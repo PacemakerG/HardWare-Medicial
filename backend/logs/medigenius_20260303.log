@@ -1,0 +1,24 @@
+2026-03-03 08:39:52 - medigenius - INFO - DatabaseService initialized
+2026-03-03 08:39:52 - medigenius - INFO - ChatService initialized
+2026-03-03 08:39:52 - medigenius - INFO - Initializing MediGenius System...
+2026-03-03 08:39:52 - medigenius - INFO - Initializing database tables...
+2026-03-03 08:39:52 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-03 08:39:52 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-03 08:40:25 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-03 08:40:33 - medigenius - INFO - Split into 2211 chunks
+2026-03-03 08:44:26 - medigenius - INFO - DatabaseService initialized
+2026-03-03 08:44:26 - medigenius - INFO - ChatService initialized
+2026-03-03 08:44:26 - medigenius - INFO - Initializing MediGenius System...
+2026-03-03 08:44:26 - medigenius - INFO - Initializing database tables...
+2026-03-03 08:44:26 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-03 08:44:26 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-03 08:44:59 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-03 08:45:01 - medigenius - INFO - Split into 2211 chunks
+2026-03-03 08:45:28 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2)
+2026-03-03 08:45:28 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-03 08:45:28 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-03 08:45:28 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-03 08:45:28 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-03 08:45:28 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-03 08:45:28 - medigenius - INFO - MediGenius System Ready!
+2026-03-03 08:57:32 - medigenius - INFO - Shutting down MediGenius...
