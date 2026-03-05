@@ -7,6 +7,7 @@ from app.core.config import OPENAI_API_KEY, OPENAI_BASE_URL
 from app.core.logging_config import logger
 
 _llm_instance = None
+_light_llm_instance = None
 
 
 def get_llm():
@@ -27,3 +28,23 @@ def get_llm():
         )
         logger.info("LLM client initialized (OpenAI Compatible / qwen3.5-plus)")
     return _llm_instance
+
+
+def get_light_llm():
+    """Return a cached ChatOpenAI LLM instance for lightweight tasks."""
+    global _light_llm_instance
+    if _light_llm_instance is None:
+        if not OPENAI_API_KEY:
+            logger.warning("OPENAI_API_KEY not found in environment variables")
+            return None
+        from langchain_openai import ChatOpenAI
+
+        _light_llm_instance = ChatOpenAI(
+            api_key=OPENAI_API_KEY,
+            base_url=OPENAI_BASE_URL,
+            model_name="qwen-turbo-latest",
+            temperature=0.0,
+            max_tokens=50,
+        )
+        logger.info("Light LLM client initialized (OpenAI Compatible / qwen-turbo-latest)")
+    return _light_llm_instance

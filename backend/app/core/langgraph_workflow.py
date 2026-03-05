@@ -22,7 +22,7 @@ def _route_after_planner(state: AgentState) -> str:
 
 
 def _route_after_llm(state: AgentState) -> str:
-    return "executor" if state.get("llm_success") else "retriever"
+    return "executor" if state.get("llm_success") else "wikipedia"
 
 
 def _route_after_rag(state: AgentState) -> str:

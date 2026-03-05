@@ -31,6 +31,25 @@ def RetrieverAgent(state: AgentState) -> AgentState:
     valid_docs = [d for d in docs if len(d.page_content.strip()) > 50] if docs else []
 
     if valid_docs:
+        from app.tools.llm_client import get_light_llm
+        light_llm = get_light_llm()
+        if light_llm:
+            doc_contents = "\n".join([d.page_content[:500] for d in valid_docs])
+            prompt = (
+                f"Question: {combined_query}\n\n"
+                f"Context:\n{doc_contents}\n\n"
+                "Based on the Context, can you confidently and highly accurately answer the Question? "
+                "Reply with ONLY 'YES' or 'NO'."
+            )
+            try:
+                eval_response = light_llm.invoke(prompt)
+                if "YES" not in eval_response.content.upper():
+                    logger.info("RAG Confidence Check Failed. Discarding docs. Response: %s", eval_response.content)
+                    valid_docs = []
+            except Exception as e:
+                logger.error("RAG Confidence Check Error: %s", e)
+
+    if valid_docs:
         state["documents"] = valid_docs
         state["rag_success"] = True
         state["source"] = "Medical Literature Database"
@@ -38,7 +57,7 @@ def RetrieverAgent(state: AgentState) -> AgentState:
     else:
         state["documents"] = []
         state["rag_success"] = False
-        logger.info("RAG: No valid documents found")
+        logger.info("RAG: No valid documents found or confidence check failed")
 
     state["rag_attempted"] = True
     return state
