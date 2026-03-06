@@ -1,12 +1,14 @@
 """
 MediGenius — agents/planner.py
-PlannerAgent: decides whether to use RAG retriever or direct LLM.
+KeywordRouterAgent: lightweight keyword/rule routing before semantic judge.
 """
+
+import re
 
 from app.core.state import AgentState
 
 # ── Medical Keywords ───────────────────────────────────────────────────────────
-MEDICAL_KEYWORDS = [
+CORE_DOMAIN_KEYWORDS = [
     # Symptoms (English & Chinese)
     "fever", "发烧", "pain", "疼痛", "headache", "头痛", "nausea", "恶心", "vomiting", "呕吐", "diarrhea", "腹泻", "cough", "健康",
     "acne", "痤疮", "pimple", "青春痘", "skin", "皮肤", "rash", "皮疹", "itch", "痒", "cold", "感冒", "flu", "流感",
@@ -37,10 +39,31 @@ MEDICAL_KEYWORDS = [
 ]
 
 
-def PlannerAgent(state: AgentState) -> AgentState:
-    """Decide whether to use RAG retriever or direct LLM based on question content."""
-    question = state["question"].lower()
-    contains_medical = any(kw in question for kw in MEDICAL_KEYWORDS)
-    state["current_tool"] = "retriever" if contains_medical else "llm_agent"
+_REGEX_HINTS = [
+    r"\bmy code\b",
+    r"\bthis error\b",
+    r"\bstack trace\b",
+    r"\btraceback\b",
+]
+
+
+def KeywordRouterAgent(state: AgentState) -> AgentState:
+    """
+    Fast rule-based router:
+      keyword_hit=yes  -> RAG
+      keyword_hit=no   -> JudgeNeedRAG
+    """
+    question = (state.get("question") or "").lower()
+    contains_domain_term = any(kw in question for kw in CORE_DOMAIN_KEYWORDS)
+    regex_hit = any(re.search(pattern, question) for pattern in _REGEX_HINTS)
+    keyword_hit = contains_domain_term or regex_hit
+
+    state["keyword_hit"] = keyword_hit
+    state["use_rag"] = keyword_hit
+    state["current_tool"] = "retriever" if keyword_hit else "judge_need_rag"
     state["retry_count"] = 0
     return state
+
+
+# Backward-compatible alias
+PlannerAgent = KeywordRouterAgent

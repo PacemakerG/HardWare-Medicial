@@ -24,17 +24,17 @@ from app.tools.wikipedia_search import get_wikipedia_wrapper  # noqa: E402
 
 def test_get_llm_no_key():
     llm_module._llm_instance = None
-    with patch('app.tools.llm_client.GROQ_API_KEY', None):
+    with patch('app.tools.llm_client.OPENAI_API_KEY', None):
         result = get_llm()
         assert result is None
 
 
 def test_get_llm_with_key():
     llm_module._llm_instance = None
-    with patch('app.tools.llm_client.GROQ_API_KEY', 'fake-key'):
-        # Patch at the source since ChatGroq is lazily imported inside the function
-        with patch('langchain_groq.ChatGroq') as mock_groq:
-            mock_groq.return_value = MagicMock()
+    with patch('app.tools.llm_client.OPENAI_API_KEY', 'fake-key'):
+        # Patch at the source since ChatOpenAI is lazily imported inside the function
+        with patch('langchain_openai.ChatOpenAI') as mock_openai:
+            mock_openai.return_value = MagicMock()
             result = get_llm()
             assert result is not None
     llm_module._llm_instance = None  # reset

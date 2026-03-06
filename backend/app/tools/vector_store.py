@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from langchain_core.documents import Document
 
-from app.core.config import VECTOR_STORE_DIR
+from app.core.config import EMBEDDING_MODEL_NAME, VECTOR_STORE_DIR
 from app.core.logging_config import logger
 
 _embeddings = None
@@ -19,13 +19,17 @@ def get_embeddings():
     """Return a cached HuggingFace sentence-transformer embeddings instance."""
     global _embeddings
     if _embeddings is None:
-        from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+        try:
+            from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 
-        _embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
-        )
-        logger.info("Embeddings model loaded (all-MiniLM-L6-v2) on CPU")
+            _embeddings = HuggingFaceEmbeddings(
+                model_name=EMBEDDING_MODEL_NAME,
+                model_kwargs={"device": "cpu"},
+            )
+            logger.info("Embeddings model loaded (%s) on CPU", EMBEDDING_MODEL_NAME)
+        except Exception as exc:
+            logger.error("Failed to initialize embeddings model: %s", exc)
+            return None
     return _embeddings
 
 
@@ -42,6 +46,9 @@ def get_or_create_vectorstore(
     from langchain_community.vectorstores import Chroma
 
     embeddings = get_embeddings()
+    if embeddings is None:
+        logger.warning("Vector store unavailable: embeddings model not ready")
+        return None
 
     if not os.path.exists(persist_dir):
         os.makedirs(persist_dir)
@@ -52,28 +59,38 @@ def get_or_create_vectorstore(
     ) if os.path.exists(persist_dir) else False
 
     if db_files_exist:
-        logger.info("Loading existing vector store from %s", persist_dir)
-        _vectorstore = Chroma(
-            persist_directory=persist_dir,
-            embedding_function=embeddings,
-            collection_metadata={"hnsw:space": "cosine"},
-        )
-        if _vectorstore._collection.count() == 0:
-            logger.warning("Vector store is empty — needs to be recreated")
+        try:
+            logger.info("Loading existing vector store from %s", persist_dir)
+            _vectorstore = Chroma(
+                persist_directory=persist_dir,
+                embedding_function=embeddings,
+                collection_metadata={"hnsw:space": "cosine"},
+            )
+            if _vectorstore._collection.count() == 0:
+                logger.warning("Vector store is empty — needs to be recreated")
+                _vectorstore = None
+                return None
+            logger.info(
+                "Loaded %d documents from vector store", _vectorstore._collection.count()
+            )
+        except Exception as exc:
+            logger.error("Failed to load vector store: %s", exc)
             _vectorstore = None
             return None
-        logger.info(
-            "Loaded %d documents from vector store", _vectorstore._collection.count()
-        )
     elif documents:
-        logger.info("Creating new vector store with %d documents", len(documents))
-        _vectorstore = Chroma.from_documents(
-            documents=documents,
-            embedding=embeddings,
-            persist_directory=persist_dir,
-            collection_metadata={"hnsw:space": "cosine"},
-        )
-        _vectorstore.persist()
+        try:
+            logger.info("Creating new vector store with %d documents", len(documents))
+            _vectorstore = Chroma.from_documents(
+                documents=documents,
+                embedding=embeddings,
+                persist_directory=persist_dir,
+                collection_metadata={"hnsw:space": "cosine"},
+            )
+            _vectorstore.persist()
+        except Exception as exc:
+            logger.error("Failed to create vector store: %s", exc)
+            _vectorstore = None
+            return None
     else:
         logger.warning("No existing vector store and no documents provided")
         return None
