@@ -48,6 +48,23 @@ function buildDownloadText(chatHistory) {
   return content;
 }
 
+function parseUploadedEcgPayload(rawText) {
+  const text = (rawText || '').trim();
+  if (!text) throw new Error('empty');
+
+  // 1) Standard JSON object
+  try {
+    return JSON.parse(text);
+  } catch {
+    // continue
+  }
+
+  // 2) JSONL: parse first non-empty line
+  const firstLine = text.split('\n').map(line => line.trim()).find(Boolean);
+  if (!firstLine) throw new Error('empty');
+  return JSON.parse(firstLine);
+}
+
 // ══════════════════════════════════════════════════════════════
 // SECTION 3 — SIDEBAR COMPONENT
 // ══════════════════════════════════════════════════════════════
@@ -281,7 +298,15 @@ function MessageBubble({ msg }) {
 // ══════════════════════════════════════════════════════════════
 // SECTION 5 — INPUT AREA COMPONENT
 // ══════════════════════════════════════════════════════════════
-function InputArea({ inputValue, setInputValue, onSend, isTyping, inputRef }) {
+function InputArea({
+  inputValue,
+  setInputValue,
+  onSend,
+  isTyping,
+  inputRef,
+  uploadInputRef,
+  onUploadFile,
+}) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -299,9 +324,21 @@ function InputArea({ inputValue, setInputValue, onSend, isTyping, inputRef }) {
     <div className="input-area">
       <div className="input-wrapper">
         <div className="input-container glass-effect">
-          <button className="input-btn" title="Attach file">
+          <button
+            className="input-btn"
+            title="上传ECG参数JSON"
+            onClick={() => uploadInputRef.current?.click()}
+            disabled={isTyping}
+          >
             <i className="fas fa-paperclip" />
           </button>
+          <input
+            ref={uploadInputRef}
+            type="file"
+            accept=".json,.jsonl,application/json,text/plain"
+            style={{ display: 'none' }}
+            onChange={onUploadFile}
+          />
           <textarea
             ref={inputRef}
             className="message-input"
@@ -369,6 +406,7 @@ export default function App() {
 
   const chatAreaRef = useRef(null);
   const inputRef = useRef(null);
+  const uploadInputRef = useRef(null);
   const toastTimerRef = useRef(null);
 
   // ── Theme ──────────────────────────────────────────────────
@@ -524,6 +562,94 @@ export default function App() {
     showToast('Chat downloaded successfully', 'success');
   }, [chatHistory, showToast]);
 
+  // ── ECG JSON upload -> report API ─────────────────────────
+  const uploadEcgFile = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (isTyping) {
+      showToast('请等待当前请求完成后再上传', 'info');
+      return;
+    }
+
+    let payload;
+    try {
+      const text = await file.text();
+      payload = parseUploadedEcgPayload(text);
+    } catch {
+      showToast('上传失败：文件不是有效 JSON/JSONL', 'error');
+      return;
+    }
+
+    if (!payload || typeof payload !== 'object' || !payload.patient_info || !payload.features) {
+      showToast('上传失败：缺少 patient_info 或 features 字段', 'error');
+      return;
+    }
+
+    setShowWelcome(false);
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const userMsg = {
+      type: 'user',
+      content: `已上传 ECG 参数文件：${file.name}`,
+      timestamp: time,
+      source: null,
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setChatHistory(prev => [...prev, userMsg]);
+    setIsTyping(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/ecg/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const reportContent = [
+          data.report || '未返回报告内容',
+          `风险等级：${data.risk_level || 'unknown'}`,
+          `免责声明：${data.disclaimer || '本报告仅供参考。'}`,
+        ].join('\n\n');
+        const botMsg = {
+          type: 'assistant',
+          content: reportContent,
+          timestamp: data.created_at || time,
+          source: 'ECG Report Skill',
+        };
+        setMessages(prev => [...prev, botMsg]);
+        setChatHistory(prev => [...prev, botMsg]);
+        showToast('ECG 报告生成成功', 'success');
+        await loadSessions();
+      } else {
+        const errorText =
+          (typeof data?.detail === 'string' && data.detail) ||
+          'ECG 报告生成失败，请检查参数后重试';
+        const errMsg = {
+          type: 'assistant',
+          content: errorText,
+          timestamp: time,
+          source: null,
+        };
+        setMessages(prev => [...prev, errMsg]);
+        setChatHistory(prev => [...prev, errMsg]);
+        showToast('ECG 报告生成失败', 'error');
+      }
+    } catch {
+      const errMsg = {
+        type: 'assistant',
+        content: '连接后端失败，无法生成 ECG 报告，请稍后重试。',
+        timestamp: time,
+        source: null,
+      };
+      setMessages(prev => [...prev, errMsg]);
+      setChatHistory(prev => [...prev, errMsg]);
+      showToast('连接错误', 'error');
+    } finally {
+      setIsTyping(false);
+    }
+  }, [isTyping, loadSessions, showToast]);
+
   // ── Send message ───────────────────────────────────────────
   const sendMessage = useCallback(async (overrideText) => {
     const message = (overrideText ?? inputValue).trim();
@@ -668,6 +794,8 @@ export default function App() {
             onSend={() => sendMessage()}
             isTyping={isTyping}
             inputRef={inputRef}
+            uploadInputRef={uploadInputRef}
+            onUploadFile={uploadEcgFile}
           />
 
         </main>

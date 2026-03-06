@@ -11,12 +11,20 @@ from langchain_core.documents import Document
 class AgentState(TypedDict):
     """Shared state passed between all LangGraph agent nodes."""
 
+    session_id: str
     question: str
     documents: List[Document]
+    rag_context: List[Dict]
+    memory_context: str
     generation: str
     source: str
     search_query: Optional[str]
     conversation_history: List[Dict]
+    keyword_hit: bool
+    use_rag: bool
+    need_rag: bool
+    tool_calls: List[Dict]
+    tool_budget_used: int
     llm_attempted: bool
     llm_success: bool
     rag_attempted: bool
@@ -32,12 +40,20 @@ class AgentState(TypedDict):
 def initialize_conversation_state() -> AgentState:
     """Return a fresh AgentState with all fields at their defaults."""
     return {
+        "session_id": "",
         "question": "",
         "documents": [],
+        "rag_context": [],
+        "memory_context": "",
         "generation": "",
         "source": "",
         "search_query": None,
         "conversation_history": [],
+        "keyword_hit": False,
+        "use_rag": False,
+        "need_rag": False,
+        "tool_calls": [],
+        "tool_budget_used": 0,
         "llm_attempted": False,
         "llm_success": False,
         "rag_attempted": False,
@@ -57,9 +73,16 @@ def reset_query_state(state: AgentState) -> AgentState:
         {
             "question": "",
             "documents": [],
+            "rag_context": [],
+            "memory_context": "",
             "generation": "",
             "source": "",
             "search_query": None,
+            "keyword_hit": False,
+            "use_rag": False,
+            "need_rag": False,
+            "tool_calls": [],
+            "tool_budget_used": 0,
             "llm_attempted": False,
             "llm_success": False,
             "rag_attempted": False,

@@ -7,8 +7,14 @@ services:
     dockerfile: Dockerfile
     plan: free
     envVars:
-      - key: GROQ_API_KEY
+      - key: OPENAI_API_KEY
         sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.siliconflow.cn/v1
+      - key: LLM_MODEL
+        value: Pro/deepseek-ai/DeepSeek-V3.2
+      - key: LIGHT_LLM_MODEL
+        value: Pro/deepseek-ai/DeepSeek-V3.2
       - key: TAVILY_API_KEY
         sync: false
       - key: PDF_PATH

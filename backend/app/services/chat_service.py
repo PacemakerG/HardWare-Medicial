@@ -43,6 +43,7 @@ class ChatService:
 
         state = self.conversation_states[session_id]
         state = reset_query_state(state)
+        state["session_id"] = session_id
         state["question"] = message
 
         # Run workflow (async preferred, sync fallback)

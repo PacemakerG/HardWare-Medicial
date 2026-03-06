@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.v1.api import api_router
-from app.core.config import CHAT_DB_PATH, PDF_PATH, VECTOR_STORE_DIR
+from app.core.config import CHAT_DB_PATH, PDF_PATH, RAG_ENABLED, VECTOR_STORE_DIR
 from app.core.logging_config import logger
 from app.services.chat_service import chat_service
 from app.services.database_service import db_service
@@ -41,13 +41,25 @@ async def lifespan(app: FastAPI):
     db_service.init_db()
     logger.info("Database initialized at %s", CHAT_DB_PATH)
 
-    if os.path.exists(PDF_PATH):
-        logger.info("Processing PDF: %s", PDF_PATH)
-        documents = process_pdf(PDF_PATH)
-        get_or_create_vectorstore(documents)
-        logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
+    if RAG_ENABLED:
+        try:
+            if os.path.exists(PDF_PATH):
+                logger.info("Processing PDF: %s", PDF_PATH)
+                documents = process_pdf(PDF_PATH)
+                vectorstore = get_or_create_vectorstore(documents)
+                if vectorstore:
+                    logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
+                else:
+                    logger.warning(
+                        "Vector store initialization skipped/failed. System will continue without RAG."
+                    )
+            else:
+                logger.warning("PDF not found at %s — vector store skipped", PDF_PATH)
+        except Exception as exc:
+            logger.error("RAG initialization failed: %s", exc)
+            logger.warning("System will continue without RAG support.")
     else:
-        logger.warning("PDF not found at %s — vector store skipped", PDF_PATH)
+        logger.info("RAG initialization disabled by RAG_ENABLED=false")
 
     chat_service.initialize_workflow()
     logger.info("MediGenius System Ready!")
