@@ -76,61 +76,59 @@ HardWare-Medicial/
 
 ```mermaid
 graph TD
-    subgraph 前端["Frontend (React + Vite)"]
-        UI[用户界面]
-        Chat[聊天组件]
-        ECG_UI[ECG 报告组件]
+    %% 前端部分
+    subgraph Frontend
+        UI["用户界面"]
+        Chat["聊天组件"]
+        ECG_UI["ECG 报告组件"]
     end
 
-    subgraph API["FastAPI Backend (app/)"]
-        Router[API 路由 api/v1/]
+    %% API 后端部分
+    subgraph FastAPI_Backend
+        Router("API 路由 api/v1/")
         ChatAPI["/chat/stream (SSE)"]
         ECGAPI["/ecg/report & /monitor"]
         HealthAPI["/health & /sessions"]
     end
 
-    subgraph Workflow["LangGraph 工作流 (core/langgraph_workflow.py)"]
-        MemRead[MemoryReadAgent]
-        MedRouter[MedicalRouterAgent]
-        QueryRW[QueryRewriterAgent]
-        Retriever[RetrieverAgent]
-        Reranker[RerankerAgent]
-        JudgeRAG[JudgeNeedRAGAgent]
-        Executor[ExecutorAgent]
-        MemWrite[MemoryWriteAsyncAgent]
-
-        MemRead --> MedRouter
-        MedRouter -->|use_rag=True| Retriever
-        MedRouter -->|use_rag=False| JudgeRAG
-        Retriever --> Reranker
-        Reranker --> QueryRW
-        QueryRW --> Executor
-        JudgeRAG -->|need_rag=True| Retriever
-        JudgeRAG -->|need_rag=False| Executor
-        Executor --> MemWrite
+    %% LangGraph 工作流部分
+    subgraph LangGraph_Workflow
+        MemRead["MemoryReadAgent"]
+        MedRouter["MedicalRouterAgent"]
+        QueryRW["QueryRewriterAgent"]
+        Retriever["RetrieverAgent"]
+        Reranker["RerankerAgent"]
+        JudgeRAG["JudgeNeedRAGAgent"]
+        Executor["ExecutorAgent"]
+        MemWrite["MemoryWriteAsyncAgent"]
     end
 
-    subgraph Services["Services (services/)"]
-        ChatSvc[ChatService]
-        DBSvc[DatabaseService]
-        ProfileSvc[ProfileService]
-        ECGReport[ECGReportService]
-        ECGMonitor[ECGMonitorService]
-        ECGPDF[ECGPdfService]
+    %% 服务部分
+    subgraph Services
+        ChatSvc["ChatService"]
+        DBSvc["DatabaseService"]
+        ProfileSvc["ProfileService"]
+        ECGReport["ECGReportService"]
+        ECGMonitor["ECGMonitorService"]
+        ECGPDF["ECGPdfService"]
     end
 
-    subgraph Tools["Tools (tools/)"]
-        LLM[LLM Client]
-        VecStore[Vector Store / ChromaDB]
-        WebSearch[Web Search Tools]
+    %% 工具部分
+    subgraph Tools
+        LLM["LLM Client"]
+        VecStore["Vector Store / ChromaDB"]
+        WebSearch["Web Search Tools"]
     end
 
-    subgraph Storage["Storage (storage/)"]
-        SQLite[(SQLite 会话/历史)]
-        JSON[(JSON 用户画像)]
-        ChromaDB[(ChromaDB 向量索引)]
-        PDF[(PDF ECG 报告)]
+    %% 存储部分
+    subgraph Storage
+        SQLite[("SQLite 会话/历史")]
+        JSON[("JSON 用户画像")]
+        ChromaDB[("ChromaDB 向量索引")]
+        PDF[("PDF ECG 报告")]
     end
+
+    %% ================= 模块间连接关系 =================
 
     UI --> Chat
     UI --> ECG_UI
@@ -145,16 +143,30 @@ graph TD
     ECGAPI --> ECGReport
     ECGAPI --> ECGMonitor
 
-    ChatSvc --> Workflow
-    ECGReport --> ECGPDF
+    %% 修改：直接指向工作流的入口节点，旧版不支持指向 subgraph
+    ChatSvc --> MemRead
+    
+    ChatSvc --> DBSvc
+    ChatSvc --> ProfileSvc
     ECGMonitor --> ECGReport
+    ECGReport --> ECGPDF
 
+    %% 工作流内部逻辑
+    MemRead --> MedRouter
+    MedRouter -->|use_rag=True| Retriever
+    MedRouter -->|use_rag=False| JudgeRAG
+    JudgeRAG -->|need_rag=True| Retriever
+    JudgeRAG -->|need_rag=False| Executor
+    Retriever --> Reranker
+    Reranker --> QueryRW
+    QueryRW --> Executor
+    Executor --> MemWrite
+
+    %% 工具与存储调用
     Executor --> LLM
     Executor --> WebSearch
     Retriever --> VecStore
 
-    ChatSvc --> DBSvc
-    ChatSvc --> ProfileSvc
     DBSvc --> SQLite
     ProfileSvc --> JSON
     VecStore --> ChromaDB
@@ -249,12 +261,30 @@ conda run -n medigenius pytest backend/tests -q
 cd frontend && npm run build
 ```
 
+## 致谢与来源
+
+本项目的早期灵感与雏形来自：
+
+- **MediGenius 原始项目（作者：Md. Emon Hasan）**  
+  https://github.com/Md-Emon-Hasan/MediGenius
+
+在此基础上，我们进行了较大幅度的二次开发与系统重构，当前版本主要改进包括：
+
+1. 多科室路由体系（手动科室锁定 + 自动路由）与科室级 RAG 检索策略。  
+2. 前后端 SSE 流式链路与更完整的 Agent 工作流拆分。  
+3. ECG 全流程能力（前端引导 -> 云端抓取 -> 报告生成 -> PDF 交付）。  
+4. 多用户隔离（tenant/user/session）与长期画像记忆机制。  
+5. 中文化与重设计的前端交互界面，以及更多工程化配置与容错策略。  
+
 ## 创作者主页/项目地址
 
-- elonge
-  - GitHub: https://github.com/PacemakerG/HardWare-Medicial
+- ElonGe
+  - GitHub: https://github.com/PacemakerG
 - xhforever
+  - GitHub: https://github.com/xhforever
+- 项目地址
   - GitHub: https://github.com/xhforever/HardWare-Medicial
+
 
 ## 说明
 
