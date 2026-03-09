@@ -118,3 +118,66 @@ AttributeError: 'NoneType' object has no attribute '__dict__'
 2026-03-09 17:15:27 - medigenius - INFO - Light LLM client initialized (tenant=default user=test / Pro/deepseek-ai/DeepSeek-V3.2)
 2026-03-09 17:15:56 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=True)
 2026-03-09 17:16:03 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test session=0f912b1c
+2026-03-09 18:43:56 - medigenius - INFO - DatabaseService initialized
+2026-03-09 18:43:56 - medigenius - INFO - ChatService initialized
+2026-03-09 18:43:56 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 18:43:56 - medigenius - INFO - Initializing database tables...
+2026-03-09 18:43:56 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 18:43:56 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-09 18:44:18 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-09 18:44:19 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 18:44:38 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 18:44:38 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 18:44:39 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 18:44:39 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 18:44:39 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 18:44:39 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 18:44:39 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 18:52:55 - medigenius - INFO - Processing message tenant=default user=elon session=0f912b1c...
+2026-03-09 18:52:56 - medigenius - INFO - LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 18:52:56 - medigenius - INFO - Light LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 18:53:24 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-09 18:53:51 - medigenius - INFO - Profile updated asynchronously for tenant=default user=elon session=0f912b1c
+2026-03-09 19:07:53 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 19:08:00 - medigenius - INFO - DatabaseService initialized
+2026-03-09 19:08:00 - medigenius - INFO - ChatService initialized
+2026-03-09 19:08:00 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 19:08:00 - medigenius - INFO - Initializing database tables...
+2026-03-09 19:08:00 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 19:08:00 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-09 19:08:20 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-09 19:08:21 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 19:08:33 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 19:08:33 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 19:08:33 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 19:08:33 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 19:08:33 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 19:08:33 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 19:08:33 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 19:08:54 - medigenius - INFO - Processing message tenant=default user=elon session=0f912b1c...
+2026-03-09 19:08:55 - medigenius - INFO - Light LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 19:09:10 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-09 19:09:10 - medigenius - INFO - LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 19:10:03 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-09 19:11:30 - medigenius - INFO - Profile updated asynchronously for tenant=default user=elon session=0f912b1c
+2026-03-09 19:33:52 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 19:34:04 - medigenius - INFO - DatabaseService initialized
+2026-03-09 19:34:04 - medigenius - INFO - ChatService initialized
+2026-03-09 19:34:04 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 19:34:04 - medigenius - INFO - Initializing database tables...
+2026-03-09 19:34:04 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 19:34:04 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-09 19:34:23 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-09 19:34:24 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 19:34:31 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 19:34:31 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 19:34:32 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 19:34:32 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 19:34:32 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 19:34:32 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 19:34:32 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 19:34:41 - medigenius - INFO - Streaming message tenant=default user=elon session=0f912b1c...
+2026-03-09 19:34:41 - medigenius - INFO - Light LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 19:35:08 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-09 19:35:35 - medigenius - INFO - LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 19:35:51 - medigenius - INFO - Shutting down MediGenius...

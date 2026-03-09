@@ -137,13 +137,15 @@ class ECGMonitorService:
     def __init__(self):
         self._tasks: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
+        self._condition = threading.Condition(self._lock)
 
     def _save_task(self, task_id: str, **fields: Any) -> Dict[str, Any]:
-        with self._lock:
+        with self._condition:
             task = self._tasks.get(task_id) or {"task_id": task_id}
             task.update(fields)
             task["updated_at"] = _utc_now_iso()
             self._tasks[task_id] = task
+            self._condition.notify_all()
             return dict(task)
 
     def _get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -223,6 +225,47 @@ class ECGMonitorService:
             or task.get("session_id") != session_id
         ):
             return None
+        return ECGMonitorStatusResponse(
+            task_id=task_id,
+            status=task.get("status", "unknown"),
+            message=task.get("message", ""),
+            started_at=task.get("started_at"),
+            updated_at=task.get("updated_at"),
+            report=task.get("report"),
+            llm_input=task.get("llm_input"),
+            llm_output=task.get("llm_output"),
+            source_row=task.get("source_row"),
+            success=bool(task.get("success", False)),
+        )
+
+    def wait_for_status_update(
+        self,
+        task_id: str,
+        *,
+        tenant_id: str,
+        user_id: str,
+        session_id: str,
+        last_updated_at: str | None,
+        timeout_sec: float = 15.0,
+    ) -> Optional[ECGMonitorStatusResponse]:
+        def _has_update() -> bool:
+            task = self._tasks.get(task_id)
+            if not task:
+                return False
+            if (
+                task.get("tenant_id") != tenant_id
+                or task.get("user_id") != user_id
+                or task.get("session_id") != session_id
+            ):
+                return False
+            return bool(task.get("updated_at")) and task.get("updated_at") != last_updated_at
+
+        with self._condition:
+            ready = self._condition.wait_for(_has_update, timeout=timeout_sec)
+            if not ready:
+                return None
+            task = dict(self._tasks.get(task_id) or {})
+
         return ECGMonitorStatusResponse(
             task_id=task_id,
             status=task.get("status", "unknown"),

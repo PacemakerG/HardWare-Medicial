@@ -3,11 +3,14 @@ MediGenius — api/v1/endpoints/chat.py
 Chat-related endpoints: /chat, /clear, /new-chat.
 """
 
+import json
 import uuid
 
 from fastapi import APIRouter, HTTPException, Request
+from starlette.responses import StreamingResponse
 
 from app.api.v1.request_context import RequestContext, get_request_context
+from app.core.logging_config import logger
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.chat_service import chat_service
 
@@ -23,6 +26,10 @@ def _get_request_context(request: Request) -> RequestContext:
     return get_request_context(request)
 
 
+def _to_sse_frame(event: str, payload: dict) -> str:
+    return f"event: {event}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest, req: Request):
     """Process a user message through the agentic pipeline."""
@@ -34,6 +41,52 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         request.message,
         tenant_id=ctx.tenant_id,
         user_id=ctx.user_id,
+    )
+
+
+@router.post("/chat/stream")
+async def chat_stream_endpoint(request: ChatRequest, req: Request):
+    """Process chat with SSE push events: start -> delta* -> done/error."""
+    if not chat_service.workflow_app:
+        raise HTTPException(status_code=503, detail="System not initialized")
+    ctx = _get_request_context(req)
+
+    async def _event_generator():
+        yield _to_sse_frame(
+            "start",
+            {
+                "success": True,
+                "session_id": ctx.session_id,
+            },
+        )
+        try:
+            async for event in chat_service.process_message_stream(
+                ctx.session_id,
+                request.message,
+                tenant_id=ctx.tenant_id,
+                user_id=ctx.user_id,
+            ):
+                event_name = event.get("event", "message")
+                payload = {k: v for k, v in event.items() if k != "event"}
+                yield _to_sse_frame(event_name, payload)
+        except Exception as exc:
+            logger.exception("chat stream failed: %s", exc)
+            yield _to_sse_frame(
+                "error",
+                {
+                    "success": False,
+                    "message": str(exc),
+                },
+            )
+
+    return StreamingResponse(
+        _event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 

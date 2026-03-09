@@ -62,6 +62,23 @@ def test_chat_flow_system_not_initialized(test_client):
         assert response.json()["detail"] == "System not initialized"
 
 
+def test_chat_stream_success(test_client, mock_dependencies):
+    mock_dependencies["workflow_app"].ainvoke.return_value = {
+        "generation": "流式回复测试",
+        "source": "Mock Brain",
+        "llm_success": True
+    }
+    response = test_client.post(
+        "/api/v1/chat/stream",
+        json={"message": "Hello stream"},
+    )
+    assert response.status_code == 200
+    body = response.text
+    assert "event: start" in body
+    assert "event: delta" in body
+    assert "event: done" in body
+
+
 def test_get_history(test_client):
     with patch.object(db_service, 'get_chat_history') as mock_hist:
         mock_hist.return_value = [{"role": "user", "content": "hi"}]

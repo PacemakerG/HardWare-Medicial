@@ -3,8 +3,12 @@ MediGenius — api/v1/endpoints/ecg.py
 ECG report generation endpoint.
 """
 
+import asyncio
+import json
+
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse
+from starlette.responses import StreamingResponse
 
 from app.api.v1.request_context import RequestContext, get_request_context
 from app.schemas.ecg import (
@@ -103,3 +107,57 @@ async def get_ecg_monitor_status_endpoint(task_id: str, req: Request):
     if not status:
         raise HTTPException(status_code=404, detail="ECG monitor task not found")
     return status
+
+
+@router.get("/monitor/{task_id}/events")
+async def stream_ecg_monitor_status_events(task_id: str, req: Request):
+    """
+    SSE stream for ECG monitor task status updates.
+    Client keeps a single connection open and receives push updates.
+    """
+    ctx = _get_request_context(req)
+    first_status = ecg_monitor_service.get_status(
+        task_id,
+        tenant_id=ctx.tenant_id,
+        user_id=ctx.user_id,
+        session_id=ctx.session_id,
+    )
+    if not first_status:
+        raise HTTPException(status_code=404, detail="ECG monitor task not found")
+
+    async def _event_generator():
+        status = first_status
+        last_updated = status.updated_at
+        yield f"data: {json.dumps(status.model_dump(), ensure_ascii=False)}\n\n"
+        if status.status in {"completed", "failed"}:
+            return
+
+        while True:
+            update = await asyncio.to_thread(
+                ecg_monitor_service.wait_for_status_update,
+                task_id,
+                tenant_id=ctx.tenant_id,
+                user_id=ctx.user_id,
+                session_id=ctx.session_id,
+                last_updated_at=last_updated,
+                timeout_sec=15.0,
+            )
+            if update is None:
+                # SSE comment frame as keepalive
+                yield ": keepalive\n\n"
+                continue
+
+            last_updated = update.updated_at
+            yield f"data: {json.dumps(update.model_dump(), ensure_ascii=False)}\n\n"
+            if update.status in {"completed", "failed"}:
+                return
+
+    return StreamingResponse(
+        _event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )

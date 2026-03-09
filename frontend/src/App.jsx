@@ -578,7 +578,7 @@ export default function App() {
 
   const chatAreaRef = useRef(null);
   const inputRef = useRef(null);
-  const ecgPollingRef = useRef(null);
+  const ecgEventSourceRef = useRef(null);
   const ecgPollingSessionRef = useRef(null);
   const toastTimerRef = useRef(null);
 
@@ -641,9 +641,9 @@ export default function App() {
   }, []);
 
   const stopEcgPolling = useCallback(() => {
-    if (ecgPollingRef.current) {
-      clearInterval(ecgPollingRef.current);
-      ecgPollingRef.current = null;
+    if (ecgEventSourceRef.current) {
+      ecgEventSourceRef.current.close();
+      ecgEventSourceRef.current = null;
     }
     ecgPollingSessionRef.current = null;
   }, []);
@@ -906,60 +906,119 @@ export default function App() {
   const pollEcgTask = useCallback((taskId, sessionIdForTask) => {
     stopEcgPolling();
     setIsEcgMonitoring(true);
-    ecgPollingSessionRef.current = sessionIdForTask || currentSessionId || sessionHeaderId;
+    const effectiveSession = sessionIdForTask || currentSessionId || sessionHeaderId;
+    ecgPollingSessionRef.current = effectiveSession;
 
-    ecgPollingRef.current = setInterval(async () => {
+    const params = new URLSearchParams({
+      tenant_id: identity.tenantId,
+      user_id: identity.userId,
+      session_id: effectiveSession || '',
+    });
+    const streamUrl = `${API_BASE}/ecg/monitor/${taskId}/events?${params.toString()}`;
+    const es = new EventSource(streamUrl, { withCredentials: true });
+    ecgEventSourceRef.current = es;
+
+    es.onmessage = (event) => {
+      if (!event?.data) return;
+      let data;
       try {
-        const res = await apiFetch(
-          `/ecg/monitor/${taskId}`,
-          {},
-          { sessionId: ecgPollingSessionRef.current },
-        );
-        const data = await res.json();
-        if (!res.ok) return;
-
-        if (data.status === 'completed' && data.report) {
-          stopEcgPolling();
-          setIsEcgMonitoring(false);
-          const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const alignedOutput = data.llm_output && typeof data.llm_output === 'object'
-            ? data.llm_output
-            : null;
-          const reportContent = [
-            alignedOutput?.report || data.report.report || '未返回报告内容',
-            `风险等级：${data.report.risk_level || 'unknown'}`,
-            `免责声明：${data.report.disclaimer || '本报告仅供参考。'}`,
-            data.report.pdf_url ? `[下载PDF报告](${data.report.pdf_url})` : '',
-          ].filter(Boolean).join('\n\n');
-          const botMsg = {
-            type: 'assistant',
-            content: reportContent,
-            timestamp: data.report.created_at || now,
-            source: 'ECG Report Skill',
-          };
-          setMessages(prev => [...prev, botMsg]);
-          setChatHistory(prev => [...prev, botMsg]);
-          showToast('ECG 报告生成成功', 'success');
-          loadSessions();
-        } else if (data.status === 'failed') {
-          stopEcgPolling();
-          setIsEcgMonitoring(false);
-          const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const errMsg = {
-            type: 'assistant',
-            content: data.message || 'ECG 报告制作失败，请稍后重试。',
-            timestamp: now,
-            source: null,
-          };
-          setMessages(prev => [...prev, errMsg]);
-          setChatHistory(prev => [...prev, errMsg]);
-          showToast('ECG 报告制作失败', 'error');
-        }
+        data = JSON.parse(event.data);
       } catch {
-        // Keep polling on transient network errors.
+        return;
       }
-    }, 4000);
-  }, [apiFetch, currentSessionId, loadSessions, sessionHeaderId, showToast, stopEcgPolling]);
+
+      if (data.status === 'completed' && data.report) {
+        stopEcgPolling();
+        setIsEcgMonitoring(false);
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const alignedOutput = data.llm_output && typeof data.llm_output === 'object'
+          ? data.llm_output
+          : null;
+        const reportContent = [
+          alignedOutput?.report || data.report.report || '未返回报告内容',
+          `风险等级：${data.report.risk_level || 'unknown'}`,
+          `免责声明：${data.report.disclaimer || '本报告仅供参考。'}`,
+          data.report.pdf_url ? `[下载PDF报告](${data.report.pdf_url})` : '',
+        ].filter(Boolean).join('\n\n');
+        const botMsg = {
+          type: 'assistant',
+          content: reportContent,
+          timestamp: data.report.created_at || now,
+          source: 'ECG Report Skill',
+        };
+        setMessages(prev => [...prev, botMsg]);
+        setChatHistory(prev => [...prev, botMsg]);
+        showToast('ECG 报告生成成功', 'success');
+        loadSessions();
+      } else if (data.status === 'failed') {
+        stopEcgPolling();
+        setIsEcgMonitoring(false);
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const errMsg = {
+          type: 'assistant',
+          content: data.message || 'ECG 报告制作失败，请稍后重试。',
+          timestamp: now,
+          source: null,
+        };
+        setMessages(prev => [...prev, errMsg]);
+        setChatHistory(prev => [...prev, errMsg]);
+        showToast('ECG 报告制作失败', 'error');
+      }
+    };
+
+    es.onerror = () => {
+      // If stream breaks before completion, close stream and fallback to current status API once.
+      if (!ecgPollingSessionRef.current) return;
+      es.close();
+      ecgEventSourceRef.current = null;
+      (async () => {
+        try {
+          const res = await apiFetch(
+            `/ecg/monitor/${taskId}`,
+            {},
+            { sessionId: ecgPollingSessionRef.current },
+          );
+          const data = await res.json();
+          if (res.ok && data.status === 'completed' && data.report) {
+            const alignedOutput = data.llm_output && typeof data.llm_output === 'object'
+              ? data.llm_output
+              : null;
+            const reportContent = [
+              alignedOutput?.report || data.report.report || '未返回报告内容',
+              `风险等级：${data.report.risk_level || 'unknown'}`,
+              `免责声明：${data.report.disclaimer || '本报告仅供参考。'}`,
+              data.report.pdf_url ? `[下载PDF报告](${data.report.pdf_url})` : '',
+            ].filter(Boolean).join('\n\n');
+            const botMsg = {
+              type: 'assistant',
+              content: reportContent,
+              timestamp: data.report.created_at || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              source: 'ECG Report Skill',
+            };
+            setMessages(prev => [...prev, botMsg]);
+            setChatHistory(prev => [...prev, botMsg]);
+            showToast('ECG 报告生成成功', 'success');
+            loadSessions();
+          } else if (res.ok && data.status === 'failed') {
+            const errMsg = {
+              type: 'assistant',
+              content: data.message || 'ECG 报告制作失败，请稍后重试。',
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              source: null,
+            };
+            setMessages(prev => [...prev, errMsg]);
+            setChatHistory(prev => [...prev, errMsg]);
+            showToast('ECG 报告制作失败', 'error');
+          }
+        } catch {
+          showToast('ECG 状态流中断，请稍后重试', 'error');
+        } finally {
+          setIsEcgMonitoring(false);
+          ecgPollingSessionRef.current = null;
+        }
+      })();
+    };
+  }, [apiFetch, currentSessionId, identity.tenantId, identity.userId, loadSessions, sessionHeaderId, showToast, stopEcgPolling]);
 
   const submitEcgGuide = useCallback(async (e) => {
     e.preventDefault();
@@ -1064,35 +1123,130 @@ export default function App() {
     if (inputRef.current) { inputRef.current.style.height = 'auto'; }
     setIsTyping(true);
 
+    const streamMsgId = `assistant-stream-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    setMessages(prev => [
+      ...prev,
+      { id: streamMsgId, type: 'assistant', content: '', timestamp: time, source: null },
+    ]);
+
+    let streamedText = '';
+    let finalized = false;
+
+    const updateStreamBubble = (patch) => {
+      setMessages(prev => prev.map(msg => (
+        msg.id === streamMsgId
+          ? { ...msg, ...patch }
+          : msg
+      )));
+    };
+
+    const finalizeStreamBubble = (payload = {}) => {
+      if (finalized) return;
+      finalized = true;
+      const finalText = payload.response || streamedText || '未返回内容';
+      const finalSource = payload.source || null;
+      const finalTimestamp = payload.timestamp || time;
+      updateStreamBubble({
+        content: finalText,
+        source: finalSource,
+        timestamp: finalTimestamp,
+      });
+      setChatHistory(prev => [
+        ...prev,
+        {
+          type: 'assistant',
+          content: finalText,
+          timestamp: finalTimestamp,
+          source: finalSource,
+        },
+      ]);
+    };
+
+    const handleSseFrame = (frame) => {
+      const lines = frame.split('\n');
+      let eventName = 'message';
+      const dataLines = [];
+      for (const line of lines) {
+        if (line.startsWith('event:')) {
+          eventName = line.slice(6).trim();
+        } else if (line.startsWith('data:')) {
+          dataLines.push(line.slice(5).trimStart());
+        }
+      }
+      if (!dataLines.length) return null;
+      let payload = {};
+      try {
+        payload = JSON.parse(dataLines.join('\n'));
+      } catch {
+        payload = {};
+      }
+      return { eventName, payload };
+    };
+
     try {
       const chatSessionId = currentSessionId || sessionHeaderId || createClientSessionId();
       persistSessionId(chatSessionId);
-      const res = await apiFetch('/chat', {
+      const res = await apiFetch('/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
       }, { sessionId: chatSessionId });
-      const data = await res.json();
 
-      if (data.success) {
-        const botMsg = {
-          type: 'assistant',
-          content: data.response,
-          timestamp: data.timestamp || time,
-          source: data.source || null,
-        };
-        setMessages(prev => [...prev, botMsg]);
-        setChatHistory(prev => [...prev, botMsg]);
-        showToast('Response received', 'success');
-        await loadSessions();
-      } else {
-        const errMsg = { type: 'assistant', content: 'Sorry, I encountered an error. Please try again.', timestamp: time, source: null };
-        setMessages(prev => [...prev, errMsg]);
-        showToast('Error occurred', 'error');
+      if (!res.ok || !res.body) {
+        throw new Error('stream_unavailable');
       }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let donePayload = null;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split('\n\n');
+        buffer = frames.pop() || '';
+        for (const frame of frames) {
+          const parsed = handleSseFrame(frame);
+          if (!parsed) continue;
+          const { eventName, payload } = parsed;
+          if (eventName === 'delta') {
+            const delta = payload.delta || '';
+            if (!delta) continue;
+            streamedText += delta;
+            updateStreamBubble({ content: streamedText });
+          } else if (eventName === 'done') {
+            donePayload = payload;
+          } else if (eventName === 'error') {
+            throw new Error(payload.message || 'stream_error');
+          }
+        }
+      }
+
+      if (buffer.trim()) {
+        const parsed = handleSseFrame(buffer);
+        if (parsed?.eventName === 'delta') {
+          const delta = parsed.payload?.delta || '';
+          streamedText += delta;
+        } else if (parsed?.eventName === 'done') {
+          donePayload = parsed.payload;
+        }
+      }
+
+      finalizeStreamBubble(donePayload || {
+        response: streamedText,
+        source: null,
+        timestamp: time,
+      });
+      showToast('Response received', 'success');
+      await loadSessions();
     } catch {
-      const errMsg = { type: 'assistant', content: 'Connection error. Please check your internet and try again.', timestamp: time, source: null };
-      setMessages(prev => [...prev, errMsg]);
+      finalizeStreamBubble({
+        response: streamedText || 'Connection error. Please check your internet and try again.',
+        source: null,
+        timestamp: time,
+      });
       showToast('Connection error', 'error');
     } finally {
       setIsTyping(false);

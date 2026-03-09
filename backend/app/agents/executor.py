@@ -6,6 +6,7 @@ It may call tools internally under strict stop conditions.
 
 import json
 import re
+from typing import Any, Dict
 
 from app.core.logging_config import logger
 from app.core.state import AgentState
@@ -344,12 +345,8 @@ def _run_web_search(state: AgentState, query: str) -> str:
     return "\n\n".join(snippets)
 
 
-def ExecutorAgent(state: AgentState) -> AgentState:
-    """Generate final answer with optional internal web-search tool usage."""
-    llm = get_llm(
-        tenant_id=state.get("tenant_id", "default"),
-        user_id=state.get("user_id", "anonymous"),
-    )
+def build_executor_plan(state: AgentState) -> Dict[str, Any]:
+    """Prepare executor generation plan so sync/stream paths share the same logic."""
     question = state["question"]
     source_info = state.get("source", "AI Medical Knowledge")
     memory_context = state.get("memory_context") or "No persistent memory context."
@@ -393,13 +390,77 @@ def ExecutorAgent(state: AgentState) -> AgentState:
             f"免责声明：{ecg_skill_output.disclaimer}"
         )
         answer = _normalize_answer(answer, question, preferred_name=preferred_name)
-        source_info = "ECG Report Skill"
-        state["generation"] = answer
-        state["source"] = source_info
-        state["conversation_history"].append({"role": "user", "content": question})
-        state["conversation_history"].append(
-            {"role": "assistant", "content": answer, "source": source_info}
-        )
+        return {
+            "mode": "shortcut",
+            "answer": answer,
+            "source_info": "ECG Report Skill",
+            "question": question,
+            "preferred_name": preferred_name,
+        }
+
+    prompt = (
+        "你是一位有温度、谨慎且专业的中文个人医疗助手。\n"
+        "输出必须使用简体中文（必要的医学名词可保留英文缩写）。\n"
+        "不要过度诊断；证据不足时明确说明不确定性。\n"
+        "回答格式必须遵循：\n"
+        "1) 先直接回应用户当前问题（1-2句）\n"
+        "2) 再给出1-3条可执行的下一步建议\n"
+        "3) 最后必须主动追问一个下一步问题，引导继续对话\n"
+        "4) 若出现高风险症状，优先提示紧急就医阈值\n\n"
+        "在不影响医学准确性的前提下，遵循以下个性化偏好：\n"
+        f"{personalization_guidance}\n\n"
+        f"用户长期画像:\n{memory_context}\n\n"
+        f"最近对话:\n{history_text or '暂无历史对话'}\n\n"
+        f"用户问题:\n{question}\n\n"
+        f"RAG资料:\n{rag_text}\n\n"
+        f"联网资料:\n{web_evidence or '暂无联网资料'}\n\n"
+        "请给出清晰、可执行、有人情味的中文回答。"
+    )
+    return {
+        "mode": "llm",
+        "prompt": prompt,
+        "source_info": source_info,
+        "question": question,
+        "preferred_name": preferred_name,
+    }
+
+
+def finalize_executor_state(
+    state: AgentState,
+    *,
+    answer: str,
+    source_info: str,
+) -> AgentState:
+    """Write final executor output into shared state consistently."""
+    question = state.get("question", "")
+    state["generation"] = answer
+    state["source"] = source_info
+    state["conversation_history"].append({"role": "user", "content": question})
+    state["conversation_history"].append(
+        {"role": "assistant", "content": answer, "source": source_info}
+    )
+    return state
+
+
+def normalize_executor_answer(answer: str, question: str, preferred_name: str = "") -> str:
+    """Exported wrapper for shared post-processing in stream path."""
+    return _normalize_answer(answer, question, preferred_name=preferred_name)
+
+
+def ExecutorAgent(state: AgentState) -> AgentState:
+    """Generate final answer with optional internal web-search tool usage."""
+    llm = get_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
+    plan = build_executor_plan(state)
+    question = plan.get("question", state.get("question", ""))
+    preferred_name = plan.get("preferred_name", "")
+    source_info = plan.get("source_info", state.get("source", "AI Medical Knowledge"))
+
+    if plan.get("mode") == "shortcut":
+        answer = plan.get("answer", "")
+        finalize_executor_state(state, answer=answer, source_info=source_info)
         logger.info("Executor: ECG report skill executed")
         return state
 
@@ -409,24 +470,7 @@ def ExecutorAgent(state: AgentState) -> AgentState:
         )
         source_info = "System Message"
     else:
-        prompt = (
-            "你是一位有温度、谨慎且专业的中文个人医疗助手。\n"
-            "输出必须使用简体中文（必要的医学名词可保留英文缩写）。\n"
-            "不要过度诊断；证据不足时明确说明不确定性。\n"
-            "回答格式必须遵循：\n"
-            "1) 先直接回应用户当前问题（1-2句）\n"
-            "2) 再给出1-3条可执行的下一步建议\n"
-            "3) 最后必须主动追问一个下一步问题，引导继续对话\n"
-            "4) 若出现高风险症状，优先提示紧急就医阈值\n\n"
-            "在不影响医学准确性的前提下，遵循以下个性化偏好：\n"
-            f"{personalization_guidance}\n\n"
-            f"用户长期画像:\n{memory_context}\n\n"
-            f"最近对话:\n{history_text or '暂无历史对话'}\n\n"
-            f"用户问题:\n{question}\n\n"
-            f"RAG资料:\n{rag_text}\n\n"
-            f"联网资料:\n{web_evidence or '暂无联网资料'}\n\n"
-            "请给出清晰、可执行、有人情味的中文回答。"
-        )
+        prompt = plan.get("prompt", "")
         try:
             response = llm.invoke(prompt)
             answer = (
@@ -439,7 +483,7 @@ def ExecutorAgent(state: AgentState) -> AgentState:
             state["llm_attempted"] = True
             logger.info(
                 "Executor: Final response generated (web_used=%s, rag_used=%s)",
-                bool(web_evidence),
+                source_info == "Current Medical Research & News",
                 bool(state.get("rag_context")),
             )
         except Exception as exc:
@@ -455,10 +499,4 @@ def ExecutorAgent(state: AgentState) -> AgentState:
     if source_info == "System Message":
         answer = _normalize_answer(answer, question, preferred_name=preferred_name)
 
-    state["generation"] = answer
-    state["source"] = source_info
-    state["conversation_history"].append({"role": "user", "content": question})
-    state["conversation_history"].append(
-        {"role": "assistant", "content": answer, "source": source_info}
-    )
-    return state
+    return finalize_executor_state(state, answer=answer, source_info=source_info)

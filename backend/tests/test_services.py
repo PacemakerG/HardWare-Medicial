@@ -1,6 +1,7 @@
 """Tests for services — Deep Modular Architecture"""
 import os
 import sys
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -75,6 +76,48 @@ class TestChatService:
     def test_clear_conversation_nonexistent(self):
         service = ChatService()
         service.clear_conversation("nonexistent")  # Should not raise
+
+    @pytest.mark.asyncio
+    async def test_process_message_stream_uses_llm_astream(self):
+        service = ChatService()
+        service.workflow_app = MagicMock()
+
+        class MockLLM:
+            def __init__(self):
+                self.prompts = []
+
+            async def astream(self, prompt):
+                self.prompts.append(prompt)
+                for token in ["你", "好", "！"]:
+                    yield SimpleNamespace(content=token)
+
+        mock_llm = MockLLM()
+
+        with patch("app.services.chat_service.MemoryReadAgent", side_effect=lambda s: s), \
+                patch("app.services.chat_service.KeywordRouterAgent", side_effect=lambda s: s), \
+                patch("app.services.chat_service.JudgeNeedRAGAgent", side_effect=lambda s: s), \
+                patch("app.services.chat_service.RetrieverAgent", side_effect=lambda s: s), \
+                patch("app.services.chat_service.MemoryWriteAsyncAgent", side_effect=lambda s: s), \
+                patch("app.services.chat_service.build_executor_plan", return_value={
+                    "mode": "llm",
+                    "prompt": "mock prompt",
+                    "source_info": "Mock Brain",
+                    "question": "hello",
+                    "preferred_name": "",
+                }), \
+                patch("app.services.chat_service.normalize_executor_answer", side_effect=lambda a, *_args, **_kwargs: a), \
+                patch("app.services.chat_service.get_llm", return_value=mock_llm), \
+                patch("app.services.chat_service.db_service.save_message"):
+            events = []
+            async for event in service.process_message_stream("test-session", "Hello"):
+                events.append(event)
+
+        deltas = [e["delta"] for e in events if e.get("event") == "delta"]
+        done = [e for e in events if e.get("event") == "done"][0]
+        assert deltas == ["你", "好", "！"]
+        assert done["response"] == "你好！"
+        assert done["source"] == "Mock Brain"
+        assert mock_llm.prompts == ["mock prompt"]
 
 
 class TestDatabaseService:
