@@ -8,7 +8,7 @@ import json
 import re
 
 from app.core.logging_config import logger
-from app.core.state import AgentState
+from app.core.state import AgentState, append_flow_trace
 from app.schemas.ecg import ECGReportRequest
 from app.services.ecg_report_service import ecg_report_service
 from app.tools.llm_client import get_light_llm, get_llm
@@ -33,12 +33,25 @@ HIGH_RISK_KEYWORDS = (
     "剧烈头痛",
     "持续高烧",
 )
+LIGHTWEIGHT_CHITCHAT = {
+    "hi",
+    "hello",
+    "hey",
+    "thanks",
+    "thank you",
+    "你好",
+    "您好",
+    "哈喽",
+    "嗨",
+    "谢谢",
+    "谢谢你",
+}
 
 
 def _recent_history_text(state: AgentState) -> str:
     lines = []
     for item in state.get("conversation_history", [])[-5:]:
-        role = "Patient" if item.get("role") == "user" else "Doctor"
+        role = "用户" if item.get("role") == "user" else "助手"
         lines.append(f"{role}: {item.get('content', '')}")
     return "\n".join(lines)
 
@@ -46,7 +59,7 @@ def _recent_history_text(state: AgentState) -> str:
 def _rag_context_text(state: AgentState) -> str:
     rag_context = state.get("rag_context") or []
     if not rag_context:
-        return "No retrieved context."
+        return "暂无检索资料。"
     chunks = []
     for i, chunk in enumerate(rag_context[:5], start=1):
         chunks.append(f"[RAG-{i}] {chunk.get('content', '')}")
@@ -129,11 +142,35 @@ def _needs_high_risk_alert(question: str) -> bool:
     return any(k in q for k in HIGH_RISK_KEYWORDS)
 
 
+def _is_lightweight_chitchat(question: str) -> bool:
+    return question.strip().lower() in LIGHTWEIGHT_CHITCHAT
+
+
+def _finalize_response(
+    state: AgentState,
+    question: str,
+    answer: str,
+    source_info: str,
+) -> AgentState:
+    state["generation"] = answer
+    state["source"] = source_info
+    state["conversation_history"].append({"role": "user", "content": question})
+    state["conversation_history"].append(
+        {"role": "assistant", "content": answer, "source": source_info}
+    )
+    return state
+
+
 def _normalize_answer(answer: str, question: str) -> str:
     """Post-process answer for Chinese output, safety reminders, and proactive follow-up."""
     text = (answer or "").strip()
     if not text:
         text = "我理解你的担心，我先给你一个简要判断和下一步建议。"
+
+    if _is_lightweight_chitchat(question):
+        if re.search(r"[\u4e00-\u9fff]", text):
+            return text
+        return "你好，我在。你想聊健康问题、饮食、运动、睡眠，还是心电数据？"
 
     if not _is_mostly_chinese(text):
         # Lightweight deterministic fallback if model drifts to English.
@@ -166,17 +203,17 @@ def _decide_web_search(state: AgentState) -> tuple[bool, str]:
     light_llm = get_light_llm()
     if not light_llm:
         # Heuristic fallback for temporally-sensitive questions.
-        temporal_hints = ("latest", "today", "recent", "new", "guideline", "news")
+        temporal_hints = ("latest", "today", "recent", "new", "guideline", "news", "最新", "今天", "近期", "指南", "新闻")
         if any(h in question.lower() for h in temporal_hints):
             return True, question
         return False, ""
 
     prompt = (
-        "You are a tool routing assistant.\n"
-        "Decide if web search is required to answer the user question accurately.\n"
-        "Return ONLY JSON: {\"need_web_search\": true|false, \"search_query\": \"...\"}\n\n"
-        f"Question: {question[:1200]}\n"
-        f"Retrieved context summary:\n{rag_text[:2400]}\n"
+        "你是工具路由助手。\n"
+        "请判断为了准确回答用户问题，是否需要联网搜索。\n"
+        "只返回 JSON：{\"need_web_search\": true|false, \"search_query\": \"...\"}\n\n"
+        f"用户问题：{question[:1200]}\n"
+        f"已检索资料摘要：\n{rag_text[:2400]}\n"
     )
     try:
         raw = light_llm.invoke(prompt)
@@ -231,13 +268,52 @@ def _run_web_search(state: AgentState, query: str) -> str:
 
 def ExecutorAgent(state: AgentState) -> AgentState:
     """Generate final answer with optional internal web-search tool usage."""
+    append_flow_trace(state, "executor")
     llm = get_llm()
     question = state["question"]
-    source_info = state.get("source", "AI Medical Knowledge")
-    memory_context = state.get("memory_context") or "No persistent memory context."
+    safety_level = state.get("safety_level", "SAFE")
+    domain = state.get("domain", "general")
+    primary_department = state.get("primary_department") or "未细分"
+    source_info = state.get("source") or f"{domain.capitalize()} AI Coach"
+    memory_context = state.get("memory_context") or "暂无长期记忆信息。"
     rag_text = _rag_context_text(state)
     history_text = _recent_history_text(state)
+    ecg_info = state.get("ecg_metrics", "").strip() or "暂无最新数据"
+    rag_source = state.get("source") if state.get("rag_context") else ""
     web_evidence = ""
+
+    if safety_level == "EMERGENCY":
+        answer = (
+            "⚠️ 系统警报：检测到你描述的情况可能存在紧急医疗风险。"
+            "我不能替代急救处置，请立即停止当前活动，尽快前往最近的急诊或立即拨打当地急救电话。"
+        )
+        logger.warning("Executor: emergency safety response triggered")
+        return _finalize_response(state, question, answer, "Safety Guard")
+
+    if safety_level == "CLARIFY":
+        if not llm:
+            answer = (
+                "我需要先确认风险，再决定是否适合继续讨论。"
+                "这个症状是你现在正在发生的吗？已经持续多久，是否在加重？"
+            )
+        else:
+            prompt = (
+                "你是一个负责任的健康管家。用户提到了敏感健康症状，但目前不能确定是否为急症。\n"
+                "不要给出任何诊断、治疗、用药或处置建议。\n"
+                "请只用关切、简洁的中文提出 1 到 2 个关键澄清问题，确认症状是否正在发生、持续多久、是否明显加重。\n\n"
+                f"用户问题：{question}\n"
+                f"历史对话：\n{history_text or '暂无历史对话'}\n"
+            )
+            try:
+                result = llm.invoke(prompt)
+                answer = result.content if hasattr(result, "content") else str(result)
+            except Exception as exc:
+                logger.warning("Executor: clarify prompt failed, using fallback: %s", exc)
+                answer = (
+                    "我先不急着给建议。这个症状是你现在正在发生的吗？"
+                    "它大概持续了多久，程度是在加重还是已经缓解？"
+                )
+        return _finalize_response(state, question, answer.strip(), "Safety Clarification")
 
     # Decide web-search usage under strict stop conditions.
     need_web_search, search_query = _decide_web_search(state)
@@ -246,17 +322,9 @@ def ExecutorAgent(state: AgentState) -> AgentState:
         if web_evidence:
             source_info = "Current Medical Research & News"
         else:
-            source_info = (
-                "Medical Literature Database"
-                if state.get("rag_context")
-                else "AI Medical Knowledge"
-            )
+            source_info = rag_source or f"{domain.capitalize()} AI Coach"
     else:
-        source_info = (
-            "Medical Literature Database"
-            if state.get("rag_context")
-            else "AI Medical Knowledge"
-        )
+        source_info = rag_source or f"{domain.capitalize()} AI Coach"
 
     # Skill shortcut: if user embeds ECG payload, generate ECG report directly.
     ecg_skill_output = _maybe_run_ecg_skill(question, state.get("session_id", ""))
@@ -268,30 +336,31 @@ def ExecutorAgent(state: AgentState) -> AgentState:
         )
         answer = _normalize_answer(answer, question)
         source_info = "ECG Report Skill"
-        state["generation"] = answer
-        state["source"] = source_info
-        state["conversation_history"].append({"role": "user", "content": question})
-        state["conversation_history"].append(
-            {"role": "assistant", "content": answer, "source": source_info}
-        )
         logger.info("Executor: ECG report skill executed")
-        return state
+        return _finalize_response(state, question, answer, source_info)
 
     if not llm:
-        answer = (
-            "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。"
-        )
+        if domain == "general" and _is_lightweight_chitchat(question):
+            answer = "你好，我在。你想聊健康问题、饮食、运动、睡眠，还是心电数据？"
+        else:
+            answer = (
+                "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。"
+            )
         source_info = "System Message"
     else:
         prompt = (
-            "你是一位有温度、谨慎且专业的中文个人医疗助手。\n"
+            "你是一位温暖、专业且务实的中文私人健康与生活方式教练。\n"
             "输出必须使用简体中文（必要的医学名词可保留英文缩写）。\n"
             "不要过度诊断；证据不足时明确说明不确定性。\n"
+            "当用户处于安全状态时，请优先给出能立即执行的小建议，不要写成空泛口号。\n"
             "回答格式必须遵循：\n"
-            "1) 先直接回应用户当前问题（1-2句）\n"
-            "2) 再给出1-3条可执行的下一步建议\n"
+            "1) 用1-2句回应用户当前问题\n"
+            "2) 给出1-3条可执行的微小建议\n"
             "3) 最后必须主动追问一个下一步问题，引导继续对话\n"
             "4) 若出现高风险症状，优先提示紧急就医阈值\n\n"
+            f"当前领域：{domain}\n"
+            f"当前主科室：{primary_department}\n"
+            f"硬件心电数据摘要：{ecg_info}\n\n"
             f"用户长期画像:\n{memory_context}\n\n"
             f"最近对话:\n{history_text or '暂无历史对话'}\n\n"
             f"用户问题:\n{question}\n\n"
@@ -309,6 +378,8 @@ def ExecutorAgent(state: AgentState) -> AgentState:
             answer = _normalize_answer(answer, question)
             state["llm_success"] = bool(answer)
             state["llm_attempted"] = True
+            if not state.get("rag_context") and source_info != "Current Medical Research & News":
+                source_info = f"{domain.capitalize()} AI Coach"
             logger.info(
                 "Executor: Final response generated (web_used=%s, rag_used=%s)",
                 bool(web_evidence),
@@ -327,10 +398,4 @@ def ExecutorAgent(state: AgentState) -> AgentState:
     if source_info == "System Message":
         answer = _normalize_answer(answer, question)
 
-    state["generation"] = answer
-    state["source"] = source_info
-    state["conversation_history"].append({"role": "user", "content": question})
-    state["conversation_history"].append(
-        {"role": "assistant", "content": answer, "source": source_info}
-    )
-    return state
+    return _finalize_response(state, question, answer, source_info)

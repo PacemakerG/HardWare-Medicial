@@ -22,7 +22,11 @@ def get_llm():
         if not OPENAI_API_KEY:
             logger.warning("OPENAI_API_KEY not found in environment variables")
             return None
-        from langchain_openai import ChatOpenAI
+        try:
+            from langchain_openai import ChatOpenAI
+        except Exception as exc:
+            logger.warning("langchain_openai unavailable for main LLM client: %s", exc)
+            return None
 
         kwargs = {
             "api_key": OPENAI_API_KEY,
@@ -45,7 +49,11 @@ def get_light_llm():
         if not OPENAI_API_KEY:
             logger.warning("OPENAI_API_KEY not found in environment variables")
             return None
-        from langchain_openai import ChatOpenAI
+        try:
+            from langchain_openai import ChatOpenAI
+        except Exception as exc:
+            logger.warning("langchain_openai unavailable for light LLM client: %s", exc)
+            return None
 
         kwargs = {
             "api_key": OPENAI_API_KEY,

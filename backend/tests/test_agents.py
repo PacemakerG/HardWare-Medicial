@@ -9,17 +9,21 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app.agents.executor import ExecutorAgent  # noqa: E402
 from app.agents.memory import MemoryAgent  # noqa: E402
+from app.agents.medical_router import MedicalRouterAgent  # noqa: E402
 from app.agents.planner import PlannerAgent  # noqa: E402
+from app.agents.query_rewriter import QueryRewriterAgent  # noqa: E402
 from app.agents.retriever import RetrieverAgent  # noqa: E402
+from app.agents.reranker import RerankerAgent  # noqa: E402
 from app.core.state import initialize_conversation_state  # noqa: E402
 
 
 # --- Planner Agent Tests ---
 def test_planner_agent_medical():
     state = initialize_conversation_state()
-    state["question"] = "I have a high fever"
+    state["question"] = "我有症状，发烧了，还想问用药问题"
     new_state = PlannerAgent(state)
-    assert new_state["current_tool"] == "retriever"
+    assert new_state["current_tool"] == "medical_router"
+    assert new_state["domain"] == "medical"
 
 
 def test_planner_agent_general():
@@ -33,6 +37,12 @@ def test_planner_agent_general():
 def test_retriever_agent_success():
     state = initialize_conversation_state()
     state["question"] = "fever"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["primary_department"] = "infectious_disease"
+    state["department_candidates"] = [{"name": "infectious_disease", "score": 0.9}]
+    state["retrieval_query"] = "发热 感染"
+    state["department_queries"] = {"infectious_disease": "感染 发热"}
 
     with patch('app.agents.retriever.get_retriever') as mock_get_retriever:
         mock_retriever = MagicMock()
@@ -42,11 +52,18 @@ def test_retriever_agent_success():
         new_state = RetrieverAgent(state)
         assert new_state["rag_success"] is True
         assert len(new_state["documents"]) > 0
+        assert "infectious_disease" in new_state["retrieval_results_by_scope"]
 
 
 def test_retriever_agent_failure():
     state = initialize_conversation_state()
     state["question"] = "unknown"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["primary_department"] = "hematology"
+    state["department_candidates"] = [{"name": "hematology", "score": 0.9}]
+    state["retrieval_query"] = "贫血"
+    state["department_queries"] = {"hematology": "贫血"}
     with patch('app.agents.retriever.get_retriever') as mock_get:
         mock_retriever = MagicMock()
         mock_retriever.invoke.return_value = []
@@ -58,9 +75,59 @@ def test_retriever_agent_failure():
 
 def test_retriever_agent_no_tool():
     state = initialize_conversation_state()
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["primary_department"] = "hematology"
+    state["department_candidates"] = [{"name": "hematology", "score": 0.9}]
     with patch('app.agents.retriever.get_retriever', return_value=None):
         new_state = RetrieverAgent(state)
         assert new_state["rag_success"] is False
+
+
+def test_medical_router_agent_fallback():
+    state = initialize_conversation_state()
+    state["question"] = "我血红蛋白低，经常头晕乏力"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    new_state = MedicalRouterAgent(state)
+    assert new_state["primary_department"] == "hematology"
+    assert new_state["department_candidates"]
+
+
+def test_query_rewriter_agent_fallback():
+    state = initialize_conversation_state()
+    state["question"] = "我血红蛋白低，经常头晕乏力"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["primary_department"] = "hematology"
+    state["department_candidates"] = [{"name": "hematology", "score": 0.9}]
+    new_state = QueryRewriterAgent(state)
+    assert new_state["retrieval_query"]
+    assert "hematology" in new_state["department_queries"]
+
+
+def test_reranker_agent():
+    state = initialize_conversation_state()
+    state["question"] = "贫血会不会导致头晕"
+    state["retrieval_query"] = "贫血 头晕"
+    state["primary_department"] = "hematology"
+    state["retrieval_scopes"] = ["hematology", "general_medical"]
+    state["merged_rag_context"] = [
+        {
+            "content": "贫血常见症状包括头晕和乏力。",
+            "metadata": {"department": "hematology"},
+            "scope": "hematology",
+            "raw_rank": 0,
+        },
+        {
+            "content": "胃病也可能导致不适。",
+            "metadata": {"department": "general_medical"},
+            "scope": "general_medical",
+            "raw_rank": 1,
+        },
+    ]
+    new_state = RerankerAgent(state)
+    assert new_state["rag_context"][0]["scope"] == "hematology"
 
 
 # --- Memory Agent Tests ---

@@ -1,0 +1,203 @@
+2026-03-08 14:54:40 - medigenius - INFO - DatabaseService initialized
+2026-03-08 14:54:40 - medigenius - INFO - ChatService initialized
+2026-03-08 14:54:40 - medigenius - INFO - Initializing MediGenius System...
+2026-03-08 14:54:40 - medigenius - INFO - Initializing database tables...
+2026-03-08 14:54:40 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-08 14:55:48 - medigenius - INFO - DatabaseService initialized
+2026-03-08 14:55:48 - medigenius - INFO - ChatService initialized
+2026-03-08 14:55:48 - medigenius - INFO - Initializing MediGenius System...
+2026-03-08 14:55:48 - medigenius - INFO - Initializing database tables...
+2026-03-08 14:55:48 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-08 14:55:48 - medigenius - INFO - RAG initialization disabled by RAG_ENABLED=false
+2026-03-08 14:55:48 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-08 14:55:48 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-08 14:55:48 - medigenius - INFO - MediGenius System Ready!
+2026-03-08 14:56:19 - medigenius - INFO - Processing message for session 68de1802...
+2026-03-08 14:56:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:19 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 14:56:19 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:28 - medigenius - INFO - Processing message for session 68de1802...
+2026-03-08 14:56:28 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:28 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 14:56:28 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:28 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:28 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:56:28 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:57:08 - medigenius - INFO - Processing message for session ae041318...
+2026-03-08 14:57:08 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:57:08 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 14:57:08 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-08 14:57:08 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:57:08 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-08 14:58:06 - medigenius - ERROR - RAG initialization failed: Limit reached while decompressing. 12809333 bytes remaining.
+2026-03-08 14:58:06 - medigenius - WARNING - System will continue without RAG support.
+2026-03-08 14:58:06 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-08 14:58:06 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-08 14:58:06 - medigenius - INFO - MediGenius System Ready!
+2026-03-08 14:58:06 - medigenius - INFO - Shutting down MediGenius...
+2026-03-08 14:58:15 - medigenius - INFO - Processing message for session 68de1802...
+2026-03-08 14:58:20 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / qwen3.5-flash)
+2026-03-08 14:58:24 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 14:58:24 - medigenius - INFO - LLM client initialized (OpenAI-compatible / qwen3.5-plus)
+2026-03-08 14:59:22 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-08 15:00:07 - medigenius - INFO - Profile updated asynchronously for session 68de1802
+2026-03-08 15:07:25 - medigenius - INFO - Shutting down MediGenius...
+2026-03-08 15:07:56 - medigenius - INFO - DatabaseService initialized
+2026-03-08 15:07:56 - medigenius - INFO - ChatService initialized
+2026-03-08 15:07:56 - medigenius - INFO - Initializing MediGenius System...
+2026-03-08 15:07:56 - medigenius - INFO - Initializing database tables...
+2026-03-08 15:07:56 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-08 15:07:56 - medigenius - INFO - RAG initialization disabled by RAG_ENABLED=false
+2026-03-08 15:07:56 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-08 15:07:56 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-08 15:07:56 - medigenius - INFO - MediGenius System Ready!
+2026-03-08 15:08:23 - medigenius - INFO - Processing message for session 8095ce7f...
+2026-03-08 15:08:28 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / qwen3.5-flash)
+2026-03-08 15:08:33 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 15:08:33 - medigenius - INFO - LLM client initialized (OpenAI-compatible / qwen3.5-plus)
+2026-03-08 15:08:52 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-08 15:09:02 - medigenius - INFO - Profile updated asynchronously for session 8095ce7f
+2026-03-08 15:11:01 - medigenius - INFO - Shutting down MediGenius...
+2026-03-08 15:11:11 - medigenius - INFO - DatabaseService initialized
+2026-03-08 15:11:11 - medigenius - INFO - ChatService initialized
+2026-03-08 15:11:11 - medigenius - INFO - Initializing MediGenius System...
+2026-03-08 15:11:11 - medigenius - INFO - Initializing database tables...
+2026-03-08 15:11:11 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-08 15:11:11 - medigenius - INFO - RAG initialization disabled by RAG_ENABLED=false
+2026-03-08 15:11:11 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-08 15:11:11 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-08 15:11:11 - medigenius - INFO - MediGenius System Ready!
+2026-03-08 15:11:47 - medigenius - INFO - Processing message for session 7dc6d512...
+2026-03-08 15:11:51 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / qwen3.5-flash)
+2026-03-08 15:11:57 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 15:11:57 - medigenius - INFO - LLM client initialized (OpenAI-compatible / qwen3.5-plus)
+2026-03-08 15:12:28 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-08 15:12:43 - medigenius - INFO - Profile updated asynchronously for session 7dc6d512
+2026-03-08 15:12:49 - medigenius - INFO - Processing message for session 7dc6d512...
+2026-03-08 15:12:54 - medigenius - INFO - HealthConcierge: domain=medical, use_rag=True
+2026-03-08 15:12:57 - medigenius - INFO - MedicalRouter: primary=gastroenterology candidates=['gastroenterology', 'general_surgery', 'gynecology']
+2026-03-08 15:13:01 - medigenius - INFO - QueryRewriter: retrieval_query=腹痛 鉴别诊断 scopes=['gastroenterology', 'general_surgery', 'gynecology']
+2026-03-08 15:13:12 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-08 15:13:12 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-08 15:13:14 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-08 15:13:14 - medigenius - INFO - RAG: No valid documents found for scopes=['gastroenterology', 'general_surgery', 'gynecology']
+2026-03-08 15:14:22 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-08 15:14:50 - medigenius - INFO - Profile updated asynchronously for session 7dc6d512
+2026-03-08 15:21:04 - medigenius - INFO - Processing message for session 7dc6d512...
+2026-03-08 15:21:08 - medigenius - INFO - HealthConcierge: domain=medical, use_rag=True
+2026-03-08 15:21:14 - medigenius - INFO - MedicalRouter: primary=pediatrics candidates=['pediatrics', 'gastroenterology', 'emergency']
+2026-03-08 15:21:19 - medigenius - INFO - QueryRewriter: retrieval_query=pediatric abdominal pain scopes=['pediatrics', 'gastroenterology', 'emergency']
+2026-03-08 15:21:19 - medigenius - INFO - RAG: No valid documents found for scopes=['pediatrics', 'gastroenterology', 'emergency']
+2026-03-08 15:21:45 - medigenius - INFO - Tavily search tool initialized
+2026-03-08 15:23:00 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=False)
+2026-03-08 15:23:07 - medigenius - INFO - Profile updated asynchronously for session 7dc6d512
+2026-03-08 15:27:04 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-08 15:27:04 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-08 15:27:05 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-08 15:27:30 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-08 15:27:30 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-08 15:27:31 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-08 15:28:54 - medigenius - INFO - Shutting down MediGenius...
+2026-03-08 15:29:04 - medigenius - INFO - DatabaseService initialized
+2026-03-08 15:29:04 - medigenius - INFO - ChatService initialized
+2026-03-08 15:29:04 - medigenius - INFO - Initializing MediGenius System...
+2026-03-08 15:29:04 - medigenius - INFO - Initializing database tables...
+2026-03-08 15:29:04 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-08 15:32:25 - medigenius - ERROR - RAG initialization failed: Limit reached while decompressing. 12809333 bytes remaining.
+2026-03-08 15:32:25 - medigenius - WARNING - System will continue without RAG support.
+2026-03-08 15:32:25 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-08 15:32:25 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-08 15:32:25 - medigenius - INFO - MediGenius System Ready!
+2026-03-08 15:32:43 - medigenius - INFO - Processing message for session 06d8e936...
+2026-03-08 15:32:44 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / qwen3.5-flash)
+2026-03-08 15:32:50 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-08 15:32:50 - medigenius - INFO - LLM client initialized (OpenAI-compatible / qwen3.5-plus)
+2026-03-08 15:33:28 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-08 15:33:44 - medigenius - INFO - Profile updated asynchronously for session 06d8e936
+2026-03-08 15:34:42 - medigenius - INFO - Processing message for session 06d8e936...
+2026-03-08 15:34:47 - medigenius - INFO - HealthConcierge: domain=medical, use_rag=True
+2026-03-08 15:34:54 - medigenius - INFO - MedicalRouter: primary=pediatrics candidates=['pediatrics', 'gastroenterology', 'general_surgery']
+2026-03-08 15:35:00 - medigenius - INFO - QueryRewriter: retrieval_query=pediatric abdominal pain scopes=['pediatrics', 'gastroenterology', 'general_surgery']
+2026-03-08 15:35:07 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-08 15:35:07 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-08 15:35:08 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-08 15:35:08 - medigenius - INFO - RAG: No valid documents found for scopes=['pediatrics', 'gastroenterology', 'general_surgery']
+2026-03-08 15:35:38 - medigenius - INFO - Tavily search tool initialized
+2026-03-08 15:36:55 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=False)
+2026-03-08 15:37:33 - medigenius - INFO - Profile updated asynchronously for session 06d8e936
+2026-03-08 15:39:21 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-08 15:39:21 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-08 15:39:22 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-08 15:40:54 - medigenius - INFO - Loaded 438 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/knowledge/departments/pediatrics_儿科/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-08 15:40:54 - medigenius - INFO - Split into 662 chunks
+2026-03-08 15:42:57 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-08 15:42:59 - medigenius - INFO - Split into 2211 chunks
+2026-03-08 15:46:55 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-08 15:46:57 - medigenius - INFO - Split into 2211 chunks
+2026-03-08 15:58:41 - medigenius - ERROR - Knowledge ingest failed: departments/infectious_disease_感染科/Major_Infectious_Diseases_3rd_edition.pdf -> department=infectious_disease (Limit reached while decompressing. 12809333 bytes remaining.)
+Traceback (most recent call last):
+  File "/data/yangxianghao/Medical-Diagnostics/MediGenius/backend/app/tools/pdf_loader.py", line 90, in process_knowledge_library
+    chunks = process_pdf_with_metadata(
+        str(pdf_file),
+    ...<5 lines>...
+        },
+    )
+  File "/data/yangxianghao/Medical-Diagnostics/MediGenius/backend/app/tools/pdf_loader.py", line 53, in process_pdf_with_metadata
+    chunks = process_pdf(pdf_path)
+  File "/data/yangxianghao/Medical-Diagnostics/MediGenius/backend/app/tools/pdf_loader.py", line 47, in process_pdf
+    return split_documents(load_pdf(pdf_path))
+                           ~~~~~~~~^^^^^^^^^^
+  File "/data/yangxianghao/Medical-Diagnostics/MediGenius/backend/app/tools/pdf_loader.py", line 26, in load_pdf
+    docs = loader.load()
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/langchain_core/document_loaders/base.py", line 43, in load
+    return list(self.lazy_load())
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/langchain_community/document_loaders/pdf.py", line 305, in lazy_load
+    yield from self.parser.lazy_parse(blob)
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/langchain_community/document_loaders/parsers/pdf.py", line 396, in lazy_parse
+    text_from_page = _extract_text_from_page(page=page)
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/langchain_community/document_loaders/parsers/pdf.py", line 378, in _extract_text_from_page
+    return page.extract_text(
+           ~~~~~~~~~~~~~~~~~^
+        extraction_mode=self.extraction_mode,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self.extraction_kwargs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/_page.py", line 2046, in extract_text
+    return self._extract_text(
+           ~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<6 lines>...
+        visitor_text,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/_page.py", line 1719, in _extract_text
+    content = ContentStream(content, pdf, "bytes")
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/generic/_data_structures.py", line 1177, in __init__
+    stream_data = stream.get_data()
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/generic/_data_structures.py", line 1097, in get_data
+    decoded.set_data(decode_stream_data(self))
+                     ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/filters.py", line 791, in decode_stream_data
+    data = FlateDecode.decode(data, params)
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/filters.py", line 171, in decode
+    str_data = decompress(data)
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/filters.py", line 110, in decompress
+    return _decompress_with_limit(data)
+  File "/home/yangxianghao/miniconda3/lib/python3.13/site-packages/pypdf/filters.py", line 82, in _decompress_with_limit
+    raise LimitReachedError(
+        f"Limit reached while decompressing. {len(decompressor.unconsumed_tail)} bytes remaining."
+    )
+pypdf.errors.LimitReachedError: Limit reached while decompressing. 12809333 bytes remaining.
+2026-03-08 15:58:52 - medigenius - INFO - Loaded 438 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/knowledge/departments/pediatrics_儿科/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-08 15:58:53 - medigenius - INFO - Split into 662 chunks
+2026-03-08 15:58:53 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=pediatrics, chunks=662
+2026-03-08 15:59:16 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-08 15:59:17 - medigenius - INFO - Split into 2211 chunks
+2026-03-08 15:59:17 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, chunks=2211
+2026-03-08 15:59:17 - medigenius - WARNING - Knowledge ingest completed with 1 failed PDF(s): ['departments/infectious_disease_感染科/Major_Infectious_Diseases_3rd_edition.pdf']

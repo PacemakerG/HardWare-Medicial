@@ -4,7 +4,13 @@ Exports all tool getter functions.
 """
 
 from app.tools.llm_client import get_llm
-from app.tools.pdf_loader import load_pdf, process_pdf, split_documents
+from app.tools.pdf_loader import (
+    load_pdf,
+    process_knowledge_library,
+    process_pdf,
+    process_pdf_with_metadata,
+    split_documents,
+)
 from app.tools.tavily_search import get_tavily_search
 from app.tools.vector_store import (
     get_embeddings,
@@ -21,6 +27,8 @@ __all__ = [
     "load_pdf",
     "split_documents",
     "process_pdf",
+    "process_pdf_with_metadata",
+    "process_knowledge_library",
     "get_wikipedia_wrapper",
     "get_tavily_search",
 ]

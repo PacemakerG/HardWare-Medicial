@@ -2,6 +2,7 @@
 import os
 import sys
 from unittest.mock import MagicMock, patch
+import types
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -12,7 +13,7 @@ import app.tools.vector_store as vs_module  # noqa: E402
 import app.tools.wikipedia_search as wiki_module  # noqa: E402
 from app.tools.duckduckgo_search import get_duckduckgo_search  # noqa: E402
 from app.tools.llm_client import get_llm  # noqa: E402
-from app.tools.pdf_loader import process_pdf, split_documents  # noqa: E402
+from app.tools.pdf_loader import process_knowledge_library, process_pdf, split_documents  # noqa: E402
 from app.tools.tavily_search import get_tavily_search  # noqa: E402
 from app.tools.vector_store import (  # noqa: E402
     get_embeddings,
@@ -32,9 +33,8 @@ def test_get_llm_no_key():
 def test_get_llm_with_key():
     llm_module._llm_instance = None
     with patch('app.tools.llm_client.OPENAI_API_KEY', 'fake-key'):
-        # Patch at the source since ChatOpenAI is lazily imported inside the function
-        with patch('langchain_openai.ChatOpenAI') as mock_openai:
-            mock_openai.return_value = MagicMock()
+        fake_module = types.SimpleNamespace(ChatOpenAI=MagicMock(return_value=MagicMock()))
+        with patch.dict(sys.modules, {'langchain_openai': fake_module}):
             result = get_llm()
             assert result is not None
     llm_module._llm_instance = None  # reset
@@ -81,6 +81,10 @@ def test_pdf_loader():
             mock_split.return_value = ["chunk1"]
             res = process_pdf("path.pdf")
             assert res == ["chunk1"]
+
+
+def test_process_knowledge_library_empty(tmp_path):
+    assert process_knowledge_library(str(tmp_path)) == []
 
 
 def test_get_duckduckgo_no_import():

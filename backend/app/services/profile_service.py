@@ -101,19 +101,19 @@ def render_profile_as_text(profile: Dict[str, Any]) -> str:
 
     if basic:
         sections.append(
-            "Basic Info: " + "; ".join(f"{k}: {v}" for k, v in basic.items())
+            "基础信息: " + "; ".join(f"{k}: {v}" for k, v in basic.items())
         )
     if prefs:
         sections.append(
-            "Preferences: " + "; ".join(f"{k}: {v}" for k, v in prefs.items())
+            "偏好信息: " + "; ".join(f"{k}: {v}" for k, v in prefs.items())
         )
     if context:
         sections.append(
-            "Current Context: " + "; ".join(f"{k}: {v}" for k, v in context.items())
+            "当前上下文: " + "; ".join(f"{k}: {v}" for k, v in context.items())
         )
 
     if not sections:
-        return "No persistent user profile information recorded yet."
+        return "暂无已记录的长期用户画像信息。"
 
     return "\n".join(sections)
 
@@ -232,12 +232,12 @@ def infer_profile_updates(question: str, answer: str) -> Dict[str, Any]:
         return {}
 
     prompt = (
-        "You extract durable user profile facts from a conversation.\n"
-        f"Follow this schema exactly: {json.dumps(PROFILE_SCHEMA, ensure_ascii=False)}\n"
-        "Return ONLY JSON with keys: basic_info, preferences, current_context.\n"
-        "Each key must map to an object. If no durable fact, use empty objects.\n\n"
-        f"User Message: {question[:1200]}\n"
-        f"Assistant Reply: {answer[:1200]}\n"
+        "你负责从对话中提取可以长期保存的用户画像信息。\n"
+        f"严格遵循这个 schema：{json.dumps(PROFILE_SCHEMA, ensure_ascii=False)}\n"
+        "只返回 JSON，且必须包含 basic_info、preferences、current_context 这三个键。\n"
+        "每个键对应一个对象；如果没有可长期保存的信息，就返回空对象。\n\n"
+        f"用户消息：{question[:1200]}\n"
+        f"助手回复：{answer[:1200]}\n"
     )
 
     try:
