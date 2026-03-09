@@ -24,11 +24,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.v1.api import api_router
-from app.core.config import CHAT_DB_PATH, PDF_PATH, RAG_ENABLED, VECTOR_STORE_DIR
+from app.core.config import (
+    CHAT_DB_PATH,
+    KNOWLEDGE_ROOT_DIR,
+    PDF_PATH,
+    RAG_ENABLED,
+    VECTOR_STORE_DIR,
+)
 from app.core.logging_config import logger
 from app.services.chat_service import chat_service
 from app.services.database_service import db_service
-from app.tools.pdf_loader import process_pdf
+from app.tools.pdf_loader import process_knowledge_library, process_pdf
 from app.tools.vector_store import get_or_create_vectorstore
 
 
@@ -43,7 +49,17 @@ async def lifespan(app: FastAPI):
 
     if RAG_ENABLED:
         try:
-            if os.path.exists(PDF_PATH):
+            knowledge_docs = process_knowledge_library(KNOWLEDGE_ROOT_DIR)
+            if knowledge_docs:
+                logger.info("Processing knowledge library: %s", KNOWLEDGE_ROOT_DIR)
+                vectorstore = get_or_create_vectorstore(knowledge_docs)
+                if vectorstore:
+                    logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
+                else:
+                    logger.warning(
+                        "Vector store initialization skipped/failed. System will continue without RAG."
+                    )
+            elif os.path.exists(PDF_PATH):
                 logger.info("Processing PDF: %s", PDF_PATH)
                 documents = process_pdf(PDF_PATH)
                 vectorstore = get_or_create_vectorstore(documents)

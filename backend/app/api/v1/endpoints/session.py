@@ -32,6 +32,7 @@ async def get_history_endpoint(req: Request):
             tenant_id=ctx.tenant_id,
             user_id=ctx.user_id,
         ),
+        "session_id": ctx.session_id,
         "success": True,
     }
 

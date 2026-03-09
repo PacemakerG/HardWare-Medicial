@@ -1,0 +1,86 @@
+2026-03-05 08:50:29 - medigenius - INFO - DatabaseService initialized
+2026-03-05 08:50:29 - medigenius - INFO - ChatService initialized
+2026-03-05 08:50:29 - medigenius - INFO - Initializing MediGenius System...
+2026-03-05 08:50:29 - medigenius - INFO - Initializing database tables...
+2026-03-05 08:50:29 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-05 08:50:29 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 08:51:00 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 08:51:01 - medigenius - INFO - Split into 2211 chunks
+2026-03-05 08:51:07 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2) on CPU
+2026-03-05 08:51:07 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 08:51:08 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-05 08:51:08 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 08:51:08 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-05 08:51:08 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-05 08:51:08 - medigenius - INFO - MediGenius System Ready!
+2026-03-05 08:51:10 - medigenius - INFO - Shutting down MediGenius...
+2026-03-05 09:01:19 - medigenius - INFO - DatabaseService initialized
+2026-03-05 09:01:19 - medigenius - INFO - ChatService initialized
+2026-03-05 09:01:19 - medigenius - INFO - Initializing MediGenius System...
+2026-03-05 09:01:19 - medigenius - INFO - Initializing database tables...
+2026-03-05 09:01:19 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-05 09:01:19 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 09:01:55 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 09:01:57 - medigenius - INFO - Split into 2211 chunks
+2026-03-05 09:02:24 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2) on CPU
+2026-03-05 09:02:24 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 09:02:25 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-05 09:02:25 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 09:02:25 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-05 09:02:25 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-05 09:02:25 - medigenius - INFO - MediGenius System Ready!
+2026-03-05 09:02:46 - medigenius - INFO - Processing message for session df72f126...
+2026-03-05 09:02:47 - medigenius - INFO - LLM client initialized (OpenAI Compatible / qwen3.5-plus)
+2026-03-05 09:03:02 - medigenius - INFO - LLM: Generated response successfully
+2026-03-05 09:03:02 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-05 09:03:33 - medigenius - INFO - Processing message for session df72f126...
+2026-03-05 09:04:04 - medigenius - INFO - LLM: Generated response successfully
+2026-03-05 09:04:04 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-05 09:34:42 - medigenius - INFO - DatabaseService initialized
+2026-03-05 09:34:42 - medigenius - INFO - ChatService initialized
+2026-03-05 09:34:42 - medigenius - INFO - Initializing MediGenius System...
+2026-03-05 09:34:42 - medigenius - INFO - Initializing database tables...
+2026-03-05 09:34:42 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-05 09:34:42 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 09:35:15 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 09:35:17 - medigenius - INFO - Split into 2211 chunks
+2026-03-05 09:35:23 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2) on CPU
+2026-03-05 09:35:23 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 09:35:27 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-05 09:35:27 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 09:35:27 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-05 09:35:27 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-05 09:35:27 - medigenius - INFO - MediGenius System Ready!
+2026-03-05 09:35:27 - medigenius - INFO - Shutting down MediGenius...
+2026-03-05 09:39:14 - medigenius - INFO - Processing message for session df72f126...
+2026-03-05 09:40:13 - medigenius - INFO - LLM: Generated response successfully
+2026-03-05 09:40:13 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-05 09:42:01 - medigenius - INFO - Processing message for session df72f126...
+2026-03-05 09:42:14 - medigenius - INFO - LLM: Generated response successfully
+2026-03-05 09:42:14 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-05 09:46:02 - medigenius - INFO - DatabaseService initialized
+2026-03-05 09:46:02 - medigenius - INFO - ChatService initialized
+2026-03-05 09:46:02 - medigenius - INFO - Initializing MediGenius System...
+2026-03-05 09:46:02 - medigenius - INFO - Initializing database tables...
+2026-03-05 09:46:02 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-05 09:46:02 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 09:46:34 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-05 09:46:34 - medigenius - INFO - Processing message for session df72f126...
+2026-03-05 09:46:36 - medigenius - INFO - Split into 2211 chunks
+2026-03-05 09:46:42 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2) on CPU
+2026-03-05 09:46:42 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 09:46:42 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-05 09:46:42 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-05 09:46:42 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-05 09:46:42 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-05 09:46:42 - medigenius - INFO - MediGenius System Ready!
+2026-03-05 09:46:42 - medigenius - INFO - Shutting down MediGenius...
+2026-03-05 09:47:00 - medigenius - INFO - LLM: Generated response successfully
+2026-03-05 09:47:00 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-05 15:03:17 - medigenius - INFO - Processing message for session df72f126...
+2026-03-05 15:03:43 - medigenius - INFO - LLM: Generated response successfully
+2026-03-05 15:03:43 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-07 15:48:36 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 15:48:48 - medigenius - INFO - LLM: Generated response successfully
+2026-03-07 15:48:48 - medigenius - INFO - Executor: Using pre-generated LLM response
+2026-03-07 16:00:33 - medigenius - INFO - Shutting down MediGenius...

@@ -22,6 +22,16 @@ class AgentState(TypedDict):
     generation: str
     source: str
     search_query: Optional[str]
+    retrieval_query: Optional[str]
+    primary_department: Optional[str]
+    department_candidates: List[Dict]
+    department_queries: Dict[str, str]
+    retrieval_scopes: List[str]
+    retrieval_results_by_scope: Dict[str, List[Dict]]
+    merged_rag_context: List[Dict]
+    reranked_rag_context: List[Dict]
+    routing_reason: str
+    rewrite_reason: str
     conversation_history: List[Dict]
     keyword_hit: bool
     use_rag: bool
@@ -38,6 +48,10 @@ class AgentState(TypedDict):
     tavily_success: bool
     current_tool: Optional[str]
     retry_count: int
+    safety_level: str
+    domain: str
+    ecg_metrics: str
+    flow_trace: List[str]
 
 
 def initialize_conversation_state() -> AgentState:
@@ -54,6 +68,16 @@ def initialize_conversation_state() -> AgentState:
         "generation": "",
         "source": "",
         "search_query": None,
+        "retrieval_query": None,
+        "primary_department": None,
+        "department_candidates": [],
+        "department_queries": {},
+        "retrieval_scopes": [],
+        "retrieval_results_by_scope": {},
+        "merged_rag_context": [],
+        "reranked_rag_context": [],
+        "routing_reason": "",
+        "rewrite_reason": "",
         "conversation_history": [],
         "keyword_hit": False,
         "use_rag": False,
@@ -70,6 +94,10 @@ def initialize_conversation_state() -> AgentState:
         "tavily_success": False,
         "current_tool": None,
         "retry_count": 0,
+        "safety_level": "SAFE",
+        "domain": "general",
+        "ecg_metrics": "",
+        "flow_trace": [],
     }
 
 
@@ -87,6 +115,16 @@ def reset_query_state(state: AgentState) -> AgentState:
             "generation": "",
             "source": "",
             "search_query": None,
+            "retrieval_query": None,
+            "primary_department": None,
+            "department_candidates": [],
+            "department_queries": {},
+            "retrieval_scopes": [],
+            "retrieval_results_by_scope": {},
+            "merged_rag_context": [],
+            "reranked_rag_context": [],
+            "routing_reason": "",
+            "rewrite_reason": "",
             "keyword_hit": False,
             "use_rag": False,
             "need_rag": False,
@@ -102,6 +140,17 @@ def reset_query_state(state: AgentState) -> AgentState:
             "tavily_success": False,
             "current_tool": None,
             "retry_count": 0,
+            "safety_level": "SAFE",
+            "domain": "general",
+            "ecg_metrics": "",
+            "flow_trace": [],
         }
     )
+    return state
+
+
+def append_flow_trace(state: AgentState, node_name: str) -> AgentState:
+    """Append a workflow node name to the trace path."""
+    state.setdefault("flow_trace", [])
+    state["flow_trace"].append(node_name)
     return state

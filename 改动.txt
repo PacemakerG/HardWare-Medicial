@@ -1,0 +1,28 @@
+2026-3-5 17:19
+第一步：配置专属的“轻量级 LLM”（修改 llm_client.py）
+
+新增一个 get_light_llm() 函数。
+
+策略：为了不拖慢整个回复速度且节约成本，这里不使用主模型，而是调用更小、更快的模型qwen-turbo-latest。
+
+参数：将 temperature 设为 0.0（保证输出的绝对理性和稳定性，消除幻觉），并将 max_tokens 设为 50（因为只需要它输出 YES 或 NO）。
+
+第二步：在检索环节增加“自信心质检”（修改 retriever.py）
+
+在从向量数据库获取到文档（valid_docs）后，先不要直接返回成功。
+
+将用户问题和检索到的文档拼接成一个严格的 Prompt，交给刚才定义的“轻量级 LLM”进行判卷。
+
+拦截逻辑：如果轻量级 LLM 的回复中不包含 YES，说明本地搜索到的内容相关性差、把握不大。此时直接将 valid_docs 清空，并把 rag_success 标记为 False。
+
+第三步：利用 LangGraph 的路由机制实现自动跳转
+
+在 retriever.py 中将 rag_success 设为 False 后，LangGraph 的条件路由函数 _route_after_rag 会自动捕捉到这个状态。
+
+根据既有逻辑，它会顺理成章地将下一个节点导向 llm_agent，让大模型凭借自身的预训练知识库来直接回答用户的问题。
+
+第四步：修复潜在的死循环（修改 langgraph_workflow.py）
+
+防患未然：防止 retriever 失败后推给 llm_agent，而 llm_agent 生成失败后又推回给 retriever（互相踢皮球）。
+
+将 llm_agent 的失败路由（Fallback）明确指向下一级兜底工具（如 wikipedia），确保工作流能单向、健康地执行到底。

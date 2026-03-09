@@ -9,7 +9,7 @@ import re
 from typing import Any, Dict
 
 from app.core.logging_config import logger
-from app.core.state import AgentState
+from app.core.state import AgentState, append_flow_trace
 from app.schemas.ecg import ECGReportRequest
 from app.services.ecg_report_service import ecg_report_service
 from app.tools.llm_client import get_light_llm, get_llm
@@ -34,6 +34,19 @@ HIGH_RISK_KEYWORDS = (
     "剧烈头痛",
     "持续高烧",
 )
+LIGHTWEIGHT_CHITCHAT = {
+    "hi",
+    "hello",
+    "hey",
+    "thanks",
+    "thank you",
+    "你好",
+    "您好",
+    "嗨",
+    "哈喽",
+    "谢谢",
+    "谢谢你",
+}
 
 STYLE_ALIAS_MAP = {
     "warm": {"warm", "friendly", "gentle", "empathetic", "温和", "共情", "亲切"},
@@ -153,6 +166,10 @@ def _needs_high_risk_alert(question: str) -> bool:
     return any(k in q for k in HIGH_RISK_KEYWORDS)
 
 
+def _is_lightweight_chitchat(question: str) -> bool:
+    return question.strip().lower() in LIGHTWEIGHT_CHITCHAT
+
+
 def _clean_preference_text(value, max_len: int = 40) -> str:
     if value is None:
         return ""
@@ -248,6 +265,11 @@ def _normalize_answer(answer: str, question: str, preferred_name: str = "") -> s
     if not text:
         text = "我理解你的担心，我先给你一个简要判断和下一步建议。"
 
+    if _is_lightweight_chitchat(question):
+        if re.search(r"[\u4e00-\u9fff]", text):
+            return text
+        return "你好，我在。你想聊健康问题、饮食、运动、睡眠，还是心电数据？"
+
     if not _is_mostly_chinese(text):
         # Lightweight deterministic fallback if model drifts to English.
         text = (
@@ -282,7 +304,7 @@ def _decide_web_search(state: AgentState) -> tuple[bool, str]:
     )
     if not light_llm:
         # Heuristic fallback for temporally-sensitive questions.
-        temporal_hints = ("latest", "today", "recent", "new", "guideline", "news")
+        temporal_hints = ("latest", "today", "recent", "new", "guideline", "news", "最新", "今天", "近期", "指南", "新闻")
         if any(h in question.lower() for h in temporal_hints):
             return True, question
         return False, ""
@@ -347,15 +369,73 @@ def _run_web_search(state: AgentState, query: str) -> str:
 
 def build_executor_plan(state: AgentState) -> Dict[str, Any]:
     """Prepare executor generation plan so sync/stream paths share the same logic."""
+    append_flow_trace(state, "executor")
     question = state["question"]
-    source_info = state.get("source", "AI Medical Knowledge")
+    safety_level = state.get("safety_level", "SAFE")
+    domain = state.get("domain", "general")
+    primary_department = state.get("primary_department") or "未细分"
+    source_info = state.get("source") or f"{str(domain).capitalize()} AI Coach"
     memory_context = state.get("memory_context") or "No persistent memory context."
     user_preferences = _extract_personalization_preferences(state)
     personalization_guidance = _build_personalization_guidance(user_preferences)
     preferred_name = user_preferences.get("preferred_name", "")
     rag_text = _rag_context_text(state)
     history_text = _recent_history_text(state)
+    ecg_info = state.get("ecg_metrics", "").strip() or "暂无最新数据"
+    rag_source = state.get("source") if state.get("rag_context") else ""
     web_evidence = ""
+
+    if safety_level == "EMERGENCY":
+        answer = (
+            "⚠️ 检测到你描述的情况可能存在紧急医疗风险。"
+            "请立即停止当前活动，尽快前往最近急诊或拨打当地急救电话。"
+        )
+        return {
+            "mode": "shortcut",
+            "answer": _normalize_answer(answer, question, preferred_name=preferred_name),
+            "source_info": "Safety Guard",
+            "question": question,
+            "preferred_name": preferred_name,
+        }
+
+    if safety_level == "CLARIFY":
+        llm = get_llm(
+            tenant_id=state.get("tenant_id", "default"),
+            user_id=state.get("user_id", "anonymous"),
+        )
+        if not llm:
+            clarify = (
+                "我需要先确认风险，再决定是否适合继续讨论。"
+                "这个症状是你现在正在发生的吗？已经持续多久，是否在加重？"
+            )
+        else:
+            prompt = (
+                "你是一个负责的健康助手。用户提到了敏感健康症状，但是否急症不明确。\n"
+                "不要给出任何诊断、治疗或用药建议。\n"
+                "请只提出 1 到 2 个关键澄清问题，用简体中文、简洁关切语气。\n\n"
+                f"用户问题：{question}\n"
+                f"历史对话：\n{history_text or '暂无历史对话'}\n"
+            )
+            try:
+                result = llm.invoke(prompt)
+                clarify = (
+                    result.content.strip()
+                    if hasattr(result, "content")
+                    else str(result).strip()
+                )
+            except Exception:
+                clarify = (
+                    "我先不急着给建议。这个症状是你现在正在发生的吗？"
+                    "它大概持续了多久，程度是在加重还是已经缓解？"
+                )
+
+        return {
+            "mode": "shortcut",
+            "answer": clarify,
+            "source_info": "Safety Clarification",
+            "question": question,
+            "preferred_name": preferred_name,
+        }
 
     # Decide web-search usage under strict stop conditions.
     need_web_search, search_query = _decide_web_search(state)
@@ -364,17 +444,9 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
         if web_evidence:
             source_info = "Current Medical Research & News"
         else:
-            source_info = (
-                "Medical Literature Database"
-                if state.get("rag_context")
-                else "AI Medical Knowledge"
-            )
+            source_info = rag_source or f"{str(domain).capitalize()} AI Coach"
     else:
-        source_info = (
-            "Medical Literature Database"
-            if state.get("rag_context")
-            else "AI Medical Knowledge"
-        )
+        source_info = rag_source or f"{str(domain).capitalize()} AI Coach"
 
     # Skill shortcut: if user embeds ECG payload, generate ECG report directly.
     ecg_skill_output = _maybe_run_ecg_skill(
@@ -409,6 +481,9 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
         "4) 若出现高风险症状，优先提示紧急就医阈值\n\n"
         "在不影响医学准确性的前提下，遵循以下个性化偏好：\n"
         f"{personalization_guidance}\n\n"
+        f"当前领域：{domain}\n"
+        f"当前主科室：{primary_department}\n"
+        f"硬件心电数据摘要：{ecg_info}\n\n"
         f"用户长期画像:\n{memory_context}\n\n"
         f"最近对话:\n{history_text or '暂无历史对话'}\n\n"
         f"用户问题:\n{question}\n\n"
@@ -465,9 +540,12 @@ def ExecutorAgent(state: AgentState) -> AgentState:
         return state
 
     if not llm:
-        answer = (
-            "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。"
-        )
+        if _is_lightweight_chitchat(question):
+            answer = "你好，我在。你想聊健康问题、饮食、运动、睡眠，还是心电数据？"
+        else:
+            answer = (
+                "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。"
+            )
         source_info = "System Message"
     else:
         prompt = plan.get("prompt", "")

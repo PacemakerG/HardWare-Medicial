@@ -126,7 +126,11 @@ def get_llm(*, tenant_id: str = "default", user_id: str = "anonymous"):
                 _llm_instance = cached
             return cached
 
-        from langchain_openai import ChatOpenAI
+        try:
+            from langchain_openai import ChatOpenAI
+        except Exception as exc:
+            logger.warning("langchain_openai unavailable for main LLM client: %s", exc)
+            return None
         kwargs = {
             "api_key": api_key,
             "model": model,
@@ -169,7 +173,11 @@ def get_light_llm(*, tenant_id: str = "default", user_id: str = "anonymous"):
                 _light_llm_instance = cached
             return cached
 
-        from langchain_openai import ChatOpenAI
+        try:
+            from langchain_openai import ChatOpenAI
+        except Exception as exc:
+            logger.warning("langchain_openai unavailable for light LLM client: %s", exc)
+            return None
         kwargs = {
             "api_key": api_key,
             "model": model,

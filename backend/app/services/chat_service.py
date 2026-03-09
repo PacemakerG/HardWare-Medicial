@@ -14,12 +14,16 @@ from app.agents.executor import (
 )
 from app.agents.judge_need_rag import JudgeNeedRAGAgent
 from app.agents.memory import MemoryReadAgent, MemoryWriteAsyncAgent
+from app.agents.medical_router import MedicalRouterAgent
 from app.agents.planner import KeywordRouterAgent
+from app.agents.query_rewriter import QueryRewriterAgent
 from app.agents.retriever import RetrieverAgent
+from app.agents.reranker import RerankerAgent
 from app.core.langgraph_workflow import create_workflow
 from app.core.logging_config import logger
 from app.core.state import initialize_conversation_state, reset_query_state
 from app.services.database_service import db_service
+from app.services.flow_trace_service import append_flow_trace_record
 from app.tools.llm_client import get_llm
 
 
@@ -43,6 +47,36 @@ class ChatService:
             self.workflow_app = create_workflow()
             logger.info("LangGraph workflow initialized successfully")
 
+    @staticmethod
+    def _legacy_context_key(tenant_id: str, user_id: str, session_id: str) -> str | None:
+        if tenant_id == "default" and user_id == "anonymous":
+            return session_id
+        return None
+
+    def _load_persisted_history(
+        self,
+        session_id: str,
+        *,
+        tenant_id: str,
+        user_id: str,
+    ) -> list[dict]:
+        """Bootstrap in-memory conversation history from persisted chat records."""
+        history = db_service.get_chat_history(
+            session_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+        restored = []
+        for item in history[-20:]:
+            record = {
+                "role": item.get("role", ""),
+                "content": item.get("content", ""),
+            }
+            if item.get("source"):
+                record["source"] = item["source"]
+            restored.append(record)
+        return restored
+
     def _prepare_query_state(
         self,
         *,
@@ -52,9 +86,18 @@ class ChatService:
         user_id: str,
     ) -> tuple[str, Dict[str, Any]]:
         context_key = self._context_key(tenant_id, user_id, session_id)
+        legacy_key = self._legacy_context_key(tenant_id, user_id, session_id)
         with self._lock:
             if context_key not in self.conversation_states:
-                self.conversation_states[context_key] = initialize_conversation_state()
+                state = initialize_conversation_state()
+                state["conversation_history"] = self._load_persisted_history(
+                    session_id,
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                )
+                self.conversation_states[context_key] = state
+                if legacy_key:
+                    self.conversation_states[legacy_key] = state
             state = self.conversation_states[context_key]
         state = reset_query_state(state)
         state["tenant_id"] = tenant_id
@@ -68,6 +111,10 @@ class ChatService:
             if context_key not in self.conversation_states:
                 self.conversation_states[context_key] = initialize_conversation_state()
             self.conversation_states[context_key].update(result)
+            tenant_id, user_id, session_id = context_key.split("::", 2)
+            legacy_key = self._legacy_context_key(tenant_id, user_id, session_id)
+            if legacy_key:
+                self.conversation_states[legacy_key] = self.conversation_states[context_key]
 
     @staticmethod
     def _extract_chunk_text(chunk: Any) -> str:
@@ -136,6 +183,7 @@ class ChatService:
 
         response_text = result.get("generation", "Unable to generate response.")
         source = result.get("source", "Unknown")
+        flow_trace = result.get("flow_trace", [])
 
         # Persist assistant response
         db_service.save_message(
@@ -146,12 +194,24 @@ class ChatService:
             tenant_id=tenant_id,
             user_id=user_id,
         )
+        append_flow_trace_record(
+            session_id=session_id,
+            question=message,
+            flow_trace=flow_trace,
+            source=source,
+            safety_level=result.get("safety_level", "SAFE"),
+            domain=result.get("domain", "general"),
+            primary_department=result.get("primary_department", "") or "",
+            use_rag=bool(result.get("use_rag", False)),
+            need_rag=bool(result.get("need_rag", False)),
+        )
 
         return {
             "response": response_text,
             "source": source,
             "timestamp": datetime.now().strftime("%I:%M %p"),
             "success": bool(result.get("generation")),
+            "flow_trace": flow_trace,
         }
 
     async def process_message_stream(
@@ -189,12 +249,31 @@ class ChatService:
         # Mirror workflow up to executor so stream path is behaviorally aligned.
         state = MemoryReadAgent(state)
         state = KeywordRouterAgent(state)
-        if state.get("use_rag"):
+
+        if state.get("safety_level") in {"EMERGENCY", "CLARIFY"}:
+            pass
+        elif state.get("domain") == "medical":
+            if state.get("use_rag"):
+                state = MedicalRouterAgent(state)
+                state = QueryRewriterAgent(state)
+                state = RetrieverAgent(state)
+                state = RerankerAgent(state)
+            else:
+                state = JudgeNeedRAGAgent(state)
+                if state.get("need_rag"):
+                    state = QueryRewriterAgent(state)
+                    state = RetrieverAgent(state)
+                    state = RerankerAgent(state)
+        elif state.get("use_rag"):
+            state = QueryRewriterAgent(state)
             state = RetrieverAgent(state)
+            state = RerankerAgent(state)
         else:
             state = JudgeNeedRAGAgent(state)
             if state.get("need_rag"):
+                state = QueryRewriterAgent(state)
                 state = RetrieverAgent(state)
+                state = RerankerAgent(state)
 
         plan = build_executor_plan(state)
         question = plan.get("question", message)
@@ -265,6 +344,7 @@ class ChatService:
         state = finalize_executor_state(state, answer=answer, source_info=source_info)
         state = MemoryWriteAsyncAgent(state)
         self._store_state(context_key, state)
+        flow_trace = state.get("flow_trace", [])
 
         db_service.save_message(
             session_id,
@@ -274,12 +354,24 @@ class ChatService:
             tenant_id=tenant_id,
             user_id=user_id,
         )
+        append_flow_trace_record(
+            session_id=session_id,
+            question=message,
+            flow_trace=flow_trace,
+            source=source_info,
+            safety_level=state.get("safety_level", "SAFE"),
+            domain=state.get("domain", "general"),
+            primary_department=state.get("primary_department", "") or "",
+            use_rag=bool(state.get("use_rag", False)),
+            need_rag=bool(state.get("need_rag", False)),
+        )
         yield {
             "event": "done",
             "success": bool(answer),
             "response": answer,
             "source": source_info,
             "timestamp": datetime.now().strftime("%I:%M %p"),
+            "flow_trace": flow_trace,
         }
 
     def clear_conversation(
@@ -291,9 +383,13 @@ class ChatService:
     ) -> None:
         """Reset the in-memory conversation state for a session."""
         context_key = self._context_key(tenant_id, user_id, session_id)
+        legacy_key = self._legacy_context_key(tenant_id, user_id, session_id)
         with self._lock:
             if context_key in self.conversation_states:
-                self.conversation_states[context_key] = initialize_conversation_state()
+                reset_state = initialize_conversation_state()
+                self.conversation_states[context_key] = reset_state
+                if legacy_key:
+                    self.conversation_states[legacy_key] = reset_state
                 logger.info(
                     "Conversation cleared tenant=%s user=%s session=%s",
                     tenant_id,

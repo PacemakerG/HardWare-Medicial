@@ -1,0 +1,190 @@
+2026-03-07 15:48:05 - medigenius - INFO - DatabaseService initialized
+2026-03-07 15:48:05 - medigenius - INFO - ChatService initialized
+2026-03-07 15:48:05 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 15:48:05 - medigenius - INFO - Initializing database tables...
+2026-03-07 15:48:05 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 15:48:05 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 15:48:56 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 15:48:58 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 15:49:05 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 15:49:05 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 15:49:07 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 15:49:07 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 15:49:07 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 15:49:07 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 15:49:07 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 15:49:07 - medigenius - INFO - Shutting down MediGenius...
+2026-03-07 16:00:59 - medigenius - INFO - DatabaseService initialized
+2026-03-07 16:00:59 - medigenius - INFO - ChatService initialized
+2026-03-07 16:00:59 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 16:00:59 - medigenius - INFO - Initializing database tables...
+2026-03-07 16:00:59 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 16:00:59 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:01:31 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:01:33 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 16:01:39 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 16:01:39 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:01:39 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 16:01:39 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:01:39 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 16:01:39 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 16:01:39 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 16:01:51 - medigenius - INFO - Processing message for session trace-te...
+2026-03-07 16:02:23 - medigenius - INFO - Shutting down MediGenius...
+2026-03-07 16:02:30 - medigenius - INFO - DatabaseService initialized
+2026-03-07 16:02:30 - medigenius - INFO - ChatService initialized
+2026-03-07 16:02:30 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 16:02:30 - medigenius - INFO - Initializing database tables...
+2026-03-07 16:02:30 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 16:02:30 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:03:03 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:03:04 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 16:03:10 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 16:03:10 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:03:11 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 16:03:11 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:03:11 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 16:03:11 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 16:03:11 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 16:03:22 - medigenius - INFO - Processing message for session trace-te...
+2026-03-07 16:03:22 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:03:22 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:03:22 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-07 16:03:22 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:03:22 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:04:48 - medigenius - INFO - Shutting down MediGenius...
+2026-03-07 16:04:58 - medigenius - INFO - DatabaseService initialized
+2026-03-07 16:04:58 - medigenius - INFO - ChatService initialized
+2026-03-07 16:04:58 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 16:04:58 - medigenius - INFO - Initializing database tables...
+2026-03-07 16:04:58 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 16:04:58 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:05:30 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:05:32 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 16:05:38 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 16:05:38 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:05:38 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 16:05:38 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:05:38 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 16:05:38 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 16:05:38 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 16:06:09 - medigenius - INFO - Processing message for session 0d446a11...
+2026-03-07 16:06:09 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:09 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:06:09 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:09 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:09 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:09 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:19 - medigenius - INFO - Processing message for session 0d446a11...
+2026-03-07 16:06:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:19 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:06:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:19 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:06:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:12:29 - medigenius - INFO - Shutting down MediGenius...
+2026-03-07 16:12:46 - medigenius - INFO - DatabaseService initialized
+2026-03-07 16:12:46 - medigenius - INFO - ChatService initialized
+2026-03-07 16:12:46 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 16:12:46 - medigenius - INFO - Initializing database tables...
+2026-03-07 16:12:46 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 16:12:46 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:13:18 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:13:20 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 16:13:26 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 16:13:26 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:13:26 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 16:13:26 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:13:26 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 16:13:26 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 16:13:26 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 16:13:33 - medigenius - INFO - Processing message for session trace-te...
+2026-03-07 16:13:34 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:13:34 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:13:34 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-07 16:13:34 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:13:34 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:13:52 - medigenius - INFO - Deleting session trace-te...
+2026-03-07 16:13:57 - medigenius - INFO - Deleting session 0d446a11...
+2026-03-07 16:14:01 - medigenius - INFO - Deleting session trace-te...
+2026-03-07 16:14:05 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 16:14:05 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:05 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:14:05 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:05 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:05 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:19 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 16:14:19 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:19 - medigenius - INFO - HealthConcierge: domain=sleep, use_rag=True
+2026-03-07 16:14:20 - medigenius - INFO - RAG: No valid documents found for domain=sleep
+2026-03-07 16:14:20 - medigenius - WARNING - langchain_openai unavailable for main LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:20 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:14:20 - medigenius - WARNING - langchain_openai unavailable for light LLM client: No module named 'langchain_openai'
+2026-03-07 16:22:10 - medigenius - INFO - Shutting down MediGenius...
+2026-03-07 16:22:22 - medigenius - INFO - DatabaseService initialized
+2026-03-07 16:22:22 - medigenius - INFO - ChatService initialized
+2026-03-07 16:22:22 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 16:22:22 - medigenius - INFO - Initializing database tables...
+2026-03-07 16:22:22 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 16:22:22 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:22:58 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:23:00 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 16:23:05 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 16:23:05 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:23:06 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 16:23:06 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:23:06 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 16:23:06 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 16:23:06 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 16:23:21 - medigenius - INFO - Processing message for session conda-en...
+2026-03-07 16:23:22 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / gpt-4o-mini)
+2026-03-07 16:23:23 - medigenius - WARNING - HealthConcierge: domain classification fallback used: Error code: 404 - {'error': {'message': 'The model `gpt-4o-mini` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'param': None, 'code': 'model_not_found'}, 'request_id': 'd17a5f41-6bcb-9137-8de6-05972aed57a6'}
+2026-03-07 16:23:23 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:23:23 - medigenius - INFO - LLM client initialized (OpenAI-compatible / gpt-4o-mini)
+2026-03-07 16:23:23 - medigenius - WARNING - Executor tool decision failed: Error code: 404 - {'error': {'message': 'The model `gpt-4o-mini` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'param': None, 'code': 'model_not_found'}, 'request_id': '5426cba9-0a06-9506-ba77-219a10fb03f9'}
+2026-03-07 16:23:23 - medigenius - ERROR - Executor: LLM generation failed: Error code: 404 - {'error': {'message': 'The model `gpt-4o-mini` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'param': None, 'code': 'model_not_found'}, 'request_id': 'bbb4efba-658c-9e7a-8c3a-45315347564e'}
+2026-03-07 16:23:23 - medigenius - WARNING - Profile update inference failed: Error code: 404 - {'error': {'message': 'The model `gpt-4o-mini` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'param': None, 'code': 'model_not_found'}, 'request_id': '8c30625c-a582-91d5-8cc9-e6d4b4187dde'}
+2026-03-07 16:26:26 - medigenius - INFO - Shutting down MediGenius...
+2026-03-07 16:26:35 - medigenius - INFO - DatabaseService initialized
+2026-03-07 16:26:35 - medigenius - INFO - ChatService initialized
+2026-03-07 16:26:35 - medigenius - INFO - Initializing MediGenius System...
+2026-03-07 16:26:35 - medigenius - INFO - Initializing database tables...
+2026-03-07 16:26:35 - medigenius - INFO - Database initialized at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/chat_db/medigenius.db
+2026-03-07 16:26:35 - medigenius - INFO - Processing PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:27:06 - medigenius - INFO - Loaded 759 pages from PDF: /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/data/medical_book.pdf
+2026-03-07 16:27:08 - medigenius - INFO - Split into 2211 chunks
+2026-03-07 16:27:13 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-07 16:27:13 - medigenius - INFO - Loading existing vector store from /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:27:21 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-07 16:27:21 - medigenius - INFO - Vector store ready at /data/yangxianghao/Medical-Diagnostics/MediGenius/backend/storage/vector_store
+2026-03-07 16:27:21 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-07 16:27:21 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-07 16:27:21 - medigenius - INFO - MediGenius System Ready!
+2026-03-07 16:27:35 - medigenius - INFO - Processing message for session qwen-con...
+2026-03-07 16:27:41 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / qwen3.5-flash)
+2026-03-07 16:27:45 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:27:45 - medigenius - INFO - LLM client initialized (OpenAI-compatible / qwen3.5-plus)
+2026-03-07 16:28:15 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-07 16:28:31 - medigenius - INFO - Profile updated asynchronously for session qwen-con
+2026-03-07 16:28:40 - medigenius - INFO - Deleting session qwen-con...
+2026-03-07 16:28:47 - medigenius - INFO - Deleting session qwen-con...
+2026-03-07 16:28:47 - medigenius - INFO - Deleting session qwen-con...
+2026-03-07 16:28:49 - medigenius - INFO - Deleting session conda-en...
+2026-03-07 16:28:59 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 16:29:07 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-07 16:29:35 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-07 16:29:58 - medigenius - INFO - Profile updated asynchronously for session 30690947
+2026-03-07 16:31:55 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 16:31:59 - medigenius - INFO - HealthConcierge: domain=sleep, use_rag=True
+2026-03-07 16:31:59 - medigenius - INFO - RAG: No valid documents found for domain=sleep
+2026-03-07 16:33:02 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-07 16:33:35 - medigenius - INFO - Profile updated asynchronously for session 30690947
+2026-03-07 16:33:40 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 16:33:48 - medigenius - INFO - HealthConcierge: safety keyword triggered, safety_level=CLARIFY
+2026-03-07 16:35:20 - medigenius - INFO - Profile updated asynchronously for session 30690947
+2026-03-07 16:35:29 - medigenius - INFO - Processing message for session 30690947...
+2026-03-07 16:35:32 - medigenius - INFO - HealthConcierge: domain=medical, use_rag=True
+2026-03-07 16:35:32 - medigenius - INFO - RAG: No valid documents found for domain=medical
+2026-03-07 16:36:31 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-07 16:37:02 - medigenius - INFO - Profile updated asynchronously for session 30690947
+2026-03-07 16:40:40 - medigenius - INFO - Shutting down MediGenius...

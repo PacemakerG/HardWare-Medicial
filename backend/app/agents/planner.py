@@ -1,69 +1,203 @@
 """
 MediGenius — agents/planner.py
-KeywordRouterAgent: lightweight keyword/rule routing before semantic judge.
+HealthConciergeAgent: multi-level safety check and domain classification.
 """
 
-import re
+import json
 
-from app.core.state import AgentState
+from app.core.logging_config import logger
+from app.core.state import AgentState, append_flow_trace
+from app.tools.llm_client import get_light_llm
 
-# ── Medical Keywords ───────────────────────────────────────────────────────────
-CORE_DOMAIN_KEYWORDS = [
-    # Symptoms (English & Chinese)
-    "fever", "发烧", "pain", "疼痛", "headache", "头痛", "nausea", "恶心", "vomiting", "呕吐", "diarrhea", "腹泻", "cough", "健康",
-    "acne", "痤疮", "pimple", "青春痘", "skin", "皮肤", "rash", "皮疹", "itch", "痒", "cold", "感冒", "flu", "流感",
-    "shortness of breath", "呼吸急促", "chest pain", "胸痛", "abdominal pain", "腹痛", "back pain", "背痛",
-    "joint pain", "关节痛", "muscle pain", "肌肉痛", "fatigue", "疲劳", "weakness", "虚弱", "dizziness", "头晕",
-    "confusion", "困惑", "memory loss", "记忆丧失", "seizure", "numbness", "麻木", "tingling", "刺痛", "swelling", "肿胀",
-    "bleeding", "出血", "bruising", "瘀伤", "weight loss", "体重减轻", "weight gain", "体重增加",
-    "appetite loss", "食欲不振", "sleep problems", "睡眠问题", "insomnia", "失眠",
-    # Conditions (English & Chinese)
-    "cancer", "癌症", "diabetes", "糖尿病", "hypertension", "高血压", "heart disease", "心脏病", "stroke", "中风", "asthma", "哮喘",
-    "copd", "慢阻肺", "pneumonia", "肺炎", "bronchitis", "支气管炎", "covid", "coronavirus", "新冠", "冠状病毒",
-    "infection", "感染", "virus", "病毒", "bacteria", "细菌", "fungal", "真菌", "arthritis", "关节炎", "osteoporosis", "骨质疏松",
-    "thyroid", "甲状腺", "kidney disease", "肾脏疾病", "liver disease", "肝病", "hepatitis", "肝炎", "depression", "抑郁",
-    "anxiety", "焦虑", "bipolar", "躁郁症", "schizophrenia", "精神分裂症", "alzheimer", "老年痴呆", "parkinson", "帕金森", "epilepsy", "癫痫",
-    # Medical terms (English & Chinese)
-    "treatment", "治疗", "therapy", "疗法", "medication", "medicine", "药物", "医学", "prescription", "处方", "dosage", "剂量",
-    "side effects", "副作用", "diagnosis", "诊断", "prognosis", "预后", "surgery", "手术", "operation", "操作",
-    "procedure", "程序", "test", "测试", "lab results", "实验室结果", "blood test", "验血", "x-ray", "X射线", "mri", "核磁共振",
-    "ct scan", "CT扫描", "ultrasound", "超声", "biopsy", "活检", "screening", "筛查", "prevention", "预防", "vaccine", "疫苗",
-    "immunization", "免疫", "rehabilitation", "康复", "recovery", "恢复", "chronic", "慢性", "acute", "急性",
-    "syndrome", "综合征", "disorder", "障碍", "symptom", "症状", "cure", "治愈", "remedy", "补救", "doctor", "医生", "hospital", "医院",
-    # Body parts (English & Chinese)
-    "heart", "心脏", "lung", "肺", "kidney", "肾", "liver", "肝", "brain", "大脑", "stomach", "胃", "intestine", "肠",
-    "blood", "血液", "bone", "骨骼", "muscle", "肌肉", "nerve", "神经", "eye", "眼睛", "ear", "耳朵", "throat", "喉咙",
-    "neck", "脖子", "spine", "脊柱", "joint", "关节", "head", "头部", "chest", "胸部", "abdomen", "腹部", "leg", "腿", "arm", "手臂",
-    # Support Keywords
-    "manual", "手册", "advice", "建议", "handle", "处理"
+SENSITIVE_KEYWORDS = [
+    "痛",
+    "血",
+    "呼吸困难",
+    "呼吸急促",
+    "胸痛",
+    "晕",
+    "昏",
+    "急救",
+    "死",
+    "严重",
+    "救命",
+    "pain",
+    "bleed",
+    "bleeding",
+    "shortness of breath",
+    "emergency",
+    "suicide",
+    "hurt",
 ]
 
+DOMAIN_KEYWORDS = {
+    "medical": [
+        "发烧",
+        "疼痛",
+        "胸痛",
+        "头痛",
+        "症状",
+        "药",
+        "用药",
+        "疾病",
+        "诊断",
+        "治疗",
+        "医院",
+        "doctor",
+        "medication",
+        "symptom",
+        "treatment",
+        "diagnosis",
+    ],
+    "nutrition": [
+        "饮食",
+        "营养",
+        "热量",
+        "蛋白质",
+        "减脂",
+        "增肌餐",
+        "碳水",
+        "脂肪",
+        "补剂",
+        "diet",
+        "nutrition",
+        "calorie",
+        "protein",
+    ],
+    "fitness": [
+        "运动",
+        "健身",
+        "训练",
+        "跑步",
+        "力量",
+        "有氧",
+        "拉伸",
+        "步数",
+        "workout",
+        "fitness",
+        "exercise",
+        "cardio",
+        "strength",
+    ],
+    "sleep": [
+        "睡眠",
+        "失眠",
+        "焦虑",
+        "压力",
+        "心理",
+        "情绪",
+        "作息",
+        "熬夜",
+        "sleep",
+        "insomnia",
+        "stress",
+        "anxiety",
+        "mood",
+    ],
+}
 
-_REGEX_HINTS = [
-    r"\bmy code\b",
-    r"\bthis error\b",
-    r"\bstack trace\b",
-    r"\btraceback\b",
-]
+RAG_DOMAINS = {"medical", "nutrition", "fitness", "sleep"}
 
 
-def KeywordRouterAgent(state: AgentState) -> AgentState:
-    """
-    Fast rule-based router:
-      keyword_hit=yes  -> RAG
-      keyword_hit=no   -> JudgeNeedRAG
-    """
-    question = (state.get("question") or "").lower()
-    contains_domain_term = any(kw in question for kw in CORE_DOMAIN_KEYWORDS)
-    regex_hit = any(re.search(pattern, question) for pattern in _REGEX_HINTS)
-    keyword_hit = contains_domain_term or regex_hit
+def _extract_json_block(text: str) -> str:
+    start = text.find("{")
+    end = text.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return "{}"
+    return text[start : end + 1]
 
-    state["keyword_hit"] = keyword_hit
-    state["use_rag"] = keyword_hit
-    state["current_tool"] = "retriever" if keyword_hit else "judge_need_rag"
+
+def _fallback_domain(question: str) -> str:
+    for domain, keywords in DOMAIN_KEYWORDS.items():
+        if any(keyword in question for keyword in keywords):
+            return domain
+    return "general"
+
+
+def HealthConciergeAgent(state: AgentState) -> AgentState:
+    """Run a safety-first triage and route SAFE queries by domain."""
+    append_flow_trace(state, "health_concierge")
+    raw_question = (state.get("question") or "").strip()
+    question = raw_question.lower()
+    llm = get_light_llm()
+    sensitive_hit = any(keyword in question for keyword in SENSITIVE_KEYWORDS)
+
+    state["keyword_hit"] = sensitive_hit
+    state["safety_level"] = "SAFE"
+    state["domain"] = "general"
+    state["use_rag"] = False
+    state["current_tool"] = "judge_need_rag"
     state["retry_count"] = 0
+    state["primary_department"] = None
+    state["department_candidates"] = []
+    state["department_queries"] = {}
+    state["retrieval_scopes"] = []
+    state["routing_reason"] = ""
+    state["rewrite_reason"] = ""
+
+    if sensitive_hit and llm:
+        safety_prompt = (
+            "你是一个严格的医疗安全护盾。分析患者输入，输出 JSON："
+            '{"safety_level": "..."}。\n'
+            "- EMERGENCY: 正在发生的、危及生命的急症，如剧烈胸痛、大出血、明显呼吸困难。\n"
+            "- CLARIFY: 提及了敏感症状，但是否急症不明确，需要先追问。\n"
+            "- SAFE: 纯讨论、无关本人健康，或明显不是现实医疗风险。\n\n"
+            f"患者输入：{raw_question}"
+        )
+        try:
+            result = llm.invoke(safety_prompt)
+            content = result.content if hasattr(result, "content") else str(result)
+            parsed = json.loads(_extract_json_block(content))
+            state["safety_level"] = parsed.get("safety_level", "CLARIFY")
+            logger.info(
+                "HealthConcierge: safety keyword triggered, safety_level=%s",
+                state["safety_level"],
+            )
+        except Exception as exc:
+            logger.warning("HealthConcierge: safety triage failed, fallback to CLARIFY: %s", exc)
+            state["safety_level"] = "CLARIFY"
+    elif sensitive_hit:
+        state["safety_level"] = "CLARIFY"
+
+    if state["safety_level"] in {"EMERGENCY", "CLARIFY"}:
+        state["current_tool"] = "executor"
+        return state
+
+    domain = _fallback_domain(question)
+    if llm:
+        domain_prompt = (
+            "你是一个健康管家。判断用户输入属于哪个领域，输出 JSON："
+            '{"domain": "..."}。\n'
+            "可选值只有：medical, nutrition, fitness, sleep, general。\n"
+            "medical 表示疾病/症状/检查/用药；nutrition 表示饮食/热量/营养；"
+            "fitness 表示运动/训练；sleep 表示睡眠/心理压力；general 表示日常闲聊。\n\n"
+            f"用户输入：{raw_question}"
+        )
+        try:
+            result = llm.invoke(domain_prompt)
+            content = result.content if hasattr(result, "content") else str(result)
+            parsed = json.loads(_extract_json_block(content))
+            llm_domain = parsed.get("domain", domain)
+            if llm_domain in RAG_DOMAINS or llm_domain == "general":
+                domain = llm_domain
+        except Exception as exc:
+            logger.warning("HealthConcierge: domain classification fallback used: %s", exc)
+
+    state["domain"] = domain
+    state["use_rag"] = domain in RAG_DOMAINS
+    if domain == "medical":
+        state["current_tool"] = "medical_router"
+    elif state["use_rag"]:
+        state["current_tool"] = "query_rewriter"
+    else:
+        state["current_tool"] = "judge_need_rag"
+    logger.info(
+        "HealthConcierge: domain=%s, use_rag=%s",
+        state["domain"],
+        state["use_rag"],
+    )
     return state
 
 
-# Backward-compatible alias
-PlannerAgent = KeywordRouterAgent
+KeywordRouterAgent = HealthConciergeAgent
+PlannerAgent = HealthConciergeAgent

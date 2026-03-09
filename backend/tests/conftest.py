@@ -43,13 +43,16 @@ def mock_dependencies():
          patch.object(chat_service, 'initialize_workflow'), \
          patch.object(chat_service, 'workflow_app', mock_app_instance), \
          patch.object(db_service, 'save_message') as mock_save, \
+         patch('app.main.process_knowledge_library') as mock_knowledge, \
          patch('app.main.process_pdf') as mock_pdf, \
          patch('app.main.get_or_create_vectorstore') as mock_vs:
 
+        mock_knowledge.return_value = []
         mock_vs.return_value = MagicMock()
 
         yield {
             "db": mock_db,
+            "knowledge": mock_knowledge,
             "pdf": mock_pdf,
             "vector_store": mock_vs,
             "workflow_app": mock_app_instance,

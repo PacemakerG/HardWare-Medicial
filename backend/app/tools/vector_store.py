@@ -4,7 +4,7 @@ ChromaDB vector store: embeddings, creation, loading, and retriever factory.
 """
 
 import os
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from langchain_core.documents import Document
 
@@ -98,9 +98,12 @@ def get_or_create_vectorstore(
     return _vectorstore
 
 
-def get_retriever(k: int = 3):
+def get_retriever(k: int = 3, search_kwargs: Optional[Dict] = None):
     """Return a retriever from the vector store, or None if unavailable."""
     vs = get_or_create_vectorstore()
     if vs:
-        return vs.as_retriever(search_kwargs={"k": k})
+        kwargs = {"k": k}
+        if search_kwargs:
+            kwargs.update(search_kwargs)
+        return vs.as_retriever(search_kwargs=kwargs)
     return None
