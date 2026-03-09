@@ -1,0 +1,16 @@
+{
+  "basic_info": {
+    "age": 23,
+    "gender": "male",
+    "height_cm": 181,
+    "weight_kg": 70
+  },
+  "preferences": {
+    "preferred_name": "elon"
+  },
+  "current_context": {},
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-03-09T06:00:16.327709+00:00"
+  }
+}

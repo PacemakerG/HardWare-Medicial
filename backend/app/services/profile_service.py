@@ -25,7 +25,9 @@ PROFILE_SCHEMA = {
     },
     "preferences": {
         "language": {"type": "string", "description": "偏好语言"},
+        "preferred_name": {"type": "string", "description": "偏好称呼"},
         "communication_style": {"type": "string"},
+        "detail_level": {"type": "string", "enum": ["brief", "balanced", "detailed"]},
     },
     "current_context": {
         "symptom": {"type": "string"},
@@ -46,11 +48,19 @@ def _sanitize_session_id(session_id: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_-]", "_", session_id)
 
 
-def _profile_path(session_id: str) -> str:
+def _sanitize_identity(value: str, default: str) -> str:
+    if not value:
+        return default
+    return re.sub(r"[^a-zA-Z0-9_.@:-]", "_", value)
+
+
+def _profile_path(session_id: str, *, tenant_id: str = "default", user_id: str = "anonymous") -> str:
+    del session_id  # profile is scoped by tenant+user, not chat session
     if not os.path.exists(PROFILE_STORE_DIR):
         os.makedirs(PROFILE_STORE_DIR, exist_ok=True)
-    safe_id = _sanitize_session_id(session_id)
-    return os.path.join(PROFILE_STORE_DIR, f"{safe_id}.json")
+    safe_tenant = _sanitize_identity(tenant_id, "default")
+    safe_user = _sanitize_identity(user_id, "anonymous")
+    return os.path.join(PROFILE_STORE_DIR, f"{safe_tenant}__{safe_user}.json")
 
 
 def _default_profile() -> Dict[str, Any]:
@@ -65,9 +75,14 @@ def _default_profile() -> Dict[str, Any]:
     }
 
 
-def load_profile(session_id: str) -> Dict[str, Any]:
+def load_profile(
+    session_id: str,
+    *,
+    tenant_id: str = "default",
+    user_id: str = "anonymous",
+) -> Dict[str, Any]:
     """Load a user profile JSON, returning defaults on first use/corruption."""
-    path = _profile_path(session_id)
+    path = _profile_path(session_id, tenant_id=tenant_id, user_id=user_id)
     if not os.path.exists(path):
         return _default_profile()
 
@@ -83,8 +98,14 @@ def load_profile(session_id: str) -> Dict[str, Any]:
         return _default_profile()
 
 
-def _atomic_save_profile(session_id: str, profile: Dict[str, Any]) -> None:
-    path = _profile_path(session_id)
+def _atomic_save_profile(
+    session_id: str,
+    profile: Dict[str, Any],
+    *,
+    tenant_id: str = "default",
+    user_id: str = "anonymous",
+) -> None:
+    path = _profile_path(session_id, tenant_id=tenant_id, user_id=user_id)
     temp_path = f"{path}.tmp"
     with open(temp_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=True, indent=2)
@@ -185,14 +206,20 @@ def _normalize_profile_updates(updates: Dict[str, Any]) -> Dict[str, Dict[str, A
     return normalized
 
 
-def update_profile(session_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+def update_profile(
+    session_id: str,
+    updates: Dict[str, Any],
+    *,
+    tenant_id: str = "default",
+    user_id: str = "anonymous",
+) -> Dict[str, Any]:
     """Merge profile updates into persistent JSON profile using atomic writes."""
     normalized_updates = _normalize_profile_updates(updates)
     if not any(normalized_updates.values()):
-        return load_profile(session_id)
+        return load_profile(session_id, tenant_id=tenant_id, user_id=user_id)
 
     with _profile_lock:
-        profile = load_profile(session_id)
+        profile = load_profile(session_id, tenant_id=tenant_id, user_id=user_id)
         profile["basic_info"] = _merge_dict(
             profile.get("basic_info") or {},
             normalized_updates.get("basic_info") or {},
@@ -210,7 +237,12 @@ def update_profile(session_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
             "version": 1,
             "last_updated": datetime.now(timezone.utc).isoformat(),
         }
-        _atomic_save_profile(session_id, profile)
+        _atomic_save_profile(
+            session_id,
+            profile,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
         return profile
 
 
@@ -222,12 +254,18 @@ def _extract_json_block(text: str) -> str:
     return text[start : end + 1]
 
 
-def infer_profile_updates(question: str, answer: str) -> Dict[str, Any]:
+def infer_profile_updates(
+    question: str,
+    answer: str,
+    *,
+    tenant_id: str = "default",
+    user_id: str = "anonymous",
+) -> Dict[str, Any]:
     """
     Infer profile updates via a lightweight model.
     Returns a strict JSON-compatible dict or empty dict.
     """
-    llm = get_light_llm()
+    llm = get_light_llm(tenant_id=tenant_id, user_id=user_id)
     if not llm:
         return {}
 
@@ -257,15 +295,37 @@ def infer_profile_updates(question: str, answer: str) -> Dict[str, Any]:
         return {}
 
 
-def schedule_profile_update(session_id: str, question: str, answer: str) -> None:
+def schedule_profile_update(
+    session_id: str,
+    question: str,
+    answer: str,
+    *,
+    tenant_id: str = "default",
+    user_id: str = "anonymous",
+) -> None:
     """Run profile extraction and write in a background daemon thread."""
 
     def _worker():
-        updates = infer_profile_updates(question, answer)
+        updates = infer_profile_updates(
+            question,
+            answer,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
         if not updates:
             return
-        update_profile(session_id, updates)
-        logger.info("Profile updated asynchronously for session %s", session_id[:8])
+        update_profile(
+            session_id,
+            updates,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+        logger.info(
+            "Profile updated asynchronously for tenant=%s user=%s session=%s",
+            tenant_id,
+            user_id,
+            session_id[:8],
+        )
 
     thread = threading.Thread(target=_worker, daemon=True)
     thread.start()

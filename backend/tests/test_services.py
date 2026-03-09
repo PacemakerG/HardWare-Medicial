@@ -68,9 +68,9 @@ class TestChatService:
 
     def test_clear_conversation(self):
         service = ChatService()
-        service.conversation_states["test-session"] = {"question": "old"}
+        service.conversation_states["default::anonymous::test-session"] = {"question": "old"}
         service.clear_conversation("test-session")
-        assert service.conversation_states["test-session"]["question"] == ""
+        assert service.conversation_states["default::anonymous::test-session"]["question"] == ""
 
     def test_clear_conversation_nonexistent(self):
         service = ChatService()

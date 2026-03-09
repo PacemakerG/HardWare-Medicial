@@ -105,7 +105,7 @@ def test_session_endpoints_coverage():
     with patch("app.api.v1.endpoints.session.db_service") as mock_db:
         mock_db.get_all_sessions.return_value = []
         import asyncio
-        res = asyncio.run(get_sessions_endpoint())
+        res = asyncio.run(get_sessions_endpoint(mock_request))
         assert res["sessions"] == []
 
         mock_db.delete_session.return_value = True

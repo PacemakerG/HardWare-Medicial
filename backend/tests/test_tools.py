@@ -24,6 +24,7 @@ from app.tools.wikipedia_search import get_wikipedia_wrapper  # noqa: E402
 
 def test_get_llm_no_key():
     llm_module._llm_instance = None
+    llm_module._llm_instances = {}
     with patch('app.tools.llm_client.OPENAI_API_KEY', None):
         result = get_llm()
         assert result is None
@@ -31,6 +32,7 @@ def test_get_llm_no_key():
 
 def test_get_llm_with_key():
     llm_module._llm_instance = None
+    llm_module._llm_instances = {}
     with patch('app.tools.llm_client.OPENAI_API_KEY', 'fake-key'):
         # Patch at the source since ChatOpenAI is lazily imported inside the function
         with patch('langchain_openai.ChatOpenAI') as mock_openai:
@@ -38,6 +40,7 @@ def test_get_llm_with_key():
             result = get_llm()
             assert result is not None
     llm_module._llm_instance = None  # reset
+    llm_module._llm_instances = {}
 
 
 def test_get_wikipedia():

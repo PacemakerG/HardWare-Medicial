@@ -685,6 +685,77 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* ── ECG Guide Modal ────────────────────────────────────────── */
+.ecg-guide-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 18, 32, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.ecg-guide-modal {
+    width: min(720px, 100%);
+    border-radius: 16px;
+    padding: 22px;
+    color: var(--text-primary);
+}
+
+.ecg-guide-modal h3 {
+    margin: 0 0 8px 0;
+}
+
+.ecg-guide-modal p {
+    margin: 0 0 16px 0;
+    color: var(--text-secondary);
+}
+
+.ecg-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.ecg-guide-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.ecg-guide-grid input,
+.ecg-guide-grid select {
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+.ecg-guide-grid input:focus,
+.ecg-guide-grid select:focus {
+    border-color: var(--primary);
+}
+
+.ecg-guide-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+@media (max-width: 768px) {
+    .ecg-guide-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ── Chat Area ───────────────────────────────────────────────── */
 .chat-area {
     flex: 1;

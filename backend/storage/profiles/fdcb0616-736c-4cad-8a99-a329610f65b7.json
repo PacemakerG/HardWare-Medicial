@@ -1,0 +1,21 @@
+{
+  "basic_info": {
+    "age": 23,
+    "gender": "male",
+    "height_cm": 181,
+    "weight_kg": 76
+  },
+  "preferences": {
+    "preferred_name": "elon"
+  },
+  "current_context": {
+    "last_ecg_report_id": "2b4bce60-cedf-494a-9c8a-32a2d14f5de3",
+    "last_ecg_risk_level": "high",
+    "last_ecg_diagnosis": "\u672a\u77e5",
+    "last_ecg_heart_rate": "163.04 bpm"
+  },
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-03-09T06:04:09.261629+00:00"
+  }
+}

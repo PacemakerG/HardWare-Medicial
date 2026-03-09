@@ -1,5 +1,61 @@
 # 架构更新与变更日志 (Changelog)
 
+## 2026-03-08: ECG 引导式监听闭环（前端按钮 + 后端后台任务）
+
+### 1. 新增 ECG 监听任务服务
+- **修改文件:** `backend/app/services/ecg_monitor_service.py`, `backend/app/core/config.py`, `backend/app/schemas/ecg.py`
+- **变更内容:** 新增后台任务管理，支持登录医生站点、监听新 ECG 记录、自动下载 XLS、解析并接入 ECG 报告生成。
+- **设计初衷:** 将“手动上传 JSON”改为“用户填基础信息后自动监听并生成报告”的闭环流程。
+
+### 2. ECG API 扩展
+- **修改文件:** `backend/app/api/v1/endpoints/ecg.py`
+- **变更内容:** 新增接口：
+  - `POST /api/v1/ecg/monitor/start`
+  - `GET /api/v1/ecg/monitor/{task_id}`
+- **设计初衷:** 支持前端异步启动监听任务并轮询状态。
+
+### 3. 前端交互改造
+- **修改文件:** `frontend/src/App.jsx`, `frontend/src/index.css`
+- **变更内容:** 将输入区按钮改为 ECG 引导入口，新增基础信息弹窗与任务轮询，任务完成后自动回填 ECG 专家报告到聊天区。
+- **设计初衷:** 让用户无需手动拼 JSON 文件，按流程操作即可获得报告。
+
+### 4. 测试更新
+- **修改文件:** `backend/tests/test_ecg_api.py`
+- **变更内容:** 增加监听任务启动与状态查询接口测试。
+- **设计初衷:** 保证新增 API 的可回归性。
+
+### 5. 监听超时兜底与 I/O 契约对齐
+- **修改文件:** `backend/app/services/ecg_monitor_service.py`, `backend/app/schemas/ecg.py`, `backend/tests/test_ecg_monitor_service.py`
+- **变更内容:** 监听窗口固定为 60 秒；超时后不报错，自动使用当前最新一条 ECG；新增 `llm_input/llm_output` 字段并保证输出仅比输入多 `report`。
+- **设计初衷:** 降低等待失败率并统一模型输入输出数据结构。
+
+### 6. Phase 1: ECG PDF 报告（波形 + 文字）
+- **修改文件:** `backend/app/services/ecg_pdf_service.py`, `backend/app/services/ecg_report_service.py`, `backend/app/api/v1/endpoints/ecg.py`, `backend/app/schemas/ecg.py`, `frontend/src/App.jsx`
+- **变更内容:** 新增 PDF 生成能力，输出 Lead II 波形图 + 结构化文字报告；新增 `GET /api/v1/ecg/report/{report_id}/pdf`；响应增加 `pdf_url`。
+- **设计初衷:** 提供可归档和可下载的医学报告载体，替代仅文本回传。
+
+## 2026-03-08: Memory 偏好驱动的个性化表达（Phase H 子项）
+
+### 1. Executor 接入结构化用户偏好
+- **修改文件:** `backend/app/core/state.py`, `backend/app/agents/memory.py`, `backend/app/agents/executor.py`
+- **变更内容:** 新增 `user_preferences` 状态字段；`MemoryReadAgent` 读取画像后注入偏好；`ExecutorAgent` 在系统提示词中显式加入“称呼/语气/详略”约束。
+- **设计初衷:** 让回答风格可由长期画像稳定控制，而不是仅依赖模型随机发挥。
+
+### 2. 偏好 schema 扩展
+- **修改文件:** `backend/app/services/profile_service.py`
+- **变更内容:** `preferences` 新增 `preferred_name`、`detail_level`（`brief | balanced | detailed`）。
+- **设计初衷:** 支持“称呼”和“详细程度”两类长期偏好可持久化写入与读取。
+
+### 3. 后处理追问模板个性化
+- **修改文件:** `backend/app/agents/executor.py`
+- **变更内容:** 回答末尾自动追问在可用时带上偏好称呼（如“王女士，…”），并保持高风险急诊提醒逻辑不变。
+- **设计初衷:** 提升连续对话的“个人助手感”，同时不削弱安全边界。
+
+### 4. 新增/更新测试
+- **修改文件:** `backend/tests/test_agents.py`, `backend/tests/test_profile_service.py`
+- **变更内容:** 增加 Memory 偏好注入测试、Executor 个性化提示词测试、称呼追问测试，并补充 profile 偏好字段归一化与持久化测试。
+- **设计初衷:** 保证二开能力可回归、可维护。
+
 ## 2026-03-05: RAG 检索链路“自信心质检”与智能路由增强
 
 ### 1. 引入专属轻量级 LLM (Lightweight LLM)

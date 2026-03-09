@@ -26,6 +26,10 @@ CHAT_DB_PATH = os.getenv("CHAT_DB_PATH", os.path.join(_BACKEND_DIR, "storage", "
 VECTOR_STORE_DIR = os.getenv("VECTOR_STORE_DIR", os.path.join(_BACKEND_DIR, "storage", "vector_store"))
 PDF_PATH = os.getenv("PDF_PATH", os.path.join(_BACKEND_DIR, "data", "medical_book.pdf"))
 PROFILE_STORE_DIR = os.getenv("PROFILE_STORE_DIR", os.path.join(_BACKEND_DIR, "storage", "profiles"))
+ECG_REPORT_PDF_DIR = os.getenv(
+    "ECG_REPORT_PDF_DIR",
+    os.path.join(_BACKEND_DIR, "storage", "ecg_reports"),
+)
 EMBEDDING_MODEL_NAME = os.getenv(
     "EMBEDDING_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2"
 )
@@ -37,3 +41,15 @@ OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 LIGHT_LLM_MODEL = os.getenv("LIGHT_LLM_MODEL", LLM_MODEL)
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+MODEL_ROUTING_CONFIG_PATH = os.getenv(
+    "MODEL_ROUTING_CONFIG_PATH",
+    os.path.join(_BACKEND_DIR, "storage", "model_routing.json"),
+)
+
+# ── ECG Remote Monitor ────────────────────────────────────────────────────────
+ECG_SITE_URL = os.getenv(
+    "ECG_SITE_URL",
+    "http://124.220.204.12:8080/index#/system/doctor",
+)
+ECG_SITE_USER = os.getenv("ECG_SITE_USER", "doctor")
+ECG_SITE_PASS = os.getenv("ECG_SITE_PASS", "123456")

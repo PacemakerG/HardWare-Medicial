@@ -1,0 +1,15 @@
+{
+  "basic_info": {},
+  "preferences": {},
+  "current_context": {
+    "last_ecg_report_id": "d528d4ff-a25c-444e-bd0e-66dea028a501",
+    "last_ecg_risk_level": "high",
+    "last_ecg_diagnosis": "\u6025\u6027\u5fc3\u808c\u6897\u6b7b\u5f85\u6392",
+    "last_ecg_heart_rate": "132 bpm",
+    "last_ecg_axis_degree": "75\u00b0"
+  },
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-03-09T05:49:54.404341+00:00"
+  }
+}

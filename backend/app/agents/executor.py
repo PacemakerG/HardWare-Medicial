@@ -16,7 +16,7 @@ from app.tools.tavily_search import get_tavily_search
 
 MAX_TOOL_CALLS = 2
 MAX_SAME_TOOL_REPEAT = 1
-FOLLOW_UP_TEMPLATE = (
+DEFAULT_FOLLOW_UP_TEMPLATE = (
     "你希望我下一步重点帮你看哪一部分：症状变化、可能原因、用药建议，还是是否需要线下就医？"
 )
 HIGH_RISK_TEMPLATE = (
@@ -33,6 +33,18 @@ HIGH_RISK_KEYWORDS = (
     "剧烈头痛",
     "持续高烧",
 )
+
+STYLE_ALIAS_MAP = {
+    "warm": {"warm", "friendly", "gentle", "empathetic", "温和", "共情", "亲切"},
+    "concise": {"concise", "brief", "direct", "简洁", "简短", "直接"},
+    "professional": {"professional", "严谨", "专业", "正式"},
+    "reassuring": {"reassuring", "supportive", "安抚", "鼓励"},
+}
+DETAIL_ALIAS_MAP = {
+    "brief": {"brief", "concise", "short", "简洁", "简短"},
+    "balanced": {"balanced", "normal", "standard", "适中", "标准"},
+    "detailed": {"detailed", "deep", "full", "详细", "深入"},
+}
 
 
 def _recent_history_text(state: AgentState) -> str:
@@ -79,7 +91,13 @@ def _extract_embedded_json(text: str) -> dict | None:
     return None
 
 
-def _maybe_run_ecg_skill(question: str, session_id: str = ""):
+def _maybe_run_ecg_skill(
+    question: str,
+    session_id: str = "",
+    *,
+    tenant_id: str = "default",
+    user_id: str = "anonymous",
+):
     """
     If question contains ECG JSON payload, run ECG report skill directly.
     Expected payload keys include at least patient_info and features.
@@ -96,7 +114,12 @@ def _maybe_run_ecg_skill(question: str, session_id: str = ""):
 
     try:
         request = ECGReportRequest.model_validate(payload)
-        return ecg_report_service.generate_report(request, session_id=session_id)
+        return ecg_report_service.generate_report(
+            request,
+            session_id=session_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
     except Exception as exc:
         logger.warning("ECG skill payload validation failed: %s", exc)
         return None
@@ -129,7 +152,96 @@ def _needs_high_risk_alert(question: str) -> bool:
     return any(k in q for k in HIGH_RISK_KEYWORDS)
 
 
-def _normalize_answer(answer: str, question: str) -> str:
+def _clean_preference_text(value, max_len: int = 40) -> str:
+    if value is None:
+        return ""
+    text = re.sub(r"\s+", " ", str(value)).strip()
+    if not text:
+        return ""
+    return text[:max_len]
+
+
+def _normalize_alias(raw: str, alias_map: dict[str, set[str]], default: str) -> str:
+    if not raw:
+        return default
+    lowered = raw.lower()
+    for normalized, aliases in alias_map.items():
+        if lowered in aliases:
+            return normalized
+    return default
+
+
+def _extract_personalization_preferences(state: AgentState) -> dict[str, str]:
+    raw_prefs = state.get("user_preferences") or {}
+    if not isinstance(raw_prefs, dict):
+        raw_prefs = {}
+
+    preferred_name = _clean_preference_text(
+        raw_prefs.get("preferred_name")
+        or raw_prefs.get("addressing_name")
+        or raw_prefs.get("nickname")
+    )
+    communication_style = _normalize_alias(
+        _clean_preference_text(raw_prefs.get("communication_style"), max_len=30),
+        STYLE_ALIAS_MAP,
+        "warm",
+    )
+    detail_level = _normalize_alias(
+        _clean_preference_text(raw_prefs.get("detail_level"), max_len=20),
+        DETAIL_ALIAS_MAP,
+        "balanced",
+    )
+    language = _clean_preference_text(raw_prefs.get("language"), max_len=20)
+
+    return {
+        "preferred_name": preferred_name,
+        "communication_style": communication_style,
+        "detail_level": detail_level,
+        "language": language,
+    }
+
+
+def _build_personalization_guidance(preferences: dict[str, str]) -> str:
+    guidance_lines = []
+    preferred_name = preferences.get("preferred_name", "")
+    if preferred_name:
+        guidance_lines.append(f"- 偏好称呼：优先称呼用户为“{preferred_name}”。")
+
+    communication_style = preferences.get("communication_style", "warm")
+    style_guidance = {
+        "warm": "- 表达风格：保持温和、共情，但先给结论再关怀。",
+        "concise": "- 表达风格：措辞直接、句子简短，减少冗余铺垫。",
+        "professional": "- 表达风格：更偏专业与严谨，减少口语化表达。",
+        "reassuring": "- 表达风格：先稳定情绪，再给明确可执行建议。",
+    }
+    guidance_lines.append(style_guidance.get(communication_style, style_guidance["warm"]))
+
+    detail_level = preferences.get("detail_level", "balanced")
+    detail_guidance = {
+        "brief": "- 详略偏好：以关键结论和行动建议为主，内容简洁。",
+        "balanced": "- 详略偏好：保持中等详细度，结论与解释平衡。",
+        "detailed": "- 详略偏好：适度展开机制解释、观察点和就医阈值。",
+    }
+    guidance_lines.append(detail_guidance.get(detail_level, detail_guidance["balanced"]))
+
+    language = preferences.get("language", "").lower()
+    if language and language not in {"zh", "zh-cn", "chinese", "中文", "简体中文"}:
+        guidance_lines.append(
+            "- 语言偏好：主体仍用简体中文，必要时可补充少量偏好语言术语说明。"
+        )
+
+    if not guidance_lines:
+        return "- 无显式偏好，使用默认温和专业风格。"
+    return "\n".join(guidance_lines)
+
+
+def _follow_up_template(preferred_name: str = "") -> str:
+    if preferred_name:
+        return f"{preferred_name}，{DEFAULT_FOLLOW_UP_TEMPLATE}"
+    return DEFAULT_FOLLOW_UP_TEMPLATE
+
+
+def _normalize_answer(answer: str, question: str, preferred_name: str = "") -> str:
     """Post-process answer for Chinese output, safety reminders, and proactive follow-up."""
     text = (answer or "").strip()
     if not text:
@@ -146,7 +258,7 @@ def _normalize_answer(answer: str, question: str) -> str:
         text = f"{text}\n\n{HIGH_RISK_TEMPLATE}"
 
     if not _contains_question_sentence(text):
-        text = f"{text}\n\n{FOLLOW_UP_TEMPLATE}"
+        text = f"{text}\n\n{_follow_up_template(preferred_name)}"
 
     return text
 
@@ -163,7 +275,10 @@ def _decide_web_search(state: AgentState) -> tuple[bool, str]:
     if state.get("tool_budget_used", 0) >= MAX_TOOL_CALLS:
         return False, ""
 
-    light_llm = get_light_llm()
+    light_llm = get_light_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     if not light_llm:
         # Heuristic fallback for temporally-sensitive questions.
         temporal_hints = ("latest", "today", "recent", "new", "guideline", "news")
@@ -231,10 +346,16 @@ def _run_web_search(state: AgentState, query: str) -> str:
 
 def ExecutorAgent(state: AgentState) -> AgentState:
     """Generate final answer with optional internal web-search tool usage."""
-    llm = get_llm()
+    llm = get_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     question = state["question"]
     source_info = state.get("source", "AI Medical Knowledge")
     memory_context = state.get("memory_context") or "No persistent memory context."
+    user_preferences = _extract_personalization_preferences(state)
+    personalization_guidance = _build_personalization_guidance(user_preferences)
+    preferred_name = user_preferences.get("preferred_name", "")
     rag_text = _rag_context_text(state)
     history_text = _recent_history_text(state)
     web_evidence = ""
@@ -259,14 +380,19 @@ def ExecutorAgent(state: AgentState) -> AgentState:
         )
 
     # Skill shortcut: if user embeds ECG payload, generate ECG report directly.
-    ecg_skill_output = _maybe_run_ecg_skill(question, state.get("session_id", ""))
+    ecg_skill_output = _maybe_run_ecg_skill(
+        question,
+        state.get("session_id", ""),
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     if ecg_skill_output is not None:
         answer = (
             f"{ecg_skill_output.report}\n\n"
             f"风险等级：{ecg_skill_output.risk_level}\n"
             f"免责声明：{ecg_skill_output.disclaimer}"
         )
-        answer = _normalize_answer(answer, question)
+        answer = _normalize_answer(answer, question, preferred_name=preferred_name)
         source_info = "ECG Report Skill"
         state["generation"] = answer
         state["source"] = source_info
@@ -292,6 +418,8 @@ def ExecutorAgent(state: AgentState) -> AgentState:
             "2) 再给出1-3条可执行的下一步建议\n"
             "3) 最后必须主动追问一个下一步问题，引导继续对话\n"
             "4) 若出现高风险症状，优先提示紧急就医阈值\n\n"
+            "在不影响医学准确性的前提下，遵循以下个性化偏好：\n"
+            f"{personalization_guidance}\n\n"
             f"用户长期画像:\n{memory_context}\n\n"
             f"最近对话:\n{history_text or '暂无历史对话'}\n\n"
             f"用户问题:\n{question}\n\n"
@@ -306,7 +434,7 @@ def ExecutorAgent(state: AgentState) -> AgentState:
                 if hasattr(response, "content")
                 else str(response).strip()
             )
-            answer = _normalize_answer(answer, question)
+            answer = _normalize_answer(answer, question, preferred_name=preferred_name)
             state["llm_success"] = bool(answer)
             state["llm_attempted"] = True
             logger.info(
@@ -319,13 +447,13 @@ def ExecutorAgent(state: AgentState) -> AgentState:
             answer = (
                 "我理解你的担心，目前我无法稳定生成可靠建议。请优先咨询线下医生进行明确评估。"
             )
-            answer = _normalize_answer(answer, question)
+            answer = _normalize_answer(answer, question, preferred_name=preferred_name)
             source_info = "System Message"
             state["llm_success"] = False
             state["llm_attempted"] = True
 
     if source_info == "System Message":
-        answer = _normalize_answer(answer, question)
+        answer = _normalize_answer(answer, question, preferred_name=preferred_name)
 
     state["generation"] = answer
     state["source"] = source_info
