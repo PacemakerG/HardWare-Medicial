@@ -28,3 +28,5 @@
 2026-03-09 08:18:22 - medigenius - INFO - RAG: No valid documents found for scopes=['general_surgery', 'emergency', 'pediatrics']
 2026-03-09 08:18:22 - medigenius - INFO - LLM client initialized (OpenAI-compatible / qwen3.5-plus)
 2026-03-09 08:19:11 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-09 08:19:32 - medigenius - INFO - Profile updated asynchronously for session 60928150
+2026-03-09 08:20:05 - medigenius - INFO - Shutting down MediGenius...
