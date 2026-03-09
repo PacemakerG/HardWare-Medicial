@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 
+from app.core.config import QUERY_REWRITER_ENABLED, QUERY_REWRITER_USE_LLM
 from app.core.logging_config import logger
 from app.core.medical_taxonomy import (
     GENERAL_MEDICAL_DEPARTMENT,
@@ -14,7 +15,7 @@ from app.core.medical_taxonomy import (
     extract_query_terms,
 )
 from app.core.state import AgentState, append_flow_trace
-from app.tools.llm_client import get_light_llm
+from app.tools.llm_client import coerce_response_text, get_light_llm
 
 
 def _extract_json_block(text: str) -> str:
@@ -42,17 +43,23 @@ def QueryRewriterAgent(state: AgentState) -> AgentState:
         return state
 
     domain = state.get("domain", "general")
-    candidate_departments = [
-        item.get("name")
-        for item in state.get("department_candidates", [])
-        if isinstance(item, dict) and item.get("name")
-    ]
-    if domain == "medical":
-        scopes = candidate_departments[:3] or [state.get("primary_department") or GENERAL_MEDICAL_DEPARTMENT]
-    elif state.get("use_rag") or state.get("need_rag"):
-        scopes = [domain]
+    forced_department_mode = bool(
+        state.get("selected_department_forced") and state.get("selected_department")
+    )
+    if forced_department_mode:
+        scopes = [state["selected_department"]]
     else:
-        scopes = []
+        candidate_departments = [
+            item.get("name")
+            for item in state.get("department_candidates", [])
+            if isinstance(item, dict) and item.get("name")
+        ]
+        if domain == "medical":
+            scopes = candidate_departments[:3] or [state.get("primary_department") or GENERAL_MEDICAL_DEPARTMENT]
+        elif state.get("use_rag") or state.get("need_rag"):
+            scopes = [domain]
+        else:
+            scopes = []
 
     fallback_query = _fallback_retrieval_query(question)
     fallback_department_queries = {
@@ -63,7 +70,46 @@ def QueryRewriterAgent(state: AgentState) -> AgentState:
     retrieval_query = fallback_query
     department_queries = fallback_department_queries
 
-    llm = get_light_llm()
+    if not QUERY_REWRITER_ENABLED:
+        state["retrieval_query"] = question or fallback_query
+        state["department_queries"] = {
+            scope: state["retrieval_query"] for scope in scopes
+        }
+        state["rewrite_reason"] = "query rewriter disabled by config"
+        logger.info(
+            "QueryRewriter: disabled by config, retrieval_query=%s scopes=%s",
+            state["retrieval_query"][:80],
+            list(state["department_queries"].keys()),
+        )
+        return state
+
+    if forced_department_mode:
+        # Latency-first path: manual department selection already disambiguates scope.
+        state["retrieval_query"] = fallback_department_queries.get(scopes[0], fallback_query)
+        state["department_queries"] = fallback_department_queries
+        state["rewrite_reason"] = "manual department fast-path"
+        logger.info(
+            "QueryRewriter: retrieval_query=%s scopes=%s",
+            state["retrieval_query"][:80],
+            list(state["department_queries"].keys()),
+        )
+        return state
+
+    if not QUERY_REWRITER_USE_LLM:
+        state["retrieval_query"] = fallback_query
+        state["department_queries"] = fallback_department_queries
+        state["rewrite_reason"] = "heuristic keyword normalization (llm disabled)"
+        logger.info(
+            "QueryRewriter: llm disabled, retrieval_query=%s scopes=%s",
+            state["retrieval_query"][:80],
+            list(state["department_queries"].keys()),
+        )
+        return state
+
+    llm = get_light_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     if llm and scopes:
         prompt = (
             "你负责把用户问题改写成更适合医疗检索的查询语句。\n"
@@ -79,7 +125,7 @@ def QueryRewriterAgent(state: AgentState) -> AgentState:
         )
         try:
             raw = llm.invoke(prompt)
-            content = raw.content if hasattr(raw, "content") else str(raw)
+            content = coerce_response_text(raw)
             parsed = json.loads(_extract_json_block(content))
             retrieval_query = (
                 str(parsed.get("retrieval_query") or fallback_query).strip() or fallback_query

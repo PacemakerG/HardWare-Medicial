@@ -8,11 +8,12 @@ import json
 import re
 from typing import Any, Dict
 
+from app.core.config import WEB_SEARCH_ENABLED, WEB_SEARCH_USE_LLM_DECIDER
 from app.core.logging_config import logger
 from app.core.state import AgentState, append_flow_trace
 from app.schemas.ecg import ECGReportRequest
 from app.services.ecg_report_service import ecg_report_service
-from app.tools.llm_client import get_light_llm, get_llm
+from app.tools.llm_client import coerce_response_text, get_light_llm, get_llm
 from app.tools.tavily_search import get_tavily_search
 
 MAX_TOOL_CALLS = 2
@@ -293,9 +294,43 @@ def _decide_web_search(state: AgentState) -> tuple[bool, str]:
     """
     question = state.get("question", "")
     rag_text = _rag_context_text(state)
+    question_lower = question.lower()
 
     # Hard stop: tool budget exhausted.
     if state.get("tool_budget_used", 0) >= MAX_TOOL_CALLS:
+        return False, ""
+
+    # Global switch from env.
+    if not WEB_SEARCH_ENABLED:
+        return False, ""
+
+    # In manual department mode, prioritize local specialist corpus for speed/stability.
+    if state.get("selected_department_forced", False):
+        return False, ""
+
+    temporal_hints = (
+        "latest",
+        "today",
+        "recent",
+        "new",
+        "guideline",
+        "news",
+        "最新",
+        "今天",
+        "近期",
+        "指南",
+        "新闻",
+    )
+    has_temporal_hint = any(h in question_lower for h in temporal_hints)
+
+    # Fast path: heuristic decision avoids one extra light-LLM call.
+    if not WEB_SEARCH_USE_LLM_DECIDER:
+        if has_temporal_hint:
+            return True, question
+        return False, ""
+
+    # If RAG already provides evidence and query is not time-sensitive, skip web search.
+    if rag_text and rag_text != "No retrieved context." and not has_temporal_hint:
         return False, ""
 
     light_llm = get_light_llm(
@@ -304,8 +339,7 @@ def _decide_web_search(state: AgentState) -> tuple[bool, str]:
     )
     if not light_llm:
         # Heuristic fallback for temporally-sensitive questions.
-        temporal_hints = ("latest", "today", "recent", "new", "guideline", "news", "最新", "今天", "近期", "指南", "新闻")
-        if any(h in question.lower() for h in temporal_hints):
+        if has_temporal_hint:
             return True, question
         return False, ""
 
@@ -318,7 +352,7 @@ def _decide_web_search(state: AgentState) -> tuple[bool, str]:
     )
     try:
         raw = light_llm.invoke(prompt)
-        content = raw.content if hasattr(raw, "content") else str(raw)
+        content = coerce_response_text(raw)
         parsed = json.loads(_extract_json_block(content))
         need_search = bool(parsed.get("need_web_search", False))
         search_query = (parsed.get("search_query") or question).strip()
@@ -418,11 +452,7 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
             )
             try:
                 result = llm.invoke(prompt)
-                clarify = (
-                    result.content.strip()
-                    if hasattr(result, "content")
-                    else str(result).strip()
-                )
+                clarify = coerce_response_text(result).strip()
             except Exception:
                 clarify = (
                     "我先不急着给建议。这个症状是你现在正在发生的吗？"
@@ -551,11 +581,7 @@ def ExecutorAgent(state: AgentState) -> AgentState:
         prompt = plan.get("prompt", "")
         try:
             response = llm.invoke(prompt)
-            answer = (
-                response.content.strip()
-                if hasattr(response, "content")
-                else str(response).strip()
-            )
+            answer = coerce_response_text(response).strip()
             answer = _normalize_answer(answer, question, preferred_name=preferred_name)
             state["llm_success"] = bool(answer)
             state["llm_attempted"] = True

@@ -4,6 +4,7 @@ ChromaDB vector store: embeddings, creation, loading, and retriever factory.
 """
 
 import os
+import shutil
 from typing import Dict, List, Optional
 
 from langchain_core.documents import Document
@@ -13,6 +14,16 @@ from app.core.logging_config import logger
 
 _embeddings = None
 _vectorstore = None
+
+
+def _collection_has_metadata_key(vectorstore, key: str, sample_size: int = 64) -> bool:
+    """Check whether existing collection chunks carry a given metadata key."""
+    try:
+        payload = vectorstore._collection.get(limit=sample_size, include=["metadatas"])
+        metadatas = payload.get("metadatas") or []
+        return any(isinstance(meta, dict) and key in meta for meta in metadatas)
+    except Exception:
+        return False
 
 
 def get_embeddings():
@@ -70,6 +81,39 @@ def get_or_create_vectorstore(
                 logger.warning("Vector store is empty — needs to be recreated")
                 _vectorstore = None
                 return None
+
+            # Backward-compatible migration:
+            # if we now ingest department-tagged medical corpora but the existing
+            # collection has no `department` metadata, rebuild once from fresh docs.
+            has_department_docs = bool(
+                documents
+                and any(
+                    isinstance((doc.metadata or {}), dict)
+                    and (doc.metadata or {}).get("department")
+                    for doc in documents
+                )
+            )
+            has_department_metadata = _collection_has_metadata_key(_vectorstore, "department")
+            if has_department_docs and not has_department_metadata:
+                logger.warning(
+                    "Existing vector store lacks `department` metadata; rebuilding from knowledge library."
+                )
+                _vectorstore = None
+                shutil.rmtree(persist_dir, ignore_errors=True)
+                os.makedirs(persist_dir, exist_ok=True)
+                _vectorstore = Chroma.from_documents(
+                    documents=documents,
+                    embedding=embeddings,
+                    persist_directory=persist_dir,
+                    collection_metadata={"hnsw:space": "cosine"},
+                )
+                _vectorstore.persist()
+                logger.info(
+                    "Rebuilt vector store with %d documents (department-aware).",
+                    _vectorstore._collection.count(),
+                )
+                return _vectorstore
+
             logger.info(
                 "Loaded %d documents from vector store", _vectorstore._collection.count()
             )

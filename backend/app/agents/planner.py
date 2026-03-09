@@ -6,8 +6,12 @@ HealthConciergeAgent: multi-level safety check and domain classification.
 import json
 
 from app.core.logging_config import logger
+from app.core.medical_taxonomy import (
+    GENERAL_MEDICAL_DEPARTMENT,
+    department_display_name,
+)
 from app.core.state import AgentState, append_flow_trace
-from app.tools.llm_client import get_light_llm
+from app.tools.llm_client import coerce_response_text, get_light_llm
 
 SENSITIVE_KEYWORDS = [
     "痛",
@@ -119,7 +123,10 @@ def HealthConciergeAgent(state: AgentState) -> AgentState:
     append_flow_trace(state, "health_concierge")
     raw_question = (state.get("question") or "").strip()
     question = raw_question.lower()
-    llm = get_light_llm()
+    llm = get_light_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     sensitive_hit = any(keyword in question for keyword in SENSITIVE_KEYWORDS)
 
     state["keyword_hit"] = sensitive_hit
@@ -146,7 +153,7 @@ def HealthConciergeAgent(state: AgentState) -> AgentState:
         )
         try:
             result = llm.invoke(safety_prompt)
-            content = result.content if hasattr(result, "content") else str(result)
+            content = coerce_response_text(result)
             parsed = json.loads(_extract_json_block(content))
             state["safety_level"] = parsed.get("safety_level", "CLARIFY")
             logger.info(
@@ -163,6 +170,30 @@ def HealthConciergeAgent(state: AgentState) -> AgentState:
         state["current_tool"] = "executor"
         return state
 
+    selected_department = state.get("selected_department")
+    if state.get("selected_department_forced") and selected_department:
+        state["domain"] = "medical"
+        state["use_rag"] = True
+        state["primary_department"] = selected_department
+        state["department_candidates"] = [
+            {
+                "name": selected_department,
+                "score": 1.0,
+                "display_name": department_display_name(selected_department),
+            }
+        ]
+        state["routing_reason"] = (
+            "manual department override"
+            if selected_department != GENERAL_MEDICAL_DEPARTMENT
+            else "manual general-medical override"
+        )
+        state["current_tool"] = "query_rewriter"
+        logger.info(
+            "HealthConcierge: manual department override=%s",
+            selected_department,
+        )
+        return state
+
     domain = _fallback_domain(question)
     if llm:
         domain_prompt = (
@@ -175,7 +206,7 @@ def HealthConciergeAgent(state: AgentState) -> AgentState:
         )
         try:
             result = llm.invoke(domain_prompt)
-            content = result.content if hasattr(result, "content") else str(result)
+            content = coerce_response_text(result)
             parsed = json.loads(_extract_json_block(content))
             llm_domain = parsed.get("domain", domain)
             if llm_domain in RAG_DOMAINS or llm_domain == "general":

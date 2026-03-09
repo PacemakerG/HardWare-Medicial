@@ -29,20 +29,20 @@ function formatTimeAgo(timestamp) {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return '刚刚';
+  if (diffMins < 60) return `${diffMins} 分钟前`;
+  if (diffHours < 24) return `${diffHours} 小时前`;
+  if (diffDays < 7) return `${diffDays} 天前`;
   return past.toLocaleDateString();
 }
 
 function buildDownloadText(chatHistory) {
-  let content = 'MediGenius Chat Export\n';
+  let content = '医枢智疗 对话导出\n';
   content += '='.repeat(50) + '\n\n';
   chatHistory.forEach((msg) => {
-    content += `[${msg.timestamp}] ${msg.type === 'user' ? 'You' : 'MediGenius'}:\n`;
+    content += `[${msg.timestamp}] ${msg.type === 'user' ? '用户' : '医枢智疗'}:\n`;
     content += msg.content + '\n';
-    if (msg.source) content += `Source: ${msg.source}\n`;
+    if (msg.source) content += `来源: ${msg.source}\n`;
     content += '\n';
   });
   return content;
@@ -64,31 +64,31 @@ function Sidebar({ sidebarOpen, sessions, currentSessionId, onNewChat, onLoadSes
               <i className="fas fa-heartbeat" />
             </div>
             <div className="logo-text">
-              <h1>MediGenius</h1>
-              <span className="version">AI Assistant v3.0</span>
+              <h1>医枢智疗</h1>
+              <span className="version">临床智能协同平台 v4.0</span>
             </div>
           </div>
           <button className="new-chat-btn" onClick={onNewChat}>
             <i className="fas fa-plus" />
-            <span>New Chat</span>
+            <span>新建会话</span>
           </button>
         </div>
 
         {/* Chat History */}
         <div className="chat-history-section">
           <div className="section-header">
-            <span>Chat History</span>
+            <span>会话历史</span>
             <div className="section-line" />
           </div>
           <div className="chat-list">
             {sessions === null ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)', fontSize: '13px' }}>
-                <div className="loading-spinner" style={{ margin: '0 auto 10px' }} />
-                Loading chats...
+              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                <div className="loading-spinner" style={{ margin: '0 auto 8px' }} />
+                加载中...
               </div>
             ) : sessions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)', fontSize: '13px' }}>
-                No chat history yet
+              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                暂无历史会话
               </div>
             ) : (
               sessions.map((session) => (
@@ -99,7 +99,7 @@ function Sidebar({ sidebarOpen, sessions, currentSessionId, onNewChat, onLoadSes
                 >
                   <i className="fas fa-message" />
                   <div className="chat-item-content">
-                    <div className="chat-item-title">{session.preview || 'New conversation'}</div>
+                    <div className="chat-item-title">{session.preview || '新会话'}</div>
                     <div className="chat-item-time">{formatTimeAgo(session.last_active)}</div>
                   </div>
                   <button
@@ -119,25 +119,37 @@ function Sidebar({ sidebarOpen, sessions, currentSessionId, onNewChat, onLoadSes
           <div className="developer-card glass-effect">
             <div className="dev-header">
               <i className="fas fa-code" />
-              <span>Developer</span>
+              <span>联合开发</span>
             </div>
             <div className="dev-info">
-              <p>Md. Emon Hasan</p>
+              <p>
+                <a
+                  href="https://github.com/PacemakerG/HardWare-Medicial"
+                  className="dev-name-link"
+                  title="elonge GitHub"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  elonge
+                </a>
+              </p>
+              <p>
+                <a
+                  href="https://github.com/xhforever/HardWare-Medicial"
+                  className="dev-name-link"
+                  title="xhforever GitHub"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  xhforever
+                </a>
+              </p>
               <div className="social-links">
-                <a href="https://github.com/Md-Emon-Hasan" className="social-link" title="GitHub" target="_blank" rel="noreferrer">
+                <a href="https://github.com/PacemakerG/HardWare-Medicial" className="social-link" title="elonge GitHub" target="_blank" rel="noreferrer">
                   <i className="fab fa-github" />
                 </a>
-                <a href="https://www.linkedin.com/in/md-emon-hasan-695483237/" className="social-link" title="LinkedIn" target="_blank" rel="noreferrer">
-                  <i className="fab fa-linkedin" />
-                </a>
-                <a href="https://www.facebook.com/mdemon.hasan2001/" className="social-link" title="Facebook" target="_blank" rel="noreferrer">
-                  <i className="fab fa-facebook" />
-                </a>
-                <a href="https://wa.me/8801834363533" className="social-link" title="WhatsApp" target="_blank" rel="noreferrer">
-                  <i className="fab fa-whatsapp" />
-                </a>
-                <a href="mailto:emon.mlengineer@gmail.com" className="social-link" title="Email">
-                  <i className="fas fa-envelope" />
+                <a href="https://github.com/xhforever/HardWare-Medicial" className="social-link" title="xhforever GitHub" target="_blank" rel="noreferrer">
+                  <i className="fab fa-github" />
                 </a>
               </div>
             </div>
@@ -155,16 +167,26 @@ function Sidebar({ sidebarOpen, sessions, currentSessionId, onNewChat, onLoadSes
 // ══════════════════════════════════════════════════════════════
 // SECTION 4 — CHAT AREA COMPONENT
 // ══════════════════════════════════════════════════════════════
-const QUICK_QUESTIONS = [
-  { icon: 'fa-thermometer', label: 'Fever Symptoms', q: 'What are the symptoms of fever?' },
-  { icon: 'fa-head-side-virus', label: 'Headache Treatment', q: 'How to treat a headache?' },
-  { icon: 'fa-heart-pulse', label: 'High Blood Pressure', q: 'What causes high blood pressure?' },
-  { icon: 'fa-notes-medical', label: 'Diabetes Management', q: 'Tell me about diabetes management' },
-  { icon: 'fa-virus-covid', label: 'COVID Prevention', q: 'COVID-19 prevention tips' },
-  { icon: 'fa-pills', label: 'Cold Remedies', q: 'Common cold remedies' },
+const DEPARTMENT_OPTIONS = [
+  { code: 'general_medical', label: '通用医疗', zh: '通用医疗', icon: 'fa-house-medical' },
+  { code: 'general_surgery', label: '普外科', zh: '普外科', icon: 'fa-user-doctor' },
+  { code: 'pediatrics', label: '儿科', zh: '儿科', icon: 'fa-baby' },
+  { code: 'neurology', label: '神经内科', zh: '神经内科', icon: 'fa-brain' },
+  { code: 'infectious_disease', label: '感染科', zh: '感染科', icon: 'fa-virus' },
+  { code: 'ent', label: '耳鼻喉科', zh: '耳鼻喉科', icon: 'fa-ear-listen' },
+  { code: 'ophthalmology', label: '眼科', zh: '眼科', icon: 'fa-eye' },
+  { code: 'dermatology', label: '皮肤科', zh: '皮肤科', icon: 'fa-hand-dots' },
 ];
 
-function ChatArea({ messages, isTyping, showWelcome, onQuickQuestion, chatAreaRef }) {
+function ChatArea({
+  messages,
+  isTyping,
+  showWelcome,
+  onSelectDepartment,
+  onClearDepartment,
+  selectedDepartment,
+  chatAreaRef,
+}) {
   return (
     <div className="chat-area" ref={chatAreaRef}>
 
@@ -174,32 +196,38 @@ function ChatArea({ messages, isTyping, showWelcome, onQuickQuestion, chatAreaRe
           <div className="logo-3d">
             <i className="fas fa-stethoscope" />
           </div>
-          <h1 className="welcome-title">Welcome to MediGenius</h1>
-          <p className="welcome-subtitle">Your AI-powered medical assistant is ready to help</p>
+          <h1 className="welcome-title">欢迎使用 医枢智疗</h1>
+          <p className="welcome-subtitle">面向多科室问诊与 ECG 报告的一体化医疗智能工作台</p>
 
           <div className="quick-actions">
-            <h3>Quick Questions:</h3>
+            <h3>专业科室选择：</h3>
             <div className="quick-buttons">
-              {QUICK_QUESTIONS.map(({ icon, label, q }) => (
-                <button key={q} className="quick-btn glass-effect" onClick={() => onQuickQuestion(q)}>
+              {DEPARTMENT_OPTIONS.map(({ code, label, zh, icon }) => (
+                <button
+                  key={code}
+                  className="quick-btn glass-effect"
+                  onClick={() => onSelectDepartment(code)}
+                  style={{
+                    border: selectedDepartment === code ? '1px solid var(--accent)' : undefined,
+                    boxShadow: selectedDepartment === code ? '0 0 0 3px var(--accent-glow)' : undefined,
+                  }}
+                >
                   <i className={`fas ${icon}`} />
                   <span>{label}</span>
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="features">
-            {[
-              { icon: 'fa-brain', label: 'AI-Powered' },
-              { icon: 'fa-database', label: 'Medical Database' },
-              { icon: 'fa-shield-alt', label: 'Reliable Info' },
-            ].map(({ icon, label }) => (
-              <div key={label} className="feature-card glass-effect">
-                <i className={`fas ${icon}`} />
-                <span>{label}</span>
-              </div>
-            ))}
+            <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-secondary)' }}>
+              当前模式：
+              {selectedDepartment ? ` 锁定 ${DEPARTMENT_OPTIONS.find(item => item.code === selectedDepartment)?.zh || selectedDepartment}` : ' 自动路由'}
+              <button
+                className="message-action"
+                style={{ marginLeft: 10 }}
+                onClick={onClearDepartment}
+              >
+                清除选择
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -215,7 +243,7 @@ function ChatArea({ messages, isTyping, showWelcome, onQuickQuestion, chatAreaRe
       <div className={`typing-indicator${isTyping ? ' active' : ''}`}>
         <div className="typing-bubble glass-effect">
           <div className="typing-content">
-            <span className="typing-text">MediGenius is thinking</span>
+            <span className="typing-text">医枢智疗正在生成答案</span>
             <div className="typing-dots">
               <span className="dot" />
               <span className="dot" />
@@ -267,7 +295,7 @@ function MessageBubble({ msg }) {
               </span>
             )}
             <div className="message-actions">
-              <button className="message-action" title="Copy" onClick={copyText}>
+              <button className="message-action" title="复制" onClick={copyText}>
                 <i className="fas fa-copy" />
               </button>
             </div>
@@ -318,19 +346,19 @@ function InputArea({
           <textarea
             ref={inputRef}
             className="message-input"
-            placeholder="Ask your medical question..."
+            placeholder="请输入你的问题（可直接描述症状、病史或检查结果）"
             rows={1}
             value={inputValue}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
           />
-          <button className="input-btn" title="Voice input">
+          <button className="input-btn" title="语音输入">
             <i className="fas fa-microphone" />
           </button>
           <button
             className="send-btn"
-            title="Send message"
-            aria-label="Send message"
+            title="发送消息"
+            aria-label="发送消息"
             onClick={onSend}
             disabled={!inputValue.trim() || isTyping}
           >
@@ -339,7 +367,7 @@ function InputArea({
         </div>
         <div className="input-info">
           <i className="fas fa-info-circle" />
-          <span>AI can make mistakes. Always consult healthcare professionals for medical advice.</span>
+          <span>本系统为辅助决策工具，不能替代医生面诊。</span>
         </div>
       </div>
     </div>
@@ -446,7 +474,7 @@ function LoginModal({
   return (
     <div className="ecg-guide-backdrop">
       <div className="ecg-guide-modal glass-effect">
-        <h3>登录 MediGenius</h3>
+        <h3>登录 医枢智疗</h3>
         <p>请先登录，再开始使用聊天、画像记忆和 ECG 报告功能。</p>
         <form onSubmit={onSubmit}>
           <div className="ecg-guide-grid">
@@ -561,6 +589,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [chatHistory, setChatHistory] = useState([]);       // for download
   const [showWelcome, setShowWelcome] = useState(true);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [showEcgGuide, setShowEcgGuide] = useState(false);
@@ -712,6 +741,7 @@ export default function App() {
         setMessages([]);
         setChatHistory([]);
         setShowWelcome(true);
+        setSelectedDepartment(null);
         showToast(`已登录为 ${data.user_id}`, 'success');
       } else {
         showToast('登录失败，请重试', 'error');
@@ -736,6 +766,7 @@ export default function App() {
     setChatHistory([]);
     setSessions([]);
     setShowWelcome(true);
+    setSelectedDepartment(null);
     showToast('已退出登录', 'info');
   }, [apiFetch, identity.tenantId, persistIdentity, showToast]);
 
@@ -809,26 +840,26 @@ export default function App() {
         setMessages(msgs);
         setChatHistory(msgs.map(m => ({ ...m })));
         setShowWelcome(false);
-        showToast('Chat loaded successfully', 'success');
+        showToast('会话加载成功', 'success');
       }
     } catch {
-      showToast('Failed to load chat', 'error');
+      showToast('会话加载失败', 'error');
     }
   }, [apiFetch, isLoggedIn, persistSessionId, showToast]);
 
   // ── Delete session ─────────────────────────────────────────
   const deleteSession = useCallback(async (sessionId) => {
     if (!isLoggedIn) return;
-    if (!window.confirm('Are you sure you want to delete this chat?')) return;
+    if (!window.confirm('确认删除该会话？')) return;
     try {
       const res = await apiFetch(`/session/${sessionId}`, { method: 'DELETE' }, { sessionId });
       if (res.ok) {
         await loadSessions();
         if (currentSessionId === sessionId) createNewChat();
-        showToast('Chat deleted successfully', 'success');
+        showToast('会话删除成功', 'success');
       }
     } catch {
-      showToast('Failed to delete chat', 'error');
+      showToast('会话删除失败', 'error');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -847,43 +878,55 @@ export default function App() {
         setCurrentSessionId(nextSessionId);
         persistSessionId(nextSessionId);
         setShowWelcome(true);
+        setSelectedDepartment(null);
         await loadSessions();
-        showToast('New chat created', 'success');
+        showToast('已创建新会话', 'success');
       }
     } catch {
-      showToast('Failed to create new chat', 'error');
+      showToast('创建会话失败', 'error');
     }
   }, [apiFetch, isLoggedIn, loadSessions, persistSessionId, showToast]);
+
+  const handleSelectDepartment = useCallback((departmentCode) => {
+    setSelectedDepartment(departmentCode);
+    const selected = DEPARTMENT_OPTIONS.find(item => item.code === departmentCode);
+    showToast(`已锁定科室：${selected?.zh || departmentCode}`, 'info');
+  }, [showToast]);
+
+  const handleClearDepartment = useCallback(() => {
+    setSelectedDepartment(null);
+    showToast('已切换为自动路由模式', 'info');
+  }, [showToast]);
 
   // ── Clear chat ─────────────────────────────────────────────
   const clearChat = useCallback(async () => {
     if (!isLoggedIn) return;
-    if (!window.confirm('Are you sure you want to clear this conversation?')) return;
+    if (!window.confirm('确认清空当前会话内容？')) return;
     try {
       const res = await apiFetch('/clear', { method: 'POST' });
       if (res.ok) {
         setMessages([]);
         setChatHistory([]);
         setShowWelcome(true);
-        showToast('Conversation cleared', 'success');
+        showToast('会话已清空', 'success');
       }
     } catch {
-      showToast('Failed to clear conversation', 'error');
+      showToast('清空会话失败', 'error');
     }
   }, [apiFetch, isLoggedIn, showToast]);
 
   // ── Download chat ──────────────────────────────────────────
   const downloadChat = useCallback(() => {
-    if (chatHistory.length === 0) { showToast('No messages to download', 'error'); return; }
+    if (chatHistory.length === 0) { showToast('暂无可导出的对话', 'error'); return; }
     const content = buildDownloadText(chatHistory);
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `medigenius-chat-${Date.now()}.txt`;
+    a.download = `医枢智疗-对话记录-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Chat downloaded successfully', 'success');
+    showToast('对话导出成功', 'success');
   }, [chatHistory, showToast]);
 
   // ── ECG guided workflow ────────────────────────────────────
@@ -1189,7 +1232,10 @@ export default function App() {
       const res = await apiFetch('/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          selected_department: selectedDepartment || null,
+        }),
       }, { sessionId: chatSessionId });
 
       if (!res.ok || !res.body) {
@@ -1239,24 +1285,19 @@ export default function App() {
         source: null,
         timestamp: time,
       });
-      showToast('Response received', 'success');
+      showToast('回答已生成', 'success');
       await loadSessions();
     } catch {
       finalizeStreamBubble({
-        response: streamedText || 'Connection error. Please check your internet and try again.',
+        response: streamedText || '连接异常，请检查网络后重试。',
         source: null,
         timestamp: time,
       });
-      showToast('Connection error', 'error');
+      showToast('连接异常', 'error');
     } finally {
       setIsTyping(false);
     }
-  }, [apiFetch, currentSessionId, inputValue, isLoggedIn, isTyping, loadSessions, persistSessionId, sessionHeaderId, showToast]);
-
-  // Quick question handler
-  const handleQuickQuestion = useCallback((q) => {
-    setTimeout(() => sendMessage(q), 200);
-  }, [sendMessage]);
+  }, [apiFetch, currentSessionId, inputValue, isLoggedIn, isTyping, loadSessions, persistSessionId, selectedDepartment, sessionHeaderId, showToast]);
 
   // ── Toast colors ───────────────────────────────────────────
   const toastColors = {
@@ -1313,22 +1354,26 @@ export default function App() {
           {/* Header */}
           <header className="app-header glass-header">
             <div className="header-content">
-              <h2 className="gradient-text">Medical AI Assistant</h2>
+              <h2 className="gradient-text">医枢智疗·临床协同中枢</h2>
               <div className="status-indicator">
                 <div className="status-ring">
                   <span className="ring-pulse" />
                 </div>
-                <span>{isLoggedIn ? `AI Ready · ${identity.userId}` : '请先登录'}</span>
+                <span>
+                  {isLoggedIn
+                    ? `在线 · ${identity.userId}${selectedDepartment ? ` · ${DEPARTMENT_OPTIONS.find(item => item.code === selectedDepartment)?.zh || selectedDepartment}` : ' · 自动路由'}`
+                    : '请先登录'}
+                </span>
               </div>
             </div>
             <div className="header-actions">
-              <button className="action-btn" title="Clear conversation" onClick={clearChat}>
+              <button className="action-btn" title="清空会话" onClick={clearChat}>
                 <i className="fas fa-trash" />
               </button>
-              <button className="action-btn" title="Download chat" onClick={downloadChat}>
+              <button className="action-btn" title="导出对话" onClick={downloadChat}>
                 <i className="fas fa-download" />
               </button>
-              <button className="action-btn" title="Logout" onClick={logout}>
+              <button className="action-btn" title="退出登录" onClick={logout}>
                 <i className="fas fa-sign-out-alt" />
               </button>
             </div>
@@ -1339,7 +1384,9 @@ export default function App() {
             messages={messages}
             isTyping={isTyping}
             showWelcome={showWelcome}
-            onQuickQuestion={handleQuickQuestion}
+            onSelectDepartment={handleSelectDepartment}
+            onClearDepartment={handleClearDepartment}
+            selectedDepartment={selectedDepartment}
             chatAreaRef={chatAreaRef}
           />
 

@@ -14,7 +14,7 @@ import httpx
 from app.core.logging_config import logger
 from app.services.database_service import db_service
 from app.services.profile_service import load_profile
-from app.tools.llm_client import get_light_llm
+from app.tools.llm_client import coerce_response_text, get_light_llm
 
 WELCOME_SOURCE = "Welcome Concierge"
 WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
@@ -211,7 +211,7 @@ def _render_with_llm(
 
     try:
         response = llm.invoke(prompt)
-        text = response.content if hasattr(response, "content") else str(response)
+        text = coerce_response_text(response)
         text = " ".join((text or "").split())
         if not text or not _looks_chinese(text):
             return ""

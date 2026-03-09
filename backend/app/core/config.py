@@ -48,10 +48,15 @@ EMBEDDING_MODEL_NAME = os.getenv(
     "EMBEDDING_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2"
 )
 RAG_ENABLED = _env_bool("RAG_ENABLED", True)
+WEB_SEARCH_ENABLED = _env_bool("WEB_SEARCH_ENABLED", True)
+WEB_SEARCH_USE_LLM_DECIDER = _env_bool("WEB_SEARCH_USE_LLM_DECIDER", False)
+QUERY_REWRITER_ENABLED = _env_bool("QUERY_REWRITER_ENABLED", True)
+QUERY_REWRITER_USE_LLM = _env_bool("QUERY_REWRITER_USE_LLM", True)
 
 # ── API Keys ───────────────────────────────────────────────────────────────────
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
+OPENAI_WIRE_API = os.getenv("OPENAI_WIRE_API", "chat").strip().lower()
 LLM_MODEL = os.getenv("LLM_MODEL", "qwen3.5-plus")
 LIGHT_LLM_MODEL = os.getenv("LIGHT_LLM_MODEL", "qwen3.5-flash")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")

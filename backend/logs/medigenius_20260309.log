@@ -181,3 +181,441 @@ AttributeError: 'NoneType' object has no attribute '__dict__'
 2026-03-09 19:35:08 - medigenius - INFO - JudgeNeedRAG: need_rag=False
 2026-03-09 19:35:35 - medigenius - INFO - LLM client initialized (tenant=default user=elon / Pro/deepseek-ai/DeepSeek-V3.2)
 2026-03-09 19:35:51 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 20:13:18 - medigenius - INFO - DatabaseService initialized
+2026-03-09 20:13:18 - medigenius - INFO - ChatService initialized
+2026-03-09 20:13:18 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 20:13:18 - medigenius - INFO - Initializing database tables...
+2026-03-09 20:13:18 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 20:13:33 - medigenius - INFO - Loaded 438 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/pediatrics_儿科/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-09 20:13:33 - medigenius - INFO - Split into 662 chunks
+2026-03-09 20:13:33 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=pediatrics, type=pdf, chunks=662
+2026-03-09 20:13:49 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-09 20:13:50 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 20:13:50 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, type=pdf, chunks=2211
+2026-03-09 20:13:50 - medigenius - INFO - Knowledge ingest completed without file failures.
+2026-03-09 20:13:50 - medigenius - INFO - Processing knowledge library: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge
+2026-03-09 20:13:59 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 20:13:59 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 20:13:59 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 20:13:59 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 20:13:59 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 20:13:59 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 20:13:59 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 20:14:30 - medigenius - INFO - Streaming message tenant=default user=test1 session=0f912b1c...
+2026-03-09 20:14:31 - medigenius - INFO - Light LLM client initialized (tenant=default user=anonymous / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 20:14:52 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 20:14:52 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 20:15:06 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 20:15:29 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=0f912b1c
+2026-03-09 20:49:42 - medigenius - INFO - Streaming message tenant=default user=test1 session=67622e4d...
+2026-03-09 20:49:55 - medigenius - INFO - HealthConcierge: domain=medical, use_rag=True
+2026-03-09 20:50:25 - medigenius - INFO - MedicalRouter: primary=respiratory candidates=['respiratory', 'infectious_disease', 'ent']
+2026-03-09 20:51:21 - medigenius - INFO - QueryRewriter: retrieval_query=common cold treatment and management scopes=['respiratory', 'infectious_disease', 'ent']
+2026-03-09 20:51:21 - medigenius - INFO - RAG: No valid documents found for scopes=['respiratory', 'infectious_disease', 'ent']
+2026-03-09 20:52:13 - medigenius - INFO - Tavily search tool initialized
+2026-03-09 20:53:28 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=67622e4d
+2026-03-09 20:59:08 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 20:59:40 - medigenius - INFO - DatabaseService initialized
+2026-03-09 20:59:40 - medigenius - INFO - ChatService initialized
+2026-03-09 20:59:40 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 20:59:40 - medigenius - INFO - Initializing database tables...
+2026-03-09 20:59:40 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 20:59:41 - medigenius - INFO - Loaded 272 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub
+2026-03-09 20:59:47 - medigenius - INFO - Split into 1823 chunks
+2026-03-09 20:59:47 - medigenius - INFO - Knowledge ingest: departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub -> department=dermatology, type=epub, chunks=1823
+2026-03-09 20:59:47 - medigenius - INFO - Loaded 504 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub
+2026-03-09 20:59:48 - medigenius - INFO - Split into 3383 chunks
+2026-03-09 20:59:48 - medigenius - INFO - Knowledge ingest: departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub -> department=ent, type=epub, chunks=3383
+2026-03-09 20:59:48 - medigenius - ERROR - Knowledge ingest failed: departments/general_surgery_普外科/02.外科学（第8版）.epub -> department=general_surgery (File is not a zip file)
+Traceback (most recent call last):
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 292, in process_knowledge_library
+    chunks = process_document_with_metadata(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 248, in process_document_with_metadata
+    chunks = process_document(document_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 239, in process_document
+    return split_documents(load_document(document_path))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 199, in load_document
+    return load_epub(document_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 169, in load_epub
+    with zipfile.ZipFile(epub_path) as archive:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/zipfile.py", line 1329, in __init__
+    self._RealGetContents()
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/zipfile.py", line 1396, in _RealGetContents
+    raise BadZipFile("File is not a zip file")
+zipfile.BadZipFile: File is not a zip file
+2026-03-09 20:59:48 - medigenius - INFO - Loaded 448 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/infectious_disease_感染科/08.传染病学（第8版）.epub
+2026-03-09 20:59:50 - medigenius - INFO - Split into 3395 chunks
+2026-03-09 20:59:50 - medigenius - INFO - Knowledge ingest: departments/infectious_disease_感染科/08.传染病学（第8版）.epub -> department=infectious_disease, type=epub, chunks=3395
+2026-03-09 20:59:50 - medigenius - INFO - Loaded 496 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/neurology_神经内科/06.神经病学（第7版）.epub
+2026-03-09 20:59:50 - medigenius - INFO - Split into 3735 chunks
+2026-03-09 20:59:50 - medigenius - INFO - Knowledge ingest: departments/neurology_神经内科/06.神经病学（第7版）.epub -> department=neurology, type=epub, chunks=3735
+2026-03-09 20:59:50 - medigenius - INFO - Loaded 387 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ophthalmology_眼科/15.眼科学（第8版）.epub
+2026-03-09 20:59:51 - medigenius - INFO - Split into 2817 chunks
+2026-03-09 20:59:51 - medigenius - INFO - Knowledge ingest: departments/ophthalmology_眼科/15.眼科学（第8版）.epub -> department=ophthalmology, type=epub, chunks=2817
+2026-03-09 20:59:52 - medigenius - INFO - Loaded 499 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/pediatrics_儿科/04.儿科学（第8版）.epub
+2026-03-09 20:59:53 - medigenius - INFO - Split into 3779 chunks
+2026-03-09 20:59:53 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/04.儿科学（第8版）.epub -> department=pediatrics, type=epub, chunks=3779
+2026-03-09 20:59:53 - medigenius - INFO - Loaded 988 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/01.内科学第八版.epub
+2026-03-09 20:59:56 - medigenius - INFO - Split into 7566 chunks
+2026-03-09 20:59:56 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/01.内科学第八版.epub -> department=general_medical, type=epub, chunks=7566
+2026-03-09 20:59:56 - medigenius - INFO - Loaded 319 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/21.康复医学（第5版）.epub
+2026-03-09 20:59:57 - medigenius - INFO - Split into 2453 chunks
+2026-03-09 20:59:57 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/21.康复医学（第5版）.epub -> department=general_medical, type=epub, chunks=2453
+2026-03-09 21:00:05 - medigenius - INFO - Loaded 438 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-09 21:00:05 - medigenius - INFO - Split into 662 chunks
+2026-03-09 21:00:05 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=general_medical, type=pdf, chunks=662
+2026-03-09 21:00:20 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-09 21:00:21 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 21:00:21 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, type=pdf, chunks=2211
+2026-03-09 21:00:21 - medigenius - WARNING - Knowledge ingest completed with 1 failed file(s): ['departments/general_surgery_普外科/02.外科学（第8版）.epub']
+2026-03-09 21:00:21 - medigenius - INFO - Processing knowledge library: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge
+2026-03-09 21:00:28 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:00:28 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:00:29 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 21:00:29 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:00:29 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 21:00:29 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 21:00:29 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 21:01:35 - medigenius - INFO - Streaming message tenant=default user=test1 session=63eded84...
+2026-03-09 21:01:36 - medigenius - INFO - Light LLM client initialized (tenant=default user=anonymous / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 21:01:36 - medigenius - INFO - HealthConcierge: manual department override=dermatology
+2026-03-09 21:02:05 - medigenius - INFO - QueryRewriter: retrieval_query=皮肤瘙痒 scopes=['dermatology']
+2026-03-09 21:02:05 - medigenius - INFO - RAG: No valid documents found for scopes=['dermatology']
+2026-03-09 21:02:05 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 21:02:47 - medigenius - INFO - Tavily search tool initialized
+2026-03-09 21:02:51 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 21:04:25 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=63eded84
+2026-03-09 21:07:32 - medigenius - INFO - Streaming message tenant=default user=test1 session=3f8f725c...
+2026-03-09 21:07:32 - medigenius - INFO - HealthConcierge: manual department override=ophthalmology
+2026-03-09 21:08:10 - medigenius - INFO - QueryRewriter: retrieval_query=干眼症 症状 治疗 scopes=['ophthalmology']
+2026-03-09 21:08:10 - medigenius - INFO - RAG: No valid documents found for scopes=['ophthalmology']
+2026-03-09 21:10:15 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=3f8f725c
+2026-03-09 21:11:26 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:11:26 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:11:26 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 21:11:54 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:11:54 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:11:54 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-09 21:12:42 - medigenius - INFO - Loaded 272 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub
+2026-03-09 21:12:48 - medigenius - INFO - Split into 1823 chunks
+2026-03-09 21:12:48 - medigenius - INFO - Knowledge ingest: departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub -> department=dermatology, type=epub, chunks=1823
+2026-03-09 21:12:48 - medigenius - INFO - Loaded 504 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub
+2026-03-09 21:12:49 - medigenius - INFO - Split into 3383 chunks
+2026-03-09 21:12:49 - medigenius - INFO - Knowledge ingest: departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub -> department=ent, type=epub, chunks=3383
+2026-03-09 21:12:49 - medigenius - ERROR - Knowledge ingest failed: departments/general_surgery_普外科/02.外科学（第8版）.epub -> department=general_surgery (File is not a zip file)
+Traceback (most recent call last):
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 292, in process_knowledge_library
+    chunks = process_document_with_metadata(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 248, in process_document_with_metadata
+    chunks = process_document(document_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 239, in process_document
+    return split_documents(load_document(document_path))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 199, in load_document
+    return load_epub(document_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/tools/pdf_loader.py", line 169, in load_epub
+    with zipfile.ZipFile(epub_path) as archive:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/zipfile.py", line 1329, in __init__
+    self._RealGetContents()
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/zipfile.py", line 1396, in _RealGetContents
+    raise BadZipFile("File is not a zip file")
+zipfile.BadZipFile: File is not a zip file
+2026-03-09 21:12:49 - medigenius - INFO - Loaded 448 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/infectious_disease_感染科/08.传染病学（第8版）.epub
+2026-03-09 21:12:50 - medigenius - INFO - Split into 3395 chunks
+2026-03-09 21:12:50 - medigenius - INFO - Knowledge ingest: departments/infectious_disease_感染科/08.传染病学（第8版）.epub -> department=infectious_disease, type=epub, chunks=3395
+2026-03-09 21:12:50 - medigenius - INFO - Loaded 496 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/neurology_神经内科/06.神经病学（第7版）.epub
+2026-03-09 21:12:52 - medigenius - INFO - Split into 3735 chunks
+2026-03-09 21:12:52 - medigenius - INFO - Knowledge ingest: departments/neurology_神经内科/06.神经病学（第7版）.epub -> department=neurology, type=epub, chunks=3735
+2026-03-09 21:12:52 - medigenius - INFO - Loaded 387 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ophthalmology_眼科/15.眼科学（第8版）.epub
+2026-03-09 21:12:53 - medigenius - INFO - Split into 2817 chunks
+2026-03-09 21:12:53 - medigenius - INFO - Knowledge ingest: departments/ophthalmology_眼科/15.眼科学（第8版）.epub -> department=ophthalmology, type=epub, chunks=2817
+2026-03-09 21:12:53 - medigenius - INFO - Loaded 499 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/pediatrics_儿科/04.儿科学（第8版）.epub
+2026-03-09 21:12:55 - medigenius - INFO - Split into 3779 chunks
+2026-03-09 21:12:55 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/04.儿科学（第8版）.epub -> department=pediatrics, type=epub, chunks=3779
+2026-03-09 21:12:55 - medigenius - INFO - Loaded 988 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/01.内科学第八版.epub
+2026-03-09 21:12:58 - medigenius - INFO - Split into 7566 chunks
+2026-03-09 21:12:58 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/01.内科学第八版.epub -> department=general_medical, type=epub, chunks=7566
+2026-03-09 21:12:58 - medigenius - INFO - Loaded 319 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/21.康复医学（第5版）.epub
+2026-03-09 21:12:59 - medigenius - INFO - Split into 2453 chunks
+2026-03-09 21:12:59 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/21.康复医学（第5版）.epub -> department=general_medical, type=epub, chunks=2453
+2026-03-09 21:13:07 - medigenius - INFO - Loaded 438 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-09 21:13:07 - medigenius - INFO - Split into 662 chunks
+2026-03-09 21:13:07 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=general_medical, type=pdf, chunks=662
+2026-03-09 21:13:22 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-09 21:13:23 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 21:13:23 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, type=pdf, chunks=2211
+2026-03-09 21:13:23 - medigenius - WARNING - Knowledge ingest completed with 1 failed file(s): ['departments/general_surgery_普外科/02.外科学（第8版）.epub']
+2026-03-09 21:13:30 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:13:30 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:13:31 - medigenius - WARNING - Existing vector store lacks `department` metadata; rebuilding from knowledge library.
+2026-03-09 21:14:09 - medigenius - ERROR - Failed to load vector store: Query error: Database error: error returned from database: (code: 1032) attempt to write a readonly database
+2026-03-09 21:15:08 - medigenius - INFO - Loaded 272 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub
+2026-03-09 21:15:13 - medigenius - INFO - Split into 1823 chunks
+2026-03-09 21:15:13 - medigenius - INFO - Knowledge ingest: departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub -> department=dermatology, type=epub, chunks=1823
+2026-03-09 21:15:13 - medigenius - INFO - Loaded 504 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub
+2026-03-09 21:15:14 - medigenius - INFO - Split into 3383 chunks
+2026-03-09 21:15:14 - medigenius - INFO - Knowledge ingest: departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub -> department=ent, type=epub, chunks=3383
+2026-03-09 21:15:14 - medigenius - INFO - Loaded 882 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/general_surgery_普外科/02.外科学（第8版）.epub
+2026-03-09 21:15:17 - medigenius - INFO - Split into 7102 chunks
+2026-03-09 21:15:17 - medigenius - INFO - Knowledge ingest: departments/general_surgery_普外科/02.外科学（第8版）.epub -> department=general_surgery, type=epub, chunks=7102
+2026-03-09 21:15:17 - medigenius - INFO - Loaded 448 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/infectious_disease_感染科/08.传染病学（第8版）.epub
+2026-03-09 21:15:19 - medigenius - INFO - Split into 3395 chunks
+2026-03-09 21:15:19 - medigenius - INFO - Knowledge ingest: departments/infectious_disease_感染科/08.传染病学（第8版）.epub -> department=infectious_disease, type=epub, chunks=3395
+2026-03-09 21:15:19 - medigenius - INFO - Loaded 496 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/neurology_神经内科/06.神经病学（第7版）.epub
+2026-03-09 21:15:20 - medigenius - INFO - Split into 3735 chunks
+2026-03-09 21:15:20 - medigenius - INFO - Knowledge ingest: departments/neurology_神经内科/06.神经病学（第7版）.epub -> department=neurology, type=epub, chunks=3735
+2026-03-09 21:15:20 - medigenius - INFO - Loaded 387 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ophthalmology_眼科/15.眼科学（第8版）.epub
+2026-03-09 21:15:21 - medigenius - INFO - Split into 2817 chunks
+2026-03-09 21:15:21 - medigenius - INFO - Knowledge ingest: departments/ophthalmology_眼科/15.眼科学（第8版）.epub -> department=ophthalmology, type=epub, chunks=2817
+2026-03-09 21:15:21 - medigenius - INFO - Loaded 499 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/pediatrics_儿科/04.儿科学（第8版）.epub
+2026-03-09 21:15:23 - medigenius - INFO - Split into 3779 chunks
+2026-03-09 21:15:23 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/04.儿科学（第8版）.epub -> department=pediatrics, type=epub, chunks=3779
+2026-03-09 21:15:23 - medigenius - INFO - Loaded 988 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/01.内科学第八版.epub
+2026-03-09 21:15:26 - medigenius - INFO - Split into 7566 chunks
+2026-03-09 21:15:26 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/01.内科学第八版.epub -> department=general_medical, type=epub, chunks=7566
+2026-03-09 21:15:26 - medigenius - INFO - Loaded 319 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/21.康复医学（第5版）.epub
+2026-03-09 21:15:27 - medigenius - INFO - Split into 2453 chunks
+2026-03-09 21:15:27 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/21.康复医学（第5版）.epub -> department=general_medical, type=epub, chunks=2453
+2026-03-09 21:15:36 - medigenius - INFO - Loaded 438 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-09 21:15:36 - medigenius - INFO - Split into 662 chunks
+2026-03-09 21:15:36 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=general_medical, type=pdf, chunks=662
+2026-03-09 21:15:51 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-09 21:15:53 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 21:15:53 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, type=pdf, chunks=2211
+2026-03-09 21:15:53 - medigenius - INFO - Knowledge ingest completed without file failures.
+2026-03-09 21:15:59 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:15:59 - medigenius - INFO - Creating new vector store with 38926 documents
+2026-03-09 21:20:39 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 21:20:47 - medigenius - INFO - DatabaseService initialized
+2026-03-09 21:20:47 - medigenius - INFO - ChatService initialized
+2026-03-09 21:20:47 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 21:20:47 - medigenius - INFO - Initializing database tables...
+2026-03-09 21:20:47 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 21:20:48 - medigenius - INFO - Loaded 272 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub
+2026-03-09 21:20:55 - medigenius - INFO - Split into 1823 chunks
+2026-03-09 21:20:55 - medigenius - INFO - Knowledge ingest: departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub -> department=dermatology, type=epub, chunks=1823
+2026-03-09 21:20:56 - medigenius - INFO - Loaded 504 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub
+2026-03-09 21:20:57 - medigenius - INFO - Split into 3383 chunks
+2026-03-09 21:20:57 - medigenius - INFO - Knowledge ingest: departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub -> department=ent, type=epub, chunks=3383
+2026-03-09 21:20:58 - medigenius - INFO - Loaded 882 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/general_surgery_普外科/02.外科学（第8版）.epub
+2026-03-09 21:21:01 - medigenius - INFO - Split into 7102 chunks
+2026-03-09 21:21:01 - medigenius - INFO - Knowledge ingest: departments/general_surgery_普外科/02.外科学（第8版）.epub -> department=general_surgery, type=epub, chunks=7102
+2026-03-09 21:21:01 - medigenius - INFO - Loaded 448 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/infectious_disease_感染科/08.传染病学（第8版）.epub
+2026-03-09 21:21:03 - medigenius - INFO - Split into 3395 chunks
+2026-03-09 21:21:03 - medigenius - INFO - Knowledge ingest: departments/infectious_disease_感染科/08.传染病学（第8版）.epub -> department=infectious_disease, type=epub, chunks=3395
+2026-03-09 21:21:03 - medigenius - INFO - Loaded 496 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/neurology_神经内科/06.神经病学（第7版）.epub
+2026-03-09 21:21:05 - medigenius - INFO - Split into 3735 chunks
+2026-03-09 21:21:05 - medigenius - INFO - Knowledge ingest: departments/neurology_神经内科/06.神经病学（第7版）.epub -> department=neurology, type=epub, chunks=3735
+2026-03-09 21:21:06 - medigenius - INFO - Loaded 387 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ophthalmology_眼科/15.眼科学（第8版）.epub
+2026-03-09 21:21:07 - medigenius - INFO - Split into 2817 chunks
+2026-03-09 21:21:07 - medigenius - INFO - Knowledge ingest: departments/ophthalmology_眼科/15.眼科学（第8版）.epub -> department=ophthalmology, type=epub, chunks=2817
+2026-03-09 21:21:08 - medigenius - INFO - Loaded 499 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/pediatrics_儿科/04.儿科学（第8版）.epub
+2026-03-09 21:21:10 - medigenius - INFO - Split into 3779 chunks
+2026-03-09 21:21:10 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/04.儿科学（第8版）.epub -> department=pediatrics, type=epub, chunks=3779
+2026-03-09 21:21:10 - medigenius - INFO - Loaded 988 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/01.内科学第八版.epub
+2026-03-09 21:21:14 - medigenius - INFO - Split into 7566 chunks
+2026-03-09 21:21:14 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/01.内科学第八版.epub -> department=general_medical, type=epub, chunks=7566
+2026-03-09 21:21:14 - medigenius - INFO - Loaded 319 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/21.康复医学（第5版）.epub
+2026-03-09 21:21:16 - medigenius - INFO - Split into 2453 chunks
+2026-03-09 21:21:16 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/21.康复医学（第5版）.epub -> department=general_medical, type=epub, chunks=2453
+2026-03-09 21:21:26 - medigenius - INFO - Loaded 438 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-09 21:21:26 - medigenius - INFO - Split into 662 chunks
+2026-03-09 21:21:26 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=general_medical, type=pdf, chunks=662
+2026-03-09 21:21:43 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-09 21:21:43 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 21:21:43 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, type=pdf, chunks=2211
+2026-03-09 21:21:43 - medigenius - INFO - Knowledge ingest completed without file failures.
+2026-03-09 21:21:43 - medigenius - INFO - Processing knowledge library: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge
+2026-03-09 21:21:51 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:21:51 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:21:53 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 21:21:53 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:21:53 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 21:21:53 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 21:21:53 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 21:22:22 - medigenius - INFO - Streaming message tenant=default user=test1 session=0f912b1c...
+2026-03-09 21:22:23 - medigenius - INFO - Light LLM client initialized (tenant=default user=anonymous / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 21:22:34 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 21:22:34 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 21:22:44 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-09 21:22:59 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-09 21:22:59 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 21:29:58 - medigenius - INFO - DatabaseService initialized
+2026-03-09 21:29:58 - medigenius - INFO - ChatService initialized
+2026-03-09 21:29:58 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 21:29:58 - medigenius - INFO - Initializing database tables...
+2026-03-09 21:29:58 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 21:29:58 - medigenius - INFO - Loaded 272 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub
+2026-03-09 21:30:02 - medigenius - INFO - Split into 1823 chunks
+2026-03-09 21:30:02 - medigenius - INFO - Knowledge ingest: departments/dermatology_皮肤科/29.皮肤性病学(第8版).epub -> department=dermatology, type=epub, chunks=1823
+2026-03-09 21:30:02 - medigenius - INFO - Loaded 504 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub
+2026-03-09 21:30:03 - medigenius - INFO - Split into 3383 chunks
+2026-03-09 21:30:03 - medigenius - INFO - Knowledge ingest: departments/ent_耳鼻喉科/10.耳鼻咽喉头颈外科学（第8版）.epub -> department=ent, type=epub, chunks=3383
+2026-03-09 21:30:04 - medigenius - INFO - Loaded 882 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/general_surgery_普外科/02.外科学（第8版）.epub
+2026-03-09 21:30:07 - medigenius - INFO - Split into 7102 chunks
+2026-03-09 21:30:07 - medigenius - INFO - Knowledge ingest: departments/general_surgery_普外科/02.外科学（第8版）.epub -> department=general_surgery, type=epub, chunks=7102
+2026-03-09 21:30:07 - medigenius - INFO - Loaded 448 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/infectious_disease_感染科/08.传染病学（第8版）.epub
+2026-03-09 21:30:08 - medigenius - INFO - Split into 3395 chunks
+2026-03-09 21:30:08 - medigenius - INFO - Knowledge ingest: departments/infectious_disease_感染科/08.传染病学（第8版）.epub -> department=infectious_disease, type=epub, chunks=3395
+2026-03-09 21:30:08 - medigenius - INFO - Loaded 496 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/neurology_神经内科/06.神经病学（第7版）.epub
+2026-03-09 21:30:09 - medigenius - INFO - Split into 3735 chunks
+2026-03-09 21:30:09 - medigenius - INFO - Knowledge ingest: departments/neurology_神经内科/06.神经病学（第7版）.epub -> department=neurology, type=epub, chunks=3735
+2026-03-09 21:30:09 - medigenius - INFO - Loaded 387 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/ophthalmology_眼科/15.眼科学（第8版）.epub
+2026-03-09 21:30:10 - medigenius - INFO - Split into 2817 chunks
+2026-03-09 21:30:10 - medigenius - INFO - Knowledge ingest: departments/ophthalmology_眼科/15.眼科学（第8版）.epub -> department=ophthalmology, type=epub, chunks=2817
+2026-03-09 21:30:11 - medigenius - INFO - Loaded 499 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/departments/pediatrics_儿科/04.儿科学（第8版）.epub
+2026-03-09 21:30:12 - medigenius - INFO - Split into 3779 chunks
+2026-03-09 21:30:12 - medigenius - INFO - Knowledge ingest: departments/pediatrics_儿科/04.儿科学（第8版）.epub -> department=pediatrics, type=epub, chunks=3779
+2026-03-09 21:30:12 - medigenius - INFO - Loaded 988 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/01.内科学第八版.epub
+2026-03-09 21:30:15 - medigenius - INFO - Split into 7566 chunks
+2026-03-09 21:30:15 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/01.内科学第八版.epub -> department=general_medical, type=epub, chunks=7566
+2026-03-09 21:30:15 - medigenius - INFO - Loaded 319 sections from EPUB: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/21.康复医学（第5版）.epub
+2026-03-09 21:30:16 - medigenius - INFO - Split into 2453 chunks
+2026-03-09 21:30:16 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/21.康复医学（第5版）.epub -> department=general_medical, type=epub, chunks=2453
+2026-03-09 21:30:24 - medigenius - INFO - Loaded 438 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf
+2026-03-09 21:30:24 - medigenius - INFO - Split into 662 chunks
+2026-03-09 21:30:24 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/WHO_Pocket_Book_of_Hospital_Care_for_Children.pdf -> department=general_medical, type=pdf, chunks=662
+2026-03-09 21:30:38 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge/medical/general_medical_通用医疗/medical_book.pdf
+2026-03-09 21:30:39 - medigenius - INFO - Split into 2211 chunks
+2026-03-09 21:30:39 - medigenius - INFO - Knowledge ingest: medical/general_medical_通用医疗/medical_book.pdf -> department=general_medical, type=pdf, chunks=2211
+2026-03-09 21:30:39 - medigenius - INFO - Knowledge ingest completed without file failures.
+2026-03-09 21:30:39 - medigenius - INFO - Processing knowledge library: /home/elon/workspace/HardWare-Medicial/backend/data/knowledge
+2026-03-09 21:30:45 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 21:30:45 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:30:47 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 21:30:47 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 21:30:47 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 21:30:47 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 21:30:47 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 21:31:02 - medigenius - INFO - Streaming message tenant=default user=test1 session=0f912b1c...
+2026-03-09 21:31:03 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / qwen3.5-flash)
+2026-03-09 21:31:07 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 21:31:12 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / qwen3.5-plus)
+2026-03-09 21:32:41 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=0f912b1c
+2026-03-09 21:33:10 - medigenius - INFO - Streaming message tenant=default user=test1 session=e5eafb90...
+2026-03-09 21:33:10 - medigenius - INFO - HealthConcierge: manual department override=ophthalmology
+2026-03-09 21:33:16 - medigenius - INFO - QueryRewriter: retrieval_query=眼部红肿 症状 诊断 处理 scopes=['ophthalmology']
+2026-03-09 21:33:16 - medigenius - INFO - RAG: merged 6 chunks across scopes=['ophthalmology']
+2026-03-09 21:33:41 - medigenius - INFO - Tavily search tool initialized
+2026-03-09 21:35:45 - medigenius - INFO - Streaming message tenant=default user=test1 session=e5eafb90...
+2026-03-09 21:35:45 - medigenius - INFO - HealthConcierge: manual department override=ophthalmology
+2026-03-09 21:35:50 - medigenius - INFO - QueryRewriter: retrieval_query=角膜移植术后视力下降 scopes=['ophthalmology']
+2026-03-09 21:35:50 - medigenius - INFO - RAG: merged 8 chunks across scopes=['ophthalmology']
+2026-03-09 21:35:54 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=e5eafb90
+2026-03-09 21:39:07 - medigenius - INFO - Deleting session 63eded84...
+2026-03-09 21:47:41 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=e5eafb90
+2026-03-09 22:02:17 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 22:05:58 - medigenius - INFO - DatabaseService initialized
+2026-03-09 22:05:59 - medigenius - INFO - ChatService initialized
+2026-03-09 22:05:59 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 22:05:59 - medigenius - INFO - Initializing database tables...
+2026-03-09 22:05:59 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 22:06:10 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 22:06:10 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:06:11 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 22:06:11 - medigenius - INFO - Vector store loaded from persistence at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:06:11 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 22:06:11 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 22:06:11 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 22:07:03 - medigenius - INFO - Streaming message tenant=default user=test1 session=8356ed22...
+2026-03-09 22:07:04 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / qwen3.5-flash)
+2026-03-09 22:07:09 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 22:07:09 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / qwen3.5-plus)
+2026-03-09 22:08:25 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=8356ed22
+2026-03-09 22:17:53 - medigenius - INFO - Light LLM client initialized (tenant=default user=config-check / gpt-5.4)
+2026-03-09 22:18:32 - medigenius - INFO - Light LLM client initialized (tenant=default user=config-check2 / gpt-5.4)
+2026-03-09 22:19:53 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 22:20:08 - medigenius - INFO - DatabaseService initialized
+2026-03-09 22:20:08 - medigenius - INFO - ChatService initialized
+2026-03-09 22:20:08 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 22:20:08 - medigenius - INFO - Initializing database tables...
+2026-03-09 22:20:08 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 22:20:21 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 22:20:21 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:20:21 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 22:20:21 - medigenius - INFO - Vector store loaded from persistence at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:20:21 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 22:20:21 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 22:20:21 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 22:20:32 - medigenius - INFO - Deleting session 8356ed22...
+2026-03-09 22:20:39 - medigenius - INFO - Streaming message tenant=default user=test1 session=3f3ae506...
+2026-03-09 22:20:40 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / gpt-5.4)
+2026-03-09 22:20:41 - medigenius - WARNING - HealthConcierge: domain classification fallback used: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:20:41 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 22:20:41 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / gpt-5.4)
+2026-03-09 22:20:42 - medigenius - ERROR - Streaming LLM generation failed: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:20:42 - medigenius - WARNING - Profile update inference failed: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:21:01 - medigenius - INFO - Streaming message tenant=default user=test1 session=3f3ae506...
+2026-03-09 22:21:02 - medigenius - WARNING - HealthConcierge: domain classification fallback used: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:21:02 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 22:21:02 - medigenius - WARNING - JudgeNeedRAG failed, fallback to no-rag: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:21:03 - medigenius - ERROR - Streaming LLM generation failed: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:21:03 - medigenius - WARNING - Profile update inference failed: Error code: 400 - {'error': {'message': 'Unsupported legacy protocol: /v1/chat/completions is not supported. Please use /v1/responses.', 'type': 'invalid_request_error'}}
+2026-03-09 22:21:18 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 22:23:56 - medigenius - INFO - Light LLM client initialized (tenant=default user=config-check2 / gpt-5.4)
+2026-03-09 22:28:56 - medigenius - INFO - Light LLM client initialized (tenant=default user=smoke-resp / gpt-5.4)
+2026-03-09 22:29:28 - medigenius - INFO - DatabaseService initialized
+2026-03-09 22:29:28 - medigenius - INFO - ChatService initialized
+2026-03-09 22:29:31 - medigenius - INFO - LLM client initialized (tenant=default user=stream-probe / gpt-5.4)
+2026-03-09 22:32:14 - medigenius - INFO - DatabaseService initialized
+2026-03-09 22:32:14 - medigenius - INFO - ChatService initialized
+2026-03-09 22:32:14 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 22:32:14 - medigenius - INFO - Initializing database tables...
+2026-03-09 22:32:14 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 22:32:26 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 22:32:26 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:32:27 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 22:32:27 - medigenius - INFO - Vector store loaded from persistence at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:32:27 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 22:32:27 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 22:32:27 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 22:32:43 - medigenius - INFO - Streaming message tenant=default user=test1 session=0df2927f...
+2026-03-09 22:32:44 - medigenius - INFO - Light LLM client initialized (tenant=default user=test1 / gpt-5.4)
+2026-03-09 22:32:50 - medigenius - INFO - HealthConcierge: domain=general, use_rag=False
+2026-03-09 22:32:50 - medigenius - INFO - LLM client initialized (tenant=default user=test1 / gpt-5.4)
+2026-03-09 22:33:05 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test1 session=0df2927f
+2026-03-09 22:33:29 - medigenius - INFO - Streaming message tenant=default user=test session=3599f117...
+2026-03-09 22:33:29 - medigenius - INFO - Light LLM client initialized (tenant=default user=test / gpt-5.4)
+2026-03-09 22:33:29 - medigenius - INFO - HealthConcierge: manual department override=dermatology
+2026-03-09 22:33:29 - medigenius - INFO - QueryRewriter: disabled by config, retrieval_query=我在冬天皮肤会很干，怎么办 scopes=['dermatology']
+2026-03-09 22:33:29 - medigenius - INFO - RAG: merged 3 chunks across scopes=['dermatology']
+2026-03-09 22:33:29 - medigenius - INFO - LLM client initialized (tenant=default user=test / gpt-5.4)
+2026-03-09 22:33:57 - medigenius - INFO - Profile updated asynchronously for tenant=default user=test session=3599f117
+2026-03-09 22:42:37 - medigenius - INFO - Conversation cleared tenant=default user=test session=3599f117
+2026-03-09 22:42:45 - medigenius - INFO - Conversation cleared tenant=default user=test session=3599f117
+2026-03-09 22:42:47 - medigenius - INFO - Deleting session 3599f117...
+2026-03-09 22:48:50 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 22:52:07 - medigenius - INFO - DatabaseService initialized
+2026-03-09 22:52:07 - medigenius - INFO - ChatService initialized
+2026-03-09 22:52:07 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 22:52:07 - medigenius - INFO - Initializing database tables...
+2026-03-09 22:52:07 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 22:52:18 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 22:52:18 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:52:18 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 22:52:18 - medigenius - INFO - Vector store loaded from persistence at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 22:52:18 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 22:52:18 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 22:52:18 - medigenius - INFO - MediGenius System Ready!
+2026-03-09 22:59:54 - medigenius - INFO - Shutting down MediGenius...
+2026-03-09 23:03:47 - medigenius - INFO - DatabaseService initialized
+2026-03-09 23:03:48 - medigenius - INFO - ChatService initialized
+2026-03-09 23:03:48 - medigenius - INFO - Initializing MediGenius System...
+2026-03-09 23:03:48 - medigenius - INFO - Initializing database tables...
+2026-03-09 23:03:48 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-09 23:03:59 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-09 23:03:59 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 23:04:00 - medigenius - INFO - Loaded 38926 documents from vector store
+2026-03-09 23:04:00 - medigenius - INFO - Vector store loaded from persistence at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-09 23:04:00 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-09 23:04:00 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-09 23:04:00 - medigenius - INFO - MediGenius System Ready!

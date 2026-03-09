@@ -11,7 +11,8 @@ def test_chat_with_header_session_id(test_client, mock_dependencies):
             "response": "Test response",
             "source": "Test",
             "timestamp": "10:00 AM",
-            "success": True
+            "success": True,
+            "flow_trace": [],
         }
         response = test_client.post(
             "/api/v1/chat",
@@ -45,3 +46,43 @@ def test_clear_with_header(test_client):
     response = test_client.post("/api/v1/clear", headers={"X-Session-ID": "test-id"})
     assert response.status_code == 200
     assert response.json()["message"] == "Conversation cleared"
+
+
+def test_chat_selected_department_passthrough(test_client, mock_dependencies):
+    with patch.object(chat_service, "process_message") as mock_process:
+        mock_process.return_value = {
+            "response": "Test response",
+            "source": "Test",
+            "timestamp": "10:00 AM",
+            "success": True,
+            "flow_trace": [],
+        }
+        response = test_client.post(
+            "/api/v1/chat",
+            json={"message": "Hello", "selected_department": "neurology"},
+            headers={"X-Session-ID": "custom-session-id"},
+        )
+        assert response.status_code == 200
+        assert mock_process.call_args.kwargs["selected_department"] == "neurology"
+
+
+def test_chat_stream_selected_department_passthrough(test_client, mock_dependencies):
+    async def _mock_stream(*_args, **_kwargs):
+        yield {"event": "delta", "delta": "ok"}
+        yield {
+            "event": "done",
+            "success": True,
+            "response": "ok",
+            "source": "Test",
+            "timestamp": "10:00 AM",
+        }
+
+    with patch.object(chat_service, "process_message_stream", side_effect=_mock_stream) as mock_stream:
+        response = test_client.post(
+            "/api/v1/chat/stream",
+            json={"message": "Hello", "selected_department": "neurology"},
+            headers={"X-Session-ID": "custom-session-id"},
+        )
+        assert response.status_code == 200
+        assert "event: done" in response.text
+        assert mock_stream.call_args.kwargs["selected_department"] == "neurology"

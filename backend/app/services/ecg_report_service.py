@@ -11,7 +11,7 @@ from app.schemas.ecg import ECGReportRequest, ECGReportResponse
 from app.services.database_service import db_service
 from app.services.ecg_pdf_service import generate_ecg_pdf, get_report_pdf_path
 from app.services.profile_service import update_profile
-from app.tools.llm_client import get_llm
+from app.tools.llm_client import coerce_response_text, get_llm
 
 DISCLAIMER = (
     "本报告仅供临床辅助参考，不可替代执业医师面对面诊断。"
@@ -182,11 +182,7 @@ class ECGReportService:
             prompt = _build_prompt(request)
             try:
                 response = llm.invoke(prompt)
-                report = (
-                    response.content.strip()
-                    if hasattr(response, "content")
-                    else str(response).strip()
-                )
+                report = coerce_response_text(response).strip()
             except Exception as exc:
                 logger.warning("ECG report generation via LLM failed: %s", exc)
 

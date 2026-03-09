@@ -22,6 +22,8 @@ class AgentState(TypedDict):
     generation: str
     source: str
     search_query: Optional[str]
+    selected_department: Optional[str]
+    selected_department_forced: bool
     retrieval_query: Optional[str]
     primary_department: Optional[str]
     department_candidates: List[Dict]
@@ -68,6 +70,8 @@ def initialize_conversation_state() -> AgentState:
         "generation": "",
         "source": "",
         "search_query": None,
+        "selected_department": None,
+        "selected_department_forced": False,
         "retrieval_query": None,
         "primary_department": None,
         "department_candidates": [],
@@ -115,6 +119,8 @@ def reset_query_state(state: AgentState) -> AgentState:
             "generation": "",
             "source": "",
             "search_query": None,
+            "selected_department": state.get("selected_department"),
+            "selected_department_forced": state.get("selected_department_forced", False),
             "retrieval_query": None,
             "primary_department": None,
             "department_candidates": [],

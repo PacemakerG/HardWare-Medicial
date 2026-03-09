@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from app.core.config import ECG_SITE_URL
 
 class ECGPatientInfo(BaseModel):
     patient_id: Optional[str] = None
@@ -49,7 +50,7 @@ class ECGMonitorStartRequest(BaseModel):
     weight_kg: Optional[float] = Field(default=None, gt=0, le=500)
 
     monitor_url: Optional[str] = Field(
-        default="http://124.220.204.12:8080/index#/system/doctor",
+        default=ECG_SITE_URL,
         max_length=300,
     )
     monitor_username: Optional[str] = Field(default=None, max_length=128)

@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 class ChatRequest(BaseModel):
     message: str
+    selected_department: str | None = None
 
 
 class ChatResponse(BaseModel):

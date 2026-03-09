@@ -42,6 +42,7 @@ async def chat_endpoint(request: ChatRequest, req: Request):
         request.message,
         tenant_id=ctx.tenant_id,
         user_id=ctx.user_id,
+        selected_department=request.selected_department,
     )
 
 
@@ -66,6 +67,7 @@ async def chat_stream_endpoint(request: ChatRequest, req: Request):
                 request.message,
                 tenant_id=ctx.tenant_id,
                 user_id=ctx.user_id,
+                selected_department=request.selected_department,
             ):
                 event_name = event.get("event", "message")
                 payload = {k: v for k, v in event.items() if k != "event"}

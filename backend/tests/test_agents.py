@@ -33,6 +33,18 @@ def test_planner_agent_general():
     assert new_state["current_tool"] == "judge_need_rag"
 
 
+def test_planner_agent_manual_department_override():
+    state = initialize_conversation_state()
+    state["question"] = "我想了解干眼症平时如何护理"
+    state["selected_department"] = "neurology"
+    state["selected_department_forced"] = True
+    new_state = PlannerAgent(state)
+    assert new_state["domain"] == "medical"
+    assert new_state["use_rag"] is True
+    assert new_state["primary_department"] == "neurology"
+    assert new_state["current_tool"] == "query_rewriter"
+
+
 # --- Retriever Agent Tests ---
 def test_retriever_agent_success():
     state = initialize_conversation_state()
@@ -53,6 +65,44 @@ def test_retriever_agent_success():
         assert new_state["rag_success"] is True
         assert len(new_state["documents"]) > 0
         assert "infectious_disease" in new_state["retrieval_results_by_scope"]
+
+
+def test_retriever_agent_manual_scope_only():
+    state = initialize_conversation_state()
+    state["question"] = "头晕怎么处理"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["selected_department"] = "neurology"
+    state["selected_department_forced"] = True
+
+    with patch("app.agents.retriever.get_retriever") as mock_get_retriever:
+        mock_retriever = MagicMock()
+        mock_retriever.invoke.return_value = [Document(page_content="神经系统症状评估 " * 10)]
+        mock_get_retriever.return_value = mock_retriever
+        new_state = RetrieverAgent(state)
+
+    assert new_state["retrieval_scopes"] == ["neurology"]
+    assert new_state["rag_success"] is True
+
+
+def test_retriever_agent_general_scope_filter_is_strict():
+    state = initialize_conversation_state()
+    state["question"] = "通用健康建议"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["selected_department"] = "general_medical"
+    state["selected_department_forced"] = True
+
+    with patch("app.agents.retriever.get_retriever") as mock_get_retriever:
+        mock_retriever = MagicMock()
+        mock_retriever.invoke.return_value = [Document(page_content="通用医疗知识 " * 10)]
+        mock_get_retriever.return_value = mock_retriever
+        new_state = RetrieverAgent(state)
+
+    assert new_state["retrieval_scopes"] == ["general_medical"]
+    assert mock_get_retriever.call_args.kwargs["search_kwargs"]["filter"] == {
+        "department": "general_medical"
+    }
 
 
 def test_retriever_agent_failure():

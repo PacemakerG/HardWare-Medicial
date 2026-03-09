@@ -14,6 +14,7 @@ from app.core.config import (
     MODEL_ROUTING_CONFIG_PATH,
     OPENAI_API_KEY,
     OPENAI_BASE_URL,
+    OPENAI_WIRE_API,
 )
 from app.core.logging_config import logger
 
@@ -24,6 +25,29 @@ _light_llm_instances: Dict[tuple, Any] = {}
 _instances_lock = threading.Lock()
 _routing_cache: Dict[str, Any] = {"mtime": None, "data": {}}
 _routing_lock = threading.Lock()
+
+
+def _content_blocks_to_text(content: Any) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+                continue
+            if isinstance(item, dict):
+                text = item.get("text") or item.get("content")
+                if isinstance(text, str):
+                    parts.append(text)
+        return "".join(parts)
+    return str(content or "")
+
+
+def coerce_response_text(response: Any) -> str:
+    """Normalize LangChain response/chunk objects to plain text."""
+    content = response.content if hasattr(response, "content") else response
+    return _content_blocks_to_text(content)
 
 
 def _load_routing_config() -> Dict[str, Any]:
@@ -131,12 +155,17 @@ def get_llm(*, tenant_id: str = "default", user_id: str = "anonymous"):
         except Exception as exc:
             logger.warning("langchain_openai unavailable for main LLM client: %s", exc)
             return None
+        use_responses_api = OPENAI_WIRE_API == "responses"
         kwargs = {
             "api_key": api_key,
             "model": model,
             "temperature": 0.3,
-            "max_tokens": 2048,
         }
+        if use_responses_api:
+            kwargs["use_responses_api"] = True
+            kwargs["max_completion_tokens"] = 2048
+        else:
+            kwargs["max_tokens"] = 2048
         if base_url:
             kwargs["base_url"] = base_url
 
@@ -178,12 +207,17 @@ def get_light_llm(*, tenant_id: str = "default", user_id: str = "anonymous"):
         except Exception as exc:
             logger.warning("langchain_openai unavailable for light LLM client: %s", exc)
             return None
+        use_responses_api = OPENAI_WIRE_API == "responses"
         kwargs = {
             "api_key": api_key,
             "model": model,
             "temperature": 0.0,
-            "max_tokens": 128,
         }
+        if use_responses_api:
+            kwargs["use_responses_api"] = True
+            kwargs["max_completion_tokens"] = 128
+        else:
+            kwargs["max_tokens"] = 128
         if base_url:
             kwargs["base_url"] = base_url
 

@@ -21,6 +21,7 @@ from app.agents.retriever import RetrieverAgent
 from app.agents.reranker import RerankerAgent
 from app.core.langgraph_workflow import create_workflow
 from app.core.logging_config import logger
+from app.core.medical_taxonomy import normalize_department_code
 from app.core.state import initialize_conversation_state, reset_query_state
 from app.services.database_service import db_service
 from app.services.flow_trace_service import append_flow_trace_record
@@ -53,6 +54,12 @@ class ChatService:
             return session_id
         return None
 
+    @staticmethod
+    def _normalize_selected_department(raw_value: str | None) -> str | None:
+        if not raw_value:
+            return None
+        return normalize_department_code(str(raw_value))
+
     def _load_persisted_history(
         self,
         session_id: str,
@@ -84,6 +91,7 @@ class ChatService:
         message: str,
         tenant_id: str,
         user_id: str,
+        selected_department: str | None,
     ) -> tuple[str, Dict[str, Any]]:
         context_key = self._context_key(tenant_id, user_id, session_id)
         legacy_key = self._legacy_context_key(tenant_id, user_id, session_id)
@@ -104,6 +112,9 @@ class ChatService:
         state["user_id"] = user_id
         state["session_id"] = session_id
         state["question"] = message
+        normalized_department = self._normalize_selected_department(selected_department)
+        state["selected_department"] = normalized_department
+        state["selected_department_forced"] = bool(normalized_department)
         return context_key, state
 
     def _store_state(self, context_key: str, result: Dict[str, Any]) -> None:
@@ -144,6 +155,7 @@ class ChatService:
         *,
         tenant_id: str = "default",
         user_id: str = "anonymous",
+        selected_department: str | None = None,
     ) -> Dict[str, Any]:
         """Run the agentic pipeline for a single user message."""
         logger.info(
@@ -170,6 +182,7 @@ class ChatService:
             message=message,
             tenant_id=tenant_id,
             user_id=user_id,
+            selected_department=selected_department,
         )
 
         # Run workflow (async preferred, sync fallback)
@@ -221,6 +234,7 @@ class ChatService:
         *,
         tenant_id: str = "default",
         user_id: str = "anonymous",
+        selected_department: str | None = None,
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """Run shared pre-processing and stream LLM tokens as they are generated."""
         logger.info(
@@ -244,6 +258,7 @@ class ChatService:
             message=message,
             tenant_id=tenant_id,
             user_id=user_id,
+            selected_department=selected_department,
         )
 
         # Mirror workflow up to executor so stream path is behaviorally aligned.
@@ -254,7 +269,8 @@ class ChatService:
             pass
         elif state.get("domain") == "medical":
             if state.get("use_rag"):
-                state = MedicalRouterAgent(state)
+                if not state.get("selected_department_forced", False):
+                    state = MedicalRouterAgent(state)
                 state = QueryRewriterAgent(state)
                 state = RetrieverAgent(state)
                 state = RerankerAgent(state)

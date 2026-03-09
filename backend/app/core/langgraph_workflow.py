@@ -20,6 +20,8 @@ from app.core.state import AgentState
 def _route_after_concierge(state: AgentState) -> str:
     if state.get("safety_level") in {"EMERGENCY", "CLARIFY"}:
         return "executor"
+    if state.get("selected_department_forced"):
+        return "query_rewriter"
     if state.get("domain") == "medical":
         return "medical_router"
     if state.get("use_rag"):

@@ -16,7 +16,7 @@ from app.core.medical_taxonomy import (
     normalize_department_code,
 )
 from app.core.state import AgentState, append_flow_trace
-from app.tools.llm_client import get_light_llm
+from app.tools.llm_client import coerce_response_text, get_light_llm
 
 
 def _extract_json_block(text: str) -> str:
@@ -61,6 +61,19 @@ def MedicalRouterAgent(state: AgentState) -> AgentState:
     append_flow_trace(state, "medical_router")
     if state.get("domain") != "medical":
         return state
+    if state.get("selected_department_forced") and state.get("selected_department"):
+        selected = state["selected_department"]
+        state["primary_department"] = selected
+        state["department_candidates"] = [
+            {
+                "name": selected,
+                "score": 1.0,
+                "display_name": department_display_name(selected),
+            }
+        ]
+        state["routing_reason"] = "manual department override"
+        state["current_tool"] = "query_rewriter"
+        return state
 
     question = (state.get("question") or "").strip()
     fallback_candidates = infer_department_candidates(question, top_k=3)
@@ -69,7 +82,10 @@ def MedicalRouterAgent(state: AgentState) -> AgentState:
     department_candidates = fallback_candidates
     routing_reason = "heuristic keyword fallback"
 
-    llm = get_light_llm()
+    llm = get_light_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     if llm:
         allowed_departments = ", ".join(code for code in list_department_codes() if code != GENERAL_MEDICAL_DEPARTMENT)
         prompt = (
@@ -86,7 +102,7 @@ def MedicalRouterAgent(state: AgentState) -> AgentState:
         )
         try:
             raw = llm.invoke(prompt)
-            content = raw.content if hasattr(raw, "content") else str(raw)
+            content = coerce_response_text(raw)
             parsed = json.loads(_extract_json_block(content))
             primary = normalize_department_code(parsed.get("primary_department"))
             department_candidates = _normalize_candidates(

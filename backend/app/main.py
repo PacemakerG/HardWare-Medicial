@@ -49,28 +49,33 @@ async def lifespan(app: FastAPI):
 
     if RAG_ENABLED:
         try:
-            knowledge_docs = process_knowledge_library(KNOWLEDGE_ROOT_DIR)
-            if knowledge_docs:
-                logger.info("Processing knowledge library: %s", KNOWLEDGE_ROOT_DIR)
-                vectorstore = get_or_create_vectorstore(knowledge_docs)
-                if vectorstore:
-                    logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
-                else:
-                    logger.warning(
-                        "Vector store initialization skipped/failed. System will continue without RAG."
-                    )
-            elif os.path.exists(PDF_PATH):
-                logger.info("Processing PDF: %s", PDF_PATH)
-                documents = process_pdf(PDF_PATH)
-                vectorstore = get_or_create_vectorstore(documents)
-                if vectorstore:
-                    logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
-                else:
-                    logger.warning(
-                        "Vector store initialization skipped/failed. System will continue without RAG."
-                    )
+            # Fast path: reuse persisted Chroma directly on restart.
+            vectorstore = get_or_create_vectorstore()
+            if vectorstore:
+                logger.info("Vector store loaded from persistence at %s", VECTOR_STORE_DIR)
             else:
-                logger.warning("PDF not found at %s — vector store skipped", PDF_PATH)
+                knowledge_docs = process_knowledge_library(KNOWLEDGE_ROOT_DIR)
+                if knowledge_docs:
+                    logger.info("Processing knowledge library: %s", KNOWLEDGE_ROOT_DIR)
+                    vectorstore = get_or_create_vectorstore(knowledge_docs)
+                    if vectorstore:
+                        logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
+                    else:
+                        logger.warning(
+                            "Vector store initialization skipped/failed. System will continue without RAG."
+                        )
+                elif os.path.exists(PDF_PATH):
+                    logger.info("Processing PDF: %s", PDF_PATH)
+                    documents = process_pdf(PDF_PATH)
+                    vectorstore = get_or_create_vectorstore(documents)
+                    if vectorstore:
+                        logger.info("Vector store ready at %s", VECTOR_STORE_DIR)
+                    else:
+                        logger.warning(
+                            "Vector store initialization skipped/failed. System will continue without RAG."
+                        )
+                else:
+                    logger.warning("PDF not found at %s — vector store skipped", PDF_PATH)
         except Exception as exc:
             logger.error("RAG initialization failed: %s", exc)
             logger.warning("System will continue without RAG support.")

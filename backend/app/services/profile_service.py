@@ -12,7 +12,7 @@ from typing import Any, Dict
 
 from app.core.config import PROFILE_STORE_DIR
 from app.core.logging_config import logger
-from app.tools.llm_client import get_light_llm
+from app.tools.llm_client import coerce_response_text, get_light_llm
 
 _profile_lock = threading.Lock()
 
@@ -280,7 +280,7 @@ def infer_profile_updates(
 
     try:
         raw = llm.invoke(prompt)
-        content = raw.content if hasattr(raw, "content") else str(raw)
+        content = coerce_response_text(raw)
         parsed = json.loads(_extract_json_block(content))
         if not isinstance(parsed, dict):
             return {}

@@ -16,12 +16,16 @@ from app.tools.vector_store import get_retriever
 def _build_scope_filter(scope: str, domain: str) -> dict:
     if domain == "medical":
         if scope == GENERAL_MEDICAL_DEPARTMENT:
-            return {"domain": "medical"}
+            # Keep general scope strict to avoid mixing specialist corpora.
+            return {"department": GENERAL_MEDICAL_DEPARTMENT}
         return {"department": scope}
     return {"domain": domain}
 
 
 def _resolve_scopes(state: AgentState) -> list[str]:
+    if state.get("selected_department_forced") and state.get("selected_department"):
+        return [state["selected_department"]]
+
     domain = state.get("domain", "general")
     if domain == "medical":
         scopes = []

@@ -41,7 +41,10 @@ def _utc_now_iso() -> str:
 def _normalize_site_base_url(url: str) -> str:
     raw = (url or "").strip()
     if not raw:
-        return "http://124.220.204.12:8080"
+        default_parsed = urlparse(ECG_SITE_URL)
+        if default_parsed.scheme and default_parsed.netloc:
+            return f"{default_parsed.scheme}://{default_parsed.netloc}"
+        return "http://127.0.0.1:8080"
     parsed = urlparse(raw)
     if parsed.scheme and parsed.netloc:
         return f"{parsed.scheme}://{parsed.netloc}"

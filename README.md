@@ -72,6 +72,95 @@ HardWare-Medicial/
 └── README.md
 ```
 
+## 项目结构流程图
+
+```mermaid
+graph TD
+    subgraph 前端["Frontend (React + Vite)"]
+        UI[用户界面]
+        Chat[聊天组件]
+        ECG_UI[ECG 报告组件]
+    end
+
+    subgraph API["FastAPI Backend (app/)"]
+        Router[API 路由 api/v1/]
+        ChatAPI["/chat/stream (SSE)"]
+        ECGAPI["/ecg/report & /monitor"]
+        HealthAPI["/health & /sessions"]
+    end
+
+    subgraph Workflow["LangGraph 工作流 (core/langgraph_workflow.py)"]
+        MemRead[MemoryReadAgent]
+        MedRouter[MedicalRouterAgent]
+        QueryRW[QueryRewriterAgent]
+        Retriever[RetrieverAgent]
+        Reranker[RerankerAgent]
+        JudgeRAG[JudgeNeedRAGAgent]
+        Executor[ExecutorAgent]
+        MemWrite[MemoryWriteAsyncAgent]
+
+        MemRead --> MedRouter
+        MedRouter -->|use_rag=True| Retriever
+        MedRouter -->|use_rag=False| JudgeRAG
+        Retriever --> Reranker
+        Reranker --> QueryRW
+        QueryRW --> Executor
+        JudgeRAG -->|need_rag=True| Retriever
+        JudgeRAG -->|need_rag=False| Executor
+        Executor --> MemWrite
+    end
+
+    subgraph Services["Services (services/)"]
+        ChatSvc[ChatService]
+        DBSvc[DatabaseService]
+        ProfileSvc[ProfileService]
+        ECGReport[ECGReportService]
+        ECGMonitor[ECGMonitorService]
+        ECGPDF[ECGPdfService]
+    end
+
+    subgraph Tools["Tools (tools/)"]
+        LLM[LLM Client]
+        VecStore[Vector Store / ChromaDB]
+        WebSearch[Web Search Tools]
+    end
+
+    subgraph Storage["Storage (storage/)"]
+        SQLite[(SQLite 会话/历史)]
+        JSON[(JSON 用户画像)]
+        ChromaDB[(ChromaDB 向量索引)]
+        PDF[(PDF ECG 报告)]
+    end
+
+    UI --> Chat
+    UI --> ECG_UI
+    Chat -->|SSE 流式请求| ChatAPI
+    ECG_UI --> ECGAPI
+
+    Router --> ChatAPI
+    Router --> ECGAPI
+    Router --> HealthAPI
+
+    ChatAPI --> ChatSvc
+    ECGAPI --> ECGReport
+    ECGAPI --> ECGMonitor
+
+    ChatSvc --> Workflow
+    ECGReport --> ECGPDF
+    ECGMonitor --> ECGReport
+
+    Executor --> LLM
+    Executor --> WebSearch
+    Retriever --> VecStore
+
+    ChatSvc --> DBSvc
+    ChatSvc --> ProfileSvc
+    DBSvc --> SQLite
+    ProfileSvc --> JSON
+    VecStore --> ChromaDB
+    ECGPDF --> PDF
+```
+
 ## 快速开始
 
 ### 1) 环境准备
@@ -160,7 +249,7 @@ conda run -n medigenius pytest backend/tests -q
 cd frontend && npm run build
 ```
 
-## 创作者主页
+## 创作者主页/项目地址
 
 - elonge
   - GitHub: https://github.com/PacemakerG/HardWare-Medicial
