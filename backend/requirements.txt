@@ -26,6 +26,8 @@ pypdf==6.5.0
 wikipedia==1.4.0
 duckduckgo-search==8.1.1
 sqlalchemy==2.0.45
+matplotlib==3.10.7
+reportlab==4.4.4
 
 # Utilities
 python-dotenv==1.2.1

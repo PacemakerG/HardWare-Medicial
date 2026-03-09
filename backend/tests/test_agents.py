@@ -74,6 +74,28 @@ def test_memory_agent():
     assert new_state["conversation_history"][-1]["content"] == "24"
 
 
+def test_memory_agent_loads_user_preferences():
+    state = initialize_conversation_state()
+    state["session_id"] = "sess-pref"
+
+    with patch("app.agents.memory.load_profile") as mock_load, patch(
+        "app.agents.memory.render_profile_as_text"
+    ) as mock_render:
+        mock_load.return_value = {
+            "preferences": {
+                "preferred_name": "王女士",
+                "communication_style": "concise",
+                "detail_level": "brief",
+            }
+        }
+        mock_render.return_value = "mock profile context"
+        new_state = MemoryAgent(state)
+
+    assert new_state["memory_context"] == "mock profile context"
+    assert new_state["user_preferences"]["preferred_name"] == "王女士"
+    assert new_state["user_preferences"]["detail_level"] == "brief"
+
+
 # --- Executor Agent Tests ---
 def test_executor_agent_with_docs():
     state = initialize_conversation_state()
@@ -101,6 +123,15 @@ def test_executor_agent_no_llm():
         assert "你希望我下一步" in new_state["generation"]
 
 
+def test_executor_agent_no_llm_with_preferred_name():
+    state = initialize_conversation_state()
+    state["question"] = "test"
+    state["user_preferences"] = {"preferred_name": "王女士"}
+    with patch("app.agents.executor.get_llm", return_value=None):
+        new_state = ExecutorAgent(state)
+        assert "王女士，你希望我下一步" in new_state["generation"]
+
+
 def test_executor_agent_llm_fail():
     state = initialize_conversation_state()
     state["question"] = "test"
@@ -112,6 +143,32 @@ def test_executor_agent_llm_fail():
         new_state = ExecutorAgent(state)
         assert "咨询线下医生" in new_state["generation"]
         assert "你希望我下一步" in new_state["generation"]
+
+
+def test_executor_agent_includes_personalization_guidance_in_prompt():
+    state = initialize_conversation_state()
+    state["question"] = "最近头痛怎么办"
+    state["user_preferences"] = {
+        "preferred_name": "李先生",
+        "communication_style": "professional",
+        "detail_level": "detailed",
+        "language": "en-US",
+    }
+
+    with patch("app.agents.executor.get_llm") as mock_get_llm, patch(
+        "app.agents.executor._decide_web_search", return_value=(False, "")
+    ):
+        mock_llm = MagicMock()
+        mock_llm.invoke.return_value.content = "请先观察一周并记录症状变化。你最近有发热吗？"
+        mock_get_llm.return_value = mock_llm
+
+        ExecutorAgent(state)
+        prompt = mock_llm.invoke.call_args[0][0]
+
+    assert "偏好称呼：优先称呼用户为“李先生”" in prompt
+    assert "表达风格：更偏专业与严谨" in prompt
+    assert "详略偏好：适度展开机制解释" in prompt
+    assert "主体仍用简体中文" in prompt
 
 
 def test_executor_ecg_skill_shortcut():
@@ -129,6 +186,11 @@ def test_executor_ecg_skill_shortcut():
             disclaimer="仅供参考",
         )
         new_state = ExecutorAgent(state)
-        mock_skill.assert_called_once_with(state["question"], "session-ecg-1")
+        mock_skill.assert_called_once_with(
+            state["question"],
+            "session-ecg-1",
+            tenant_id="default",
+            user_id="anonymous",
+        )
         assert "心电图诊断报告" in new_state["generation"]
         assert new_state["source"] == "ECG Report Skill"

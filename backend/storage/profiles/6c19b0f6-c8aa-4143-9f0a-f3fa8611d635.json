@@ -1,0 +1,35 @@
+{
+  "basic_info": {
+    "preferred_language": "Chinese"
+  },
+  "preferences": {
+    "interests": [
+      "\u7535\u5b50\u7ade\u6280",
+      "\u65e0\u754f\u5951\u7ea6\uff08VALORANT\uff09",
+      "EDG\u6218\u961f"
+    ],
+    "esports_teams": [
+      "EDG"
+    ],
+    "esports_interests": [
+      "tournament schedules",
+      "team performance"
+    ]
+  },
+  "current_context": {
+    "topic_of_inquiry": "\u4e2d\u56fd2025\u5e74\u5fc3\u810f\u75c5\u53d1\u75c5\u7387",
+    "inquiry_type": "\u6570\u636e\u67e5\u8be2/\u9884\u6d4b",
+    "subject_area": "\u533b\u7597\u5065\u5eb7/\u6d41\u884c\u75c5\u5b66",
+    "topic": "EDG\u6218\u961f\u5728\u65e0\u754f\u5951\u7ea6\u56fd\u9645\u8d5b\u4e8b\u4e2d\u7684\u8868\u73b0",
+    "recent_inquiry": "\u8be2\u95eeEDG\u6218\u961f\u5728\u6700\u8fd1\u7684\u65e0\u754f\u5951\u7ea6\u56fd\u9645\u8d5b\u4e8b\u4e2d\u7684\u8868\u73b0",
+    "inquiry_topic": "EDG\u6218\u961f\u8fd1\u671f\u8d5b\u4e8b\u4e0e\u6218\u7ee9",
+    "inquiry_timeframe": "\u672c\u6708",
+    "mentioned_events": [
+      "2024\u5e748\u6708\u5168\u7403\u51a0\u519b\u8d5b"
+    ]
+  },
+  "meta": {
+    "version": 1,
+    "last_updated": "2026-03-06T08:40:34.288430+00:00"
+  }
+}

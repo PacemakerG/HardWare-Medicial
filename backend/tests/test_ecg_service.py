@@ -27,6 +27,8 @@ def test_generate_report_with_llm():
 
     with patch("app.services.ecg_report_service.get_llm") as mock_get, \
             patch("app.services.ecg_report_service.db_service.save_ecg_report") as mock_save, \
+            patch("app.services.ecg_report_service.generate_ecg_pdf", return_value="/tmp/r1.pdf"), \
+            patch("app.services.ecg_report_service.os.path.exists", return_value=True), \
             patch("app.services.ecg_report_service.update_profile") as mock_update_profile:
         mock_llm = MagicMock()
         mock_llm.invoke.return_value.content = "**心电图诊断报告**\n\n**临床信息**\n...\n\n**建议**\n..."
@@ -39,6 +41,7 @@ def test_generate_report_with_llm():
     assert result.risk_level in {"low", "medium", "high"}
     assert len(result.recommendations) >= 1
     assert result.report_id == "r1"
+    assert result.pdf_url == "/api/v1/ecg/report/r1/pdf"
     mock_update_profile.assert_called_once()
 
 
@@ -47,7 +50,8 @@ def test_generate_report_fallback_without_llm():
     request = _sample_request()
 
     with patch("app.services.ecg_report_service.get_llm", return_value=None), \
-            patch("app.services.ecg_report_service.db_service.save_ecg_report") as mock_save:
+            patch("app.services.ecg_report_service.db_service.save_ecg_report") as mock_save, \
+            patch("app.services.ecg_report_service.generate_ecg_pdf", return_value=None):
         mock_save.return_value = {"report_id": "r2", "created_at": "2026-03-06T00:00:01"}
         result = service.generate_report(request)
 
@@ -63,7 +67,8 @@ def test_generate_report_high_risk_has_urgent_alert():
     req.features["heart_rate"] = 150
 
     with patch("app.services.ecg_report_service.get_llm", return_value=None), \
-            patch("app.services.ecg_report_service.db_service.save_ecg_report") as mock_save:
+            patch("app.services.ecg_report_service.db_service.save_ecg_report") as mock_save, \
+            patch("app.services.ecg_report_service.generate_ecg_pdf", return_value=None):
         mock_save.return_value = {"report_id": "r3", "created_at": "2026-03-06T00:00:02"}
         result = service.generate_report(req)
 

@@ -1,0 +1,268 @@
+2026-03-06 15:42:36 - medigenius - INFO - LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 15:59:54 - medigenius - INFO - DatabaseService initialized
+2026-03-06 15:59:54 - medigenius - INFO - ChatService initialized
+2026-03-06 15:59:54 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 15:59:54 - medigenius - INFO - Initializing database tables...
+2026-03-06 15:59:54 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 15:59:54 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:00:17 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:00:19 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 16:04:39 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2) on CPU
+2026-03-06 16:04:39 - medigenius - INFO - Creating new vector store with 2211 documents
+2026-03-06 16:05:07 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:05:07 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 16:05:07 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 16:05:07 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 16:10:48 - medigenius - INFO - DatabaseService initialized
+2026-03-06 16:10:48 - medigenius - INFO - ChatService initialized
+2026-03-06 16:10:48 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 16:10:48 - medigenius - INFO - Initializing database tables...
+2026-03-06 16:10:48 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 16:10:48 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:11:08 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:11:10 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 16:14:49 - medigenius - INFO - DatabaseService initialized
+2026-03-06 16:14:49 - medigenius - INFO - ChatService initialized
+2026-03-06 16:14:49 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 16:14:49 - medigenius - INFO - Initializing database tables...
+2026-03-06 16:14:49 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 16:14:49 - medigenius - INFO - RAG initialization disabled by RAG_ENABLED=false
+2026-03-06 16:14:49 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 16:14:49 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 16:14:49 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 16:15:13 - medigenius - INFO - Embeddings model loaded (all-MiniLM-L6-v2) on CPU
+2026-03-06 16:15:13 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:15:13 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 16:15:13 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:15:13 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 16:15:13 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 16:15:13 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 16:22:19 - medigenius - INFO - DatabaseService initialized
+2026-03-06 16:22:19 - medigenius - INFO - ChatService initialized
+2026-03-06 16:22:19 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 16:22:19 - medigenius - INFO - Initializing database tables...
+2026-03-06 16:22:19 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 16:22:19 - medigenius - INFO - RAG initialization disabled by RAG_ENABLED=false
+2026-03-06 16:22:19 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 16:22:19 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 16:22:19 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 16:23:07 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:23:10 - medigenius - INFO - LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 16:23:10 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 16:23:20 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-06 16:23:21 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:23:22 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:23:26 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 16:23:31 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-06 16:23:36 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:23:43 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:23:45 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 16:23:50 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-06 16:23:52 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:24:17 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:28:20 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 16:28:20 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:28:21 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 16:28:21 - medigenius - INFO - RAG: Found 3 relevant documents
+2026-03-06 16:28:24 - medigenius - WARNING - TAVILY_API_KEY not found in environment variables
+2026-03-06 16:28:24 - medigenius - INFO - Executor: web search unavailable (no Tavily key)
+2026-03-06 16:28:30 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=True)
+2026-03-06 16:28:30 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 16:28:35 - medigenius - INFO - DatabaseService initialized
+2026-03-06 16:28:35 - medigenius - INFO - ChatService initialized
+2026-03-06 16:28:35 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 16:28:35 - medigenius - INFO - Initializing database tables...
+2026-03-06 16:28:35 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 16:28:35 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:29:00 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:29:02 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 16:29:13 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 16:29:13 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:29:14 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 16:29:14 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:29:14 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 16:29:14 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 16:29:14 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 16:31:06 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:31:06 - medigenius - INFO - RAG: Found 3 relevant documents
+2026-03-06 16:31:06 - medigenius - INFO - LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 16:31:06 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 16:31:09 - medigenius - WARNING - TAVILY_API_KEY not found in environment variables
+2026-03-06 16:31:09 - medigenius - INFO - Executor: web search unavailable (no Tavily key)
+2026-03-06 16:31:15 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=True)
+2026-03-06 16:31:18 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:37:06 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 16:37:15 - medigenius - INFO - DatabaseService initialized
+2026-03-06 16:37:15 - medigenius - INFO - ChatService initialized
+2026-03-06 16:37:15 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 16:37:15 - medigenius - INFO - Initializing database tables...
+2026-03-06 16:37:15 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 16:37:15 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:37:40 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 16:37:42 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 16:37:48 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 16:37:48 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:37:49 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 16:37:49 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 16:37:49 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 16:37:49 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 16:37:49 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 16:38:00 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:38:00 - medigenius - INFO - RAG: Found 3 relevant documents
+2026-03-06 16:38:01 - medigenius - INFO - LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 16:38:01 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 16:38:03 - medigenius - INFO - Tavily search tool initialized
+2026-03-06 16:38:13 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=True)
+2026-03-06 16:38:18 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:38:30 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:38:33 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 16:38:44 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=False)
+2026-03-06 16:38:46 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:39:23 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:39:30 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 16:39:42 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=False)
+2026-03-06 16:39:47 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 16:40:11 - medigenius - INFO - Processing message for session 6c19b0f6...
+2026-03-06 16:40:15 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 16:40:29 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=False)
+2026-03-06 16:40:34 - medigenius - INFO - Profile updated asynchronously for session 6c19b0f6
+2026-03-06 17:05:01 - medigenius - INFO - Processing message for session a3116887...
+2026-03-06 17:05:05 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 17:05:10 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-06 17:05:13 - medigenius - INFO - Profile updated asynchronously for session a3116887
+2026-03-06 17:05:25 - medigenius - INFO - Processing message for session a3116887...
+2026-03-06 17:05:29 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 17:05:36 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-06 17:05:44 - medigenius - INFO - Profile updated asynchronously for session a3116887
+2026-03-06 17:18:35 - medigenius - INFO - Processing message for session a3116887...
+2026-03-06 17:18:39 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-06 17:18:46 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-06 17:18:49 - medigenius - INFO - Profile updated asynchronously for session a3116887
+2026-03-06 20:06:42 - medigenius - INFO - Processing message for session 3b96cbb5...
+2026-03-06 20:06:42 - medigenius - INFO - RAG: Found 3 relevant documents
+2026-03-06 20:06:49 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=True)
+2026-03-06 20:06:57 - medigenius - INFO - Profile updated asynchronously for session 3b96cbb5
+2026-03-06 20:36:41 - medigenius - INFO - DatabaseService initialized
+2026-03-06 20:36:41 - medigenius - INFO - ChatService initialized
+2026-03-06 21:16:05 - medigenius - INFO - DatabaseService initialized
+2026-03-06 21:16:05 - medigenius - INFO - ChatService initialized
+2026-03-06 21:16:05 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 21:16:05 - medigenius - INFO - Initializing database tables...
+2026-03-06 21:16:05 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 21:16:05 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:16:27 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:16:28 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 21:16:35 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 21:16:35 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:16:36 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 21:16:36 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:16:36 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 21:16:36 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 21:16:36 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 21:16:36 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 21:17:11 - medigenius - INFO - DatabaseService initialized
+2026-03-06 21:17:11 - medigenius - INFO - ChatService initialized
+2026-03-06 21:17:11 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 21:17:11 - medigenius - INFO - Initializing database tables...
+2026-03-06 21:17:11 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 21:17:11 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:17:31 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:17:32 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 21:17:39 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 21:17:39 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:17:40 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 21:17:40 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:17:40 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 21:17:40 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 21:17:40 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 21:17:40 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 21:19:41 - medigenius - INFO - DatabaseService initialized
+2026-03-06 21:19:41 - medigenius - INFO - ChatService initialized
+2026-03-06 21:19:41 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 21:19:41 - medigenius - INFO - Initializing database tables...
+2026-03-06 21:19:41 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 21:19:41 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:20:01 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:20:03 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 21:20:11 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 21:20:11 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:20:11 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 21:20:11 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:20:11 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 21:20:11 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 21:20:11 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 21:20:11 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 21:33:04 - medigenius - INFO - DatabaseService initialized
+2026-03-06 21:33:04 - medigenius - INFO - ChatService initialized
+2026-03-06 21:33:04 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 21:33:04 - medigenius - INFO - Initializing database tables...
+2026-03-06 21:33:04 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 21:33:04 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:33:25 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 21:33:27 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 21:33:36 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 21:33:36 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:33:36 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 21:33:36 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 21:33:36 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 21:33:36 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 21:33:36 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 21:33:36 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 22:21:18 - medigenius - INFO - DatabaseService initialized
+2026-03-06 22:21:18 - medigenius - INFO - ChatService initialized
+2026-03-06 22:21:18 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 22:21:18 - medigenius - INFO - Initializing database tables...
+2026-03-06 22:21:18 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 22:21:18 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 22:21:38 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 22:21:40 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 22:21:47 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 22:21:47 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 22:21:47 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 22:21:47 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 22:21:47 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 22:21:47 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 22:21:47 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 22:21:47 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 22:22:43 - medigenius - INFO - DatabaseService initialized
+2026-03-06 22:22:43 - medigenius - INFO - ChatService initialized
+2026-03-06 22:22:43 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 22:22:43 - medigenius - INFO - Initializing database tables...
+2026-03-06 22:22:43 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 22:22:43 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 22:23:05 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 22:23:06 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 22:23:13 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 22:23:13 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 22:23:14 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 22:23:14 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 22:23:14 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 22:23:14 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 22:23:14 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 22:23:14 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 22:40:27 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 22:40:27 - medigenius - INFO - Shutting down MediGenius...
+2026-03-06 22:41:14 - medigenius - INFO - DatabaseService initialized
+2026-03-06 22:41:14 - medigenius - INFO - ChatService initialized
+2026-03-06 22:41:14 - medigenius - INFO - Initializing MediGenius System...
+2026-03-06 22:41:14 - medigenius - INFO - Initializing database tables...
+2026-03-06 22:41:14 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-06 22:41:14 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 22:41:40 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-06 22:41:42 - medigenius - INFO - Split into 2211 chunks
+2026-03-06 22:41:48 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-06 22:41:48 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 22:41:49 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-06 22:41:49 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-06 22:41:49 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-06 22:41:49 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-06 22:41:49 - medigenius - INFO - MediGenius System Ready!
+2026-03-06 23:01:36 - medigenius - INFO - Processing message for session bf3ecf0e...
+2026-03-06 23:01:36 - medigenius - INFO - RAG: Found 3 relevant documents
+2026-03-06 23:01:37 - medigenius - INFO - LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 23:01:37 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-06 23:01:42 - medigenius - INFO - Deleting session 3b96cbb5...
+2026-03-06 23:02:00 - medigenius - INFO - Tavily search tool initialized
+2026-03-06 23:02:14 - medigenius - INFO - Executor: Final response generated (web_used=True, rag_used=True)
+2026-03-06 23:02:43 - medigenius - INFO - Profile updated asynchronously for session bf3ecf0e
+2026-03-06 23:09:53 - medigenius - INFO - Shutting down MediGenius...

@@ -18,6 +18,8 @@ class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    tenant_id = Column(String(128), nullable=False, default="default", index=True)
+    user_id = Column(String(128), nullable=False, default="anonymous", index=True)
     session_id = Column(String(255), nullable=False, index=True)
     role = Column(String(50), nullable=False)          # "user" | "assistant"
     content = Column(Text, nullable=False)
@@ -27,6 +29,8 @@ class Message(Base):
     def to_dict(self) -> Dict:
         return {
             "id": self.id,
+            "tenant_id": self.tenant_id,
+            "user_id": self.user_id,
             "session_id": self.session_id,
             "role": self.role,
             "content": self.content,

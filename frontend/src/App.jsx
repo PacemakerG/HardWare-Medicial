@@ -48,23 +48,6 @@ function buildDownloadText(chatHistory) {
   return content;
 }
 
-function parseUploadedEcgPayload(rawText) {
-  const text = (rawText || '').trim();
-  if (!text) throw new Error('empty');
-
-  // 1) Standard JSON object
-  try {
-    return JSON.parse(text);
-  } catch {
-    // continue
-  }
-
-  // 2) JSONL: parse first non-empty line
-  const firstLine = text.split('\n').map(line => line.trim()).find(Boolean);
-  if (!firstLine) throw new Error('empty');
-  return JSON.parse(firstLine);
-}
-
 // ══════════════════════════════════════════════════════════════
 // SECTION 3 — SIDEBAR COMPONENT
 // ══════════════════════════════════════════════════════════════
@@ -302,10 +285,10 @@ function InputArea({
   inputValue,
   setInputValue,
   onSend,
+  onStartEcgFlow,
   isTyping,
+  isEcgMonitoring,
   inputRef,
-  uploadInputRef,
-  onUploadFile,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -326,19 +309,12 @@ function InputArea({
         <div className="input-container glass-effect">
           <button
             className="input-btn"
-            title="上传ECG参数JSON"
-            onClick={() => uploadInputRef.current?.click()}
-            disabled={isTyping}
+            title="ECG专家报告流程"
+            onClick={onStartEcgFlow}
+            disabled={isTyping || isEcgMonitoring}
           >
             <i className="fas fa-paperclip" />
           </button>
-          <input
-            ref={uploadInputRef}
-            type="file"
-            accept=".json,.jsonl,application/json,text/plain"
-            style={{ display: 'none' }}
-            onChange={onUploadFile}
-          />
           <textarea
             ref={inputRef}
             className="message-input"
@@ -370,10 +346,186 @@ function InputArea({
   );
 }
 
+function ECGGuideModal({
+  open,
+  form,
+  onChange,
+  onClose,
+  onSubmit,
+  submitting,
+}) {
+  if (!open) return null;
+  return (
+    <div className="ecg-guide-backdrop" onClick={onClose}>
+      <div className="ecg-guide-modal glass-effect" onClick={(e) => e.stopPropagation()}>
+        <h3>ECG 专家报告引导</h3>
+        <p>先补充基础信息。提交后会确认你是否已完成 ECG 采集并上传云端，确认后直接抓取最新一条数据生成报告。</p>
+        <form onSubmit={onSubmit}>
+          <div className="ecg-guide-grid">
+            <label>
+              姓名
+              <input
+                value={form.patientName}
+                onChange={(e) => onChange('patientName', e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              年龄
+              <input
+                type="number"
+                min="0"
+                max="130"
+                value={form.age}
+                onChange={(e) => onChange('age', e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              性别
+              <select
+                value={form.gender}
+                onChange={(e) => onChange('gender', e.target.value)}
+                required
+              >
+                <option value="male">男</option>
+                <option value="female">女</option>
+                <option value="other">其他</option>
+              </select>
+            </label>
+            <label>
+              身高(cm)
+              <input
+                type="number"
+                min="1"
+                max="260"
+                value={form.heightCm}
+                onChange={(e) => onChange('heightCm', e.target.value)}
+              />
+            </label>
+            <label>
+              体重(kg)
+              <input
+                type="number"
+                min="1"
+                max="500"
+                value={form.weightKg}
+                onChange={(e) => onChange('weightKg', e.target.value)}
+              />
+            </label>
+            <label>
+              病历号(可选)
+              <input
+                value={form.patientId}
+                onChange={(e) => onChange('patientId', e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="ecg-guide-actions">
+            <button type="button" className="action-btn" onClick={onClose} disabled={submitting}>
+              取消
+            </button>
+            <button type="submit" className="action-btn" disabled={submitting}>
+              {submitting ? '启动中...' : '开始制作报告'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function LoginModal({
+  open,
+  form,
+  onChange,
+  onSubmit,
+  submitting,
+}) {
+  if (!open) return null;
+  return (
+    <div className="ecg-guide-backdrop">
+      <div className="ecg-guide-modal glass-effect">
+        <h3>登录 MediGenius</h3>
+        <p>请先登录，再开始使用聊天、画像记忆和 ECG 报告功能。</p>
+        <form onSubmit={onSubmit}>
+          <div className="ecg-guide-grid">
+            <label>
+              用户ID
+              <input
+                value={form.userId}
+                onChange={(e) => onChange('userId', e.target.value)}
+                placeholder="例如 doctor_zhang"
+                required
+              />
+            </label>
+            <label>
+              租户ID
+              <input
+                value={form.tenantId}
+                onChange={(e) => onChange('tenantId', e.target.value)}
+                placeholder="default"
+              />
+            </label>
+          </div>
+          <div className="ecg-guide-actions">
+            <button type="submit" className="action-btn" disabled={submitting}>
+              {submitting ? '登录中...' : '登录并进入系统'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════
 // SECTION 6 — APP ROOT  (all state + API logic)
 // ══════════════════════════════════════════════════════════════
 const API_BASE = '/api/v1';
+const TENANT_STORAGE_KEY = 'medigenius_tenant_id';
+const USER_STORAGE_KEY = 'medigenius_user_id';
+const SESSION_STORAGE_KEY = 'medigenius_session_id';
+
+function sanitizeIdentity(value, fallback) {
+  const text = (value || '').trim();
+  if (!text) return fallback;
+  return text.replace(/[^a-zA-Z0-9_.:@/-]/g, '_').slice(0, 128) || fallback;
+}
+
+function createClientSessionId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `sess-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+}
+
+function resolveClientIdentity() {
+  if (typeof window === 'undefined') {
+    return { tenantId: 'default', userId: 'anonymous' };
+  }
+  const query = new URLSearchParams(window.location.search);
+  const tenantId = sanitizeIdentity(
+    query.get('tenant') || localStorage.getItem(TENANT_STORAGE_KEY) || import.meta.env.VITE_TENANT_ID,
+    'default',
+  );
+  const userId = sanitizeIdentity(
+    query.get('user') || localStorage.getItem(USER_STORAGE_KEY) || import.meta.env.VITE_USER_ID,
+    'anonymous',
+  );
+  localStorage.setItem(TENANT_STORAGE_KEY, tenantId);
+  localStorage.setItem(USER_STORAGE_KEY, userId);
+  return { tenantId, userId };
+}
+
+function resolveClientSessionId() {
+  if (typeof window === 'undefined') return 'browser-session';
+  const cached = localStorage.getItem(SESSION_STORAGE_KEY);
+  if (cached && cached.trim()) return cached.trim();
+  const generated = createClientSessionId();
+  localStorage.setItem(SESSION_STORAGE_KEY, generated);
+  return generated;
+}
 
 // ── Mobile detection hook ──────────────────────────────────────
 function useIsMobile(breakpoint = 768) {
@@ -388,6 +540,15 @@ function useIsMobile(breakpoint = 768) {
 
 export default function App() {
   // ── State ──────────────────────────────────────────────────
+  const [identity, setIdentity] = useState(() => resolveClientIdentity());
+  const [sessionHeaderId, setSessionHeaderId] = useState(() => resolveClientSessionId());
+  const [authReady, setAuthReady] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
+  const [loginForm, setLoginForm] = useState({
+    userId: '',
+    tenantId: resolveClientIdentity().tenantId,
+  });
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const isMobile = useIsMobile();
   // On mobile default to closed; on desktop restore from localStorage
@@ -402,12 +563,57 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [showEcgGuide, setShowEcgGuide] = useState(false);
+  const [isStartingEcg, setIsStartingEcg] = useState(false);
+  const [isEcgMonitoring, setIsEcgMonitoring] = useState(false);
+  const [ecgForm, setEcgForm] = useState({
+    patientName: '',
+    age: '',
+    gender: 'male',
+    heightCm: '',
+    weightKg: '',
+    patientId: '',
+  });
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   const chatAreaRef = useRef(null);
   const inputRef = useRef(null);
-  const uploadInputRef = useRef(null);
+  const ecgPollingRef = useRef(null);
+  const ecgPollingSessionRef = useRef(null);
   const toastTimerRef = useRef(null);
+
+  const persistSessionId = useCallback((sessionId) => {
+    const normalized = (sessionId || '').trim();
+    if (!normalized) return;
+    setSessionHeaderId(normalized);
+    localStorage.setItem(SESSION_STORAGE_KEY, normalized);
+  }, []);
+
+  const persistIdentity = useCallback((nextIdentity) => {
+    const tenantId = sanitizeIdentity(nextIdentity?.tenantId, 'default');
+    const userId = sanitizeIdentity(nextIdentity?.userId, 'anonymous');
+    setIdentity({ tenantId, userId });
+    localStorage.setItem(TENANT_STORAGE_KEY, tenantId);
+    localStorage.setItem(USER_STORAGE_KEY, userId);
+  }, []);
+
+  const apiFetch = useCallback((path, options = {}, context = {}) => {
+    const headers = new Headers(options.headers || {});
+    headers.set('X-Tenant-ID', identity.tenantId);
+    headers.set('X-User-ID', identity.userId);
+    const effectiveSessionId = context.sessionId || currentSessionId || sessionHeaderId;
+    if (effectiveSessionId) {
+      headers.set('X-Session-ID', effectiveSessionId);
+    }
+    return fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+    });
+  }, [identity.tenantId, identity.userId, currentSessionId, sessionHeaderId]);
+
+  const onLoginFormChange = useCallback((key, value) => {
+    setLoginForm(prev => ({ ...prev, [key]: value }));
+  }, []);
 
   // ── Theme ──────────────────────────────────────────────────
   useEffect(() => {
@@ -434,6 +640,105 @@ export default function App() {
     toastTimerRef.current = setTimeout(() => setToast(t => ({ ...t, show: false })), 3000);
   }, []);
 
+  const stopEcgPolling = useCallback(() => {
+    if (ecgPollingRef.current) {
+      clearInterval(ecgPollingRef.current);
+      ecgPollingRef.current = null;
+    }
+    ecgPollingSessionRef.current = null;
+  }, []);
+
+  useEffect(() => () => stopEcgPolling(), [stopEcgPolling]);
+
+  // ── Auth bootstrap ────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const headers = {
+          'X-Tenant-ID': identity.tenantId,
+          'X-User-ID': identity.userId,
+          'X-Session-ID': sessionHeaderId,
+        };
+        const res = await fetch(`${API_BASE}/auth/me`, { headers });
+        const data = await res.json();
+        if (cancelled) return;
+
+        const nextIdentity = {
+          tenantId: sanitizeIdentity(data?.tenant_id || identity.tenantId, 'default'),
+          userId: sanitizeIdentity(data?.user_id || 'anonymous', 'anonymous'),
+        };
+        persistIdentity(nextIdentity);
+        if (data?.session_id) persistSessionId(data.session_id);
+        setIsLoggedIn(Boolean(data?.logged_in) && nextIdentity.userId !== 'anonymous');
+      } catch {
+        if (!cancelled) setIsLoggedIn(identity.userId !== 'anonymous');
+      } finally {
+        if (!cancelled) setAuthReady(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const submitLogin = useCallback(async (e) => {
+    e.preventDefault();
+    if (isAuthSubmitting) return;
+    const userId = sanitizeIdentity(loginForm.userId, '');
+    const tenantId = sanitizeIdentity(loginForm.tenantId || identity.tenantId, 'default');
+    if (!userId) {
+      showToast('请输入用户ID', 'error');
+      return;
+    }
+
+    setIsAuthSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Session-ID': sessionHeaderId,
+        },
+        body: JSON.stringify({ user_id: userId, tenant_id: tenantId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        persistIdentity({ tenantId: data.tenant_id, userId: data.user_id });
+        if (data.session_id) {
+          persistSessionId(data.session_id);
+          setCurrentSessionId(data.session_id);
+        }
+        setIsLoggedIn(true);
+        setSessions(null);
+        setMessages([]);
+        setChatHistory([]);
+        setShowWelcome(true);
+        showToast(`已登录为 ${data.user_id}`, 'success');
+      } else {
+        showToast('登录失败，请重试', 'error');
+      }
+    } catch {
+      showToast('登录请求失败', 'error');
+    } finally {
+      setIsAuthSubmitting(false);
+    }
+  }, [identity.tenantId, isAuthSubmitting, loginForm.tenantId, loginForm.userId, persistIdentity, persistSessionId, sessionHeaderId, showToast]);
+
+  const logout = useCallback(async () => {
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' });
+    } catch {
+      // ignore logout network failures, still clear local state
+    }
+    persistIdentity({ tenantId: identity.tenantId, userId: 'anonymous' });
+    setIsLoggedIn(false);
+    setCurrentSessionId(null);
+    setMessages([]);
+    setChatHistory([]);
+    setSessions([]);
+    setShowWelcome(true);
+    showToast('已退出登录', 'info');
+  }, [apiFetch, identity.tenantId, persistIdentity, showToast]);
+
   // ── Scroll to bottom ───────────────────────────────────────
   const scrollToBottom = useCallback(() => {
     if (chatAreaRef.current) {
@@ -445,21 +750,31 @@ export default function App() {
 
   // ── Load sessions ──────────────────────────────────────────
   const loadSessions = useCallback(async () => {
+    if (!isLoggedIn) {
+      setSessions([]);
+      return;
+    }
     try {
-      const res = await fetch(`${API_BASE}/sessions`);
+      const res = await apiFetch('/sessions');
       const data = await res.json();
       if (data.success && data.sessions) setSessions(data.sessions);
     } catch {
       setSessions([]);
     }
-  }, []);
+  }, [apiFetch, isLoggedIn]);
 
   // ── Load current history on mount ──────────────────────────
   useEffect(() => {
+    if (!authReady || !isLoggedIn) {
+      setMessages([]);
+      setChatHistory([]);
+      setShowWelcome(true);
+      return;
+    }
     loadSessions();
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/history`);
+        const res = await apiFetch('/history');
         const data = await res.json();
         if (data.success && data.messages && data.messages.length > 0) {
           const msgs = data.messages.map(m => ({
@@ -474,15 +789,17 @@ export default function App() {
         }
       } catch { /* silent */ }
     })();
-  }, [loadSessions]);
+  }, [apiFetch, authReady, isLoggedIn, loadSessions]);
 
   // ── Load session ───────────────────────────────────────────
   const loadSession = useCallback(async (sessionId) => {
+    if (!isLoggedIn) return;
     try {
-      const res = await fetch(`${API_BASE}/session/${sessionId}`);
+      const res = await apiFetch(`/session/${sessionId}`, {}, { sessionId });
       const data = await res.json();
       if (data.success) {
         setCurrentSessionId(sessionId);
+        persistSessionId(sessionId);
         const msgs = data.messages.map(m => ({
           type: m.role === 'user' ? 'user' : 'assistant',
           content: m.content,
@@ -497,13 +814,14 @@ export default function App() {
     } catch {
       showToast('Failed to load chat', 'error');
     }
-  }, [showToast]);
+  }, [apiFetch, isLoggedIn, persistSessionId, showToast]);
 
   // ── Delete session ─────────────────────────────────────────
   const deleteSession = useCallback(async (sessionId) => {
+    if (!isLoggedIn) return;
     if (!window.confirm('Are you sure you want to delete this chat?')) return;
     try {
-      const res = await fetch(`${API_BASE}/session/${sessionId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/session/${sessionId}`, { method: 'DELETE' }, { sessionId });
       if (res.ok) {
         await loadSessions();
         if (currentSessionId === sessionId) createNewChat();
@@ -513,16 +831,21 @@ export default function App() {
       showToast('Failed to delete chat', 'error');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSessionId, loadSessions, showToast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiFetch, currentSessionId, isLoggedIn, loadSessions, showToast]);
 
   // ── New chat ───────────────────────────────────────────────
   const createNewChat = useCallback(async () => {
+    if (!isLoggedIn) return;
     try {
-      const res = await fetch(`${API_BASE}/new-chat`, { method: 'POST' });
+      const res = await apiFetch('/new-chat', { method: 'POST' });
+      const data = await res.json();
       if (res.ok) {
         setMessages([]);
         setChatHistory([]);
-        setCurrentSessionId(null);
+        const nextSessionId = data?.session_id || createClientSessionId();
+        setCurrentSessionId(nextSessionId);
+        persistSessionId(nextSessionId);
         setShowWelcome(true);
         await loadSessions();
         showToast('New chat created', 'success');
@@ -530,13 +853,14 @@ export default function App() {
     } catch {
       showToast('Failed to create new chat', 'error');
     }
-  }, [loadSessions, showToast]);
+  }, [apiFetch, isLoggedIn, loadSessions, persistSessionId, showToast]);
 
   // ── Clear chat ─────────────────────────────────────────────
   const clearChat = useCallback(async () => {
+    if (!isLoggedIn) return;
     if (!window.confirm('Are you sure you want to clear this conversation?')) return;
     try {
-      const res = await fetch(`${API_BASE}/clear`, { method: 'POST' });
+      const res = await apiFetch('/clear', { method: 'POST' });
       if (res.ok) {
         setMessages([]);
         setChatHistory([]);
@@ -546,7 +870,7 @@ export default function App() {
     } catch {
       showToast('Failed to clear conversation', 'error');
     }
-  }, [showToast]);
+  }, [apiFetch, isLoggedIn, showToast]);
 
   // ── Download chat ──────────────────────────────────────────
   const downloadChat = useCallback(() => {
@@ -562,96 +886,172 @@ export default function App() {
     showToast('Chat downloaded successfully', 'success');
   }, [chatHistory, showToast]);
 
-  // ── ECG JSON upload -> report API ─────────────────────────
-  const uploadEcgFile = useCallback(async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-    if (isTyping) {
-      showToast('请等待当前请求完成后再上传', 'info');
+  // ── ECG guided workflow ────────────────────────────────────
+  const openEcgGuide = useCallback(() => {
+    if (!isLoggedIn) {
+      showToast('请先登录', 'info');
+      return;
+    }
+    if (isTyping || isEcgMonitoring) {
+      showToast('当前有进行中的任务，请稍后再试', 'info');
+      return;
+    }
+    setShowEcgGuide(true);
+  }, [isLoggedIn, isTyping, isEcgMonitoring, showToast]);
+
+  const onEcgFormChange = useCallback((key, value) => {
+    setEcgForm(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const pollEcgTask = useCallback((taskId, sessionIdForTask) => {
+    stopEcgPolling();
+    setIsEcgMonitoring(true);
+    ecgPollingSessionRef.current = sessionIdForTask || currentSessionId || sessionHeaderId;
+
+    ecgPollingRef.current = setInterval(async () => {
+      try {
+        const res = await apiFetch(
+          `/ecg/monitor/${taskId}`,
+          {},
+          { sessionId: ecgPollingSessionRef.current },
+        );
+        const data = await res.json();
+        if (!res.ok) return;
+
+        if (data.status === 'completed' && data.report) {
+          stopEcgPolling();
+          setIsEcgMonitoring(false);
+          const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const alignedOutput = data.llm_output && typeof data.llm_output === 'object'
+            ? data.llm_output
+            : null;
+          const reportContent = [
+            alignedOutput?.report || data.report.report || '未返回报告内容',
+            `风险等级：${data.report.risk_level || 'unknown'}`,
+            `免责声明：${data.report.disclaimer || '本报告仅供参考。'}`,
+            data.report.pdf_url ? `[下载PDF报告](${data.report.pdf_url})` : '',
+          ].filter(Boolean).join('\n\n');
+          const botMsg = {
+            type: 'assistant',
+            content: reportContent,
+            timestamp: data.report.created_at || now,
+            source: 'ECG Report Skill',
+          };
+          setMessages(prev => [...prev, botMsg]);
+          setChatHistory(prev => [...prev, botMsg]);
+          showToast('ECG 报告生成成功', 'success');
+          loadSessions();
+        } else if (data.status === 'failed') {
+          stopEcgPolling();
+          setIsEcgMonitoring(false);
+          const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const errMsg = {
+            type: 'assistant',
+            content: data.message || 'ECG 报告制作失败，请稍后重试。',
+            timestamp: now,
+            source: null,
+          };
+          setMessages(prev => [...prev, errMsg]);
+          setChatHistory(prev => [...prev, errMsg]);
+          showToast('ECG 报告制作失败', 'error');
+        }
+      } catch {
+        // Keep polling on transient network errors.
+      }
+    }, 4000);
+  }, [apiFetch, currentSessionId, loadSessions, sessionHeaderId, showToast, stopEcgPolling]);
+
+  const submitEcgGuide = useCallback(async (e) => {
+    e.preventDefault();
+    if (!isLoggedIn) return;
+    if (isStartingEcg) return;
+
+    const patientName = ecgForm.patientName.trim();
+    const age = Number(ecgForm.age);
+    if (!patientName || !Number.isFinite(age)) {
+      showToast('请完整填写姓名和年龄', 'error');
       return;
     }
 
-    let payload;
-    try {
-      const text = await file.text();
-      payload = parseUploadedEcgPayload(text);
-    } catch {
-      showToast('上传失败：文件不是有效 JSON/JSONL', 'error');
+    const payload = {
+      patient_name: patientName,
+      age,
+      gender: ecgForm.gender,
+      patient_id: ecgForm.patientId.trim() || null,
+      height_cm: ecgForm.heightCm ? Number(ecgForm.heightCm) : null,
+      weight_kg: ecgForm.weightKg ? Number(ecgForm.weightKg) : null,
+    };
+
+    const uploadConfirmed = window.confirm(
+      '是否已采集 ECG 数据并上传云端？\n点击“确定”后将直接抓取网站最新一条数据生成 PDF 报告。',
+    );
+    if (!uploadConfirmed) {
+      showToast('请先完成 ECG 采集并上传云端后再开始', 'info');
       return;
     }
 
-    if (!payload || typeof payload !== 'object' || !payload.patient_info || !payload.features) {
-      showToast('上传失败：缺少 patient_info 或 features 字段', 'error');
-      return;
-    }
-
+    setIsStartingEcg(true);
+    setShowEcgGuide(false);
     setShowWelcome(false);
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsg = {
       type: 'user',
-      content: `已上传 ECG 参数文件：${file.name}`,
-      timestamp: time,
+      content: `ECG流程基础信息：姓名 ${patientName}，年龄 ${age}，性别 ${ecgForm.gender}`,
+      timestamp: now,
       source: null,
     };
     setMessages(prev => [...prev, userMsg]);
     setChatHistory(prev => [...prev, userMsg]);
-    setIsTyping(true);
 
     try {
-      const res = await fetch(`${API_BASE}/ecg/report`, {
+      const monitorSessionId = currentSessionId || sessionHeaderId || createClientSessionId();
+      persistSessionId(monitorSessionId);
+      const res = await apiFetch('/ecg/monitor/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
+      }, { sessionId: monitorSessionId });
       const data = await res.json();
-      if (res.ok && data.success) {
-        const reportContent = [
-          data.report || '未返回报告内容',
-          `风险等级：${data.risk_level || 'unknown'}`,
-          `免责声明：${data.disclaimer || '本报告仅供参考。'}`,
-        ].join('\n\n');
+      if (res.ok && data.success && data.task_id) {
         const botMsg = {
           type: 'assistant',
-          content: reportContent,
-          timestamp: data.created_at || time,
-          source: 'ECG Report Skill',
+          content: '已确认上传状态，正在直接抓取医生系统最新一条 ECG 数据，并生成 PDF 版专家报告。',
+          timestamp: now,
+          source: 'ECG Monitor',
         };
         setMessages(prev => [...prev, botMsg]);
         setChatHistory(prev => [...prev, botMsg]);
-        showToast('ECG 报告生成成功', 'success');
-        await loadSessions();
+        pollEcgTask(data.task_id, monitorSessionId);
+        showToast('已启动ECG报告制作任务', 'success');
       } else {
-        const errorText =
-          (typeof data?.detail === 'string' && data.detail) ||
-          'ECG 报告生成失败，请检查参数后重试';
-        const errMsg = {
-          type: 'assistant',
-          content: errorText,
-          timestamp: time,
-          source: null,
-        };
+        const errText = (typeof data?.detail === 'string' && data.detail) || '启动ECG报告制作失败';
+        const errMsg = { type: 'assistant', content: errText, timestamp: now, source: null };
         setMessages(prev => [...prev, errMsg]);
         setChatHistory(prev => [...prev, errMsg]);
-        showToast('ECG 报告生成失败', 'error');
+        showToast('启动失败', 'error');
       }
     } catch {
       const errMsg = {
         type: 'assistant',
-        content: '连接后端失败，无法生成 ECG 报告，请稍后重试。',
-        timestamp: time,
+        content: '连接后端失败，无法启动 ECG 报告制作任务。',
+        timestamp: now,
         source: null,
       };
       setMessages(prev => [...prev, errMsg]);
       setChatHistory(prev => [...prev, errMsg]);
       showToast('连接错误', 'error');
     } finally {
-      setIsTyping(false);
+      setIsStartingEcg(false);
     }
-  }, [isTyping, loadSessions, showToast]);
+  }, [apiFetch, currentSessionId, ecgForm, isLoggedIn, isStartingEcg, persistSessionId, pollEcgTask, sessionHeaderId, showToast]);
 
   // ── Send message ───────────────────────────────────────────
   const sendMessage = useCallback(async (overrideText) => {
+    if (!isLoggedIn) {
+      showToast('请先登录', 'info');
+      return;
+    }
     const message = (overrideText ?? inputValue).trim();
     if (!message || isTyping) return;
 
@@ -665,11 +1065,13 @@ export default function App() {
     setIsTyping(true);
 
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const chatSessionId = currentSessionId || sessionHeaderId || createClientSessionId();
+      persistSessionId(chatSessionId);
+      const res = await apiFetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
-      });
+      }, { sessionId: chatSessionId });
       const data = await res.json();
 
       if (data.success) {
@@ -695,7 +1097,7 @@ export default function App() {
     } finally {
       setIsTyping(false);
     }
-  }, [inputValue, isTyping, loadSessions, showToast]);
+  }, [apiFetch, currentSessionId, inputValue, isLoggedIn, isTyping, loadSessions, persistSessionId, sessionHeaderId, showToast]);
 
   // Quick question handler
   const handleQuickQuestion = useCallback((q) => {
@@ -762,7 +1164,7 @@ export default function App() {
                 <div className="status-ring">
                   <span className="ring-pulse" />
                 </div>
-                <span>AI Ready</span>
+                <span>{isLoggedIn ? `AI Ready · ${identity.userId}` : '请先登录'}</span>
               </div>
             </div>
             <div className="header-actions">
@@ -772,8 +1174,8 @@ export default function App() {
               <button className="action-btn" title="Download chat" onClick={downloadChat}>
                 <i className="fas fa-download" />
               </button>
-              <button className="action-btn" title="Settings">
-                <i className="fas fa-cog" />
+              <button className="action-btn" title="Logout" onClick={logout}>
+                <i className="fas fa-sign-out-alt" />
               </button>
             </div>
           </header>
@@ -792,10 +1194,10 @@ export default function App() {
             inputValue={inputValue}
             setInputValue={setInputValue}
             onSend={() => sendMessage()}
+            onStartEcgFlow={openEcgGuide}
             isTyping={isTyping}
+            isEcgMonitoring={isEcgMonitoring}
             inputRef={inputRef}
-            uploadInputRef={uploadInputRef}
-            onUploadFile={uploadEcgFile}
           />
 
         </main>
@@ -809,6 +1211,23 @@ export default function App() {
         <i className={`fas ${toastIcons[toast.type]}`} />
         <span>{toast.message}</span>
       </div>
+
+      <ECGGuideModal
+        open={showEcgGuide}
+        form={ecgForm}
+        onChange={onEcgFormChange}
+        onClose={() => setShowEcgGuide(false)}
+        onSubmit={submitEcgGuide}
+        submitting={isStartingEcg}
+      />
+
+      <LoginModal
+        open={authReady && !isLoggedIn}
+        form={loginForm}
+        onChange={onLoginFormChange}
+        onSubmit={submitLogin}
+        submitting={isAuthSubmitting}
+      />
     </>
   );
 }

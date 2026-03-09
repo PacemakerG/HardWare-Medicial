@@ -1,0 +1,18 @@
+{
+  "patient_info": {
+    "patient_id": 19,
+    "patient_name": "加纳",
+    "age": null,
+    "gender": null,
+    "height_cm": null,
+    "weight_kg": null,
+    "checkup_time": "2026-01-17 13:46:33"
+  },
+  "manual_input_required": [
+    "age",
+    "gender",
+    "height_cm",
+    "weight_kg"
+  ],
+  "tips": "请补充缺失基础信息，然后将 patient_info 回写到主 JSON 或 skill_request 中。"
+}

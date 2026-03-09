@@ -1,0 +1,96 @@
+{
+  "ecg_id": 3682129731,
+  "metadata": {
+    "patient_id": 19,
+    "diagnosis_codes": [],
+    "diagnosis_cn": []
+  },
+  "patient_info": {
+    "patient_id": 19,
+    "patient_name": "加纳",
+    "age": null,
+    "gender": null,
+    "height_cm": null,
+    "weight_kg": null,
+    "checkup_time": "2026-01-17 13:46:33"
+  },
+  "features": {
+    "heart_rate": 163.04,
+    "axis_degree": null,
+    "axis_desc": null,
+    "rr_interval_ms_mean": 367.0,
+    "rr_interval_ms_std": 42.65,
+    "pr_interval_ms": null,
+    "qrs_duration_ms": null,
+    "qt_interval_ms": null,
+    "qtc_ms": null,
+    "st_deviation_mv": null,
+    "p_wave_duration_ms": null,
+    "t_wave_duration_ms": null,
+    "rhythm_type": null,
+    "arrhythmia_flags": [],
+    "r_peak_count": 7,
+    "sample_rate_hz": 500,
+    "sample_count": 1250,
+    "duration_sec": 2.5,
+    "signal_quality_score": 0.3789,
+    "noise_ratio": 0.9986,
+    "baseline_wander_ratio": 0.037,
+    "signal_quality": "信号质量较差"
+  },
+  "skill_request": {
+    "patient_info": {
+      "patient_id": 19,
+      "age": null,
+      "gender": null,
+      "height_cm": null,
+      "weight_kg": null,
+      "checkup_time": "2026-01-17 13:46:33"
+    },
+    "diagnosis_codes": [],
+    "diagnosis_cn": [],
+    "signal_quality": "信号质量较差",
+    "features": {
+      "heart_rate": 163.04,
+      "axis_degree": null,
+      "axis_desc": null,
+      "rr_interval_ms_mean": 367.0,
+      "rr_interval_ms_std": 42.65,
+      "pr_interval_ms": null,
+      "qrs_duration_ms": null,
+      "qt_interval_ms": null,
+      "qtc_ms": null,
+      "st_deviation_mv": null,
+      "p_wave_duration_ms": null,
+      "t_wave_duration_ms": null,
+      "rhythm_type": null,
+      "arrhythmia_flags": [],
+      "r_peak_count": 7,
+      "sample_rate_hz": 500,
+      "sample_count": 1250,
+      "duration_sec": 2.5,
+      "signal_quality_score": 0.3789,
+      "noise_ratio": 0.9986,
+      "baseline_wander_ratio": 0.037,
+      "signal_quality": "信号质量较差"
+    },
+    "notes": "以下基础信息缺失，建议用户补充后再生成最终报告: age, gender, height_cm, weight_kg"
+  },
+  "manual_input_required": [
+    "age",
+    "gender",
+    "height_cm",
+    "weight_kg"
+  ],
+  "source_xls": "hardware/ECGdata/jiana_jana_20260117_134633.xls",
+  "source_row": {
+    "username": "jana",
+    "create_time": "2026-01-17 13:46:33",
+    "doctor_name": null,
+    "raw_annotation": null
+  },
+  "prompt": "【心电图诊断报告生成任务】\n\n===========================================================\n一、患者基本信息\n===========================================================\n病历号: 19\n年龄: 待补充 | 性别: 待补充\n检查日期: 2026-01-17 13:46:33\n\n===========================================================\n二、输入特征与诊断结论\n===========================================================\n【算法预判诊断】:\n  待诊断\n\n【定量测量参数】:\n  - 心率: 163 bpm -> [偏高]\n  - 心电轴: 无法计算\n\n【信号质量】:\n  信号质量较差\n\n===========================================================\n三、指令\n===========================================================\n请扮演资深心电图医生，根据上述数据书写一份专业的中文诊断报告。\n\n要求：\n1. **综合分析**：不要机械翻译数据，要结合年龄、性别和数值进行综合判断。\n2. **结构规范**：包含「临床信息」、「心电图所见」、「诊断结论」、「建议」四部分。\n3. **特别注意**：\n    - **严禁**生成“报告医师”、“审核医师”、“报告日期”、“医疗机构”等结尾签名栏或行政信息。\n    - **严禁**使用 [ ] 占位符（如 [您的姓名]、[签字日期] 等）。\n    - 报告请在“建议”部分结束后立即停止，不要有任何额外的结束语。\n",
+  "generated_report": null,
+  "generation_time": null,
+  "error": null
+}

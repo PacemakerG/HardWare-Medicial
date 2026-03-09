@@ -83,7 +83,11 @@ def test_delete_session(test_client):
         response = test_client.delete("/api/v1/session/test-id")
         assert response.status_code == 200
         assert response.json()["message"] == "Session deleted"
-        mock_del.assert_called_once_with("test-id")
+        mock_del.assert_called_once()
+        args, kwargs = mock_del.call_args
+        assert args[0] == "test-id"
+        assert kwargs["tenant_id"] == "default"
+        assert kwargs["user_id"] == "anonymous"
 
 
 def test_clear_conversation(test_client):

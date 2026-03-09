@@ -36,7 +36,10 @@ def JudgeNeedRAGAgent(state: AgentState) -> AgentState:
         state["search_query"] = None
         return state
 
-    llm = get_light_llm()
+    llm = get_light_llm(
+        tenant_id=state.get("tenant_id", "default"),
+        user_id=state.get("user_id", "anonymous"),
+    )
     if not llm:
         # Conservative fallback: for non-keyword route, avoid retrieval by default.
         state["need_rag"] = False

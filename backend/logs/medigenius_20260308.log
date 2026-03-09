@@ -1,0 +1,47 @@
+2026-03-08 22:44:45 - medigenius - INFO - DatabaseService initialized
+2026-03-08 22:44:45 - medigenius - INFO - ChatService initialized
+2026-03-08 22:44:45 - medigenius - INFO - Initializing MediGenius System...
+2026-03-08 22:44:45 - medigenius - INFO - Initializing database tables...
+2026-03-08 22:44:45 - medigenius - INFO - Database initialized at /home/elon/workspace/HardWare-Medicial/backend/storage/chat_db/medigenius.db
+2026-03-08 22:44:45 - medigenius - INFO - Processing PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-08 22:45:07 - medigenius - INFO - Loaded 759 pages from PDF: /home/elon/workspace/HardWare-Medicial/backend/data/medical_book.pdf
+2026-03-08 22:45:08 - medigenius - INFO - Split into 2211 chunks
+2026-03-08 22:45:14 - medigenius - INFO - Embeddings model loaded (sentence-transformers/all-MiniLM-L6-v2) on CPU
+2026-03-08 22:45:14 - medigenius - INFO - Loading existing vector store from /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-08 22:45:15 - medigenius - INFO - Loaded 2211 documents from vector store
+2026-03-08 22:45:15 - medigenius - INFO - Vector store ready at /home/elon/workspace/HardWare-Medicial/backend/storage/vector_store
+2026-03-08 22:45:15 - medigenius - INFO - Initializing LangGraph workflow...
+2026-03-08 22:45:15 - medigenius - INFO - LangGraph workflow initialized successfully
+2026-03-08 22:45:15 - medigenius - INFO - MediGenius System Ready!
+2026-03-08 22:54:38 - medigenius - ERROR - ECG monitor task failed: 'NoneType' object has no attribute '__dict__'
+Traceback (most recent call last):
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/services/ecg_monitor_service.py", line 205, in _worker
+    module = _load_hardware_fetch_module()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/workspace/HardWare-Medicial/backend/app/services/ecg_monitor_service.py", line 105, in _load_hardware_fetch_module
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/home/elon/workspace/HardWare-Medicial/hardware/fetch_latest_ecg_and_convert.py", line 58, in <module>
+    @dataclass
+     ^^^^^^^^^
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/dataclasses.py", line 1232, in dataclass
+    return wrap(cls)
+           ^^^^^^^^^
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/dataclasses.py", line 1222, in wrap
+    return _process_class(cls, init, repr, eq, order, unsafe_hash,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/dataclasses.py", line 947, in _process_class
+    and _is_type(type, cls, dataclasses, dataclasses.KW_ONLY,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/elon/miniconda3/envs/medigenius/lib/python3.11/dataclasses.py", line 712, in _is_type
+    ns = sys.modules.get(cls.__module__).__dict__
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute '__dict__'
+2026-03-08 22:57:34 - medigenius - INFO - Processing message for session 0f912b1c...
+2026-03-08 22:57:34 - medigenius - INFO - Light LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-08 22:57:54 - medigenius - INFO - JudgeNeedRAG: need_rag=False
+2026-03-08 22:57:54 - medigenius - INFO - LLM client initialized (OpenAI-compatible / Pro/deepseek-ai/DeepSeek-V3.2)
+2026-03-08 22:58:23 - medigenius - INFO - Executor: Final response generated (web_used=False, rag_used=False)
+2026-03-08 22:58:37 - medigenius - INFO - Profile updated asynchronously for session 0f912b1c
+2026-03-08 23:06:53 - medigenius - INFO - Shutting down MediGenius...

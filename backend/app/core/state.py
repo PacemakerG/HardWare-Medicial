@@ -11,11 +11,14 @@ from langchain_core.documents import Document
 class AgentState(TypedDict):
     """Shared state passed between all LangGraph agent nodes."""
 
+    tenant_id: str
+    user_id: str
     session_id: str
     question: str
     documents: List[Document]
     rag_context: List[Dict]
     memory_context: str
+    user_preferences: Dict
     generation: str
     source: str
     search_query: Optional[str]
@@ -40,11 +43,14 @@ class AgentState(TypedDict):
 def initialize_conversation_state() -> AgentState:
     """Return a fresh AgentState with all fields at their defaults."""
     return {
+        "tenant_id": "default",
+        "user_id": "anonymous",
         "session_id": "",
         "question": "",
         "documents": [],
         "rag_context": [],
         "memory_context": "",
+        "user_preferences": {},
         "generation": "",
         "source": "",
         "search_query": None,
@@ -71,10 +77,13 @@ def reset_query_state(state: AgentState) -> AgentState:
     """Reset per-query flags while preserving conversation history."""
     state.update(
         {
+            "tenant_id": state.get("tenant_id", "default"),
+            "user_id": state.get("user_id", "anonymous"),
             "question": "",
             "documents": [],
             "rag_context": [],
             "memory_context": "",
+            "user_preferences": {},
             "generation": "",
             "source": "",
             "search_query": None,

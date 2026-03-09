@@ -3,11 +3,13 @@ MediGenius — services/ecg_report_service.py
 ECG report generation skill service.
 """
 
+import os
 from typing import Any, Dict, List
 
 from app.core.logging_config import logger
 from app.schemas.ecg import ECGReportRequest, ECGReportResponse
 from app.services.database_service import db_service
+from app.services.ecg_pdf_service import generate_ecg_pdf, get_report_pdf_path
 from app.services.profile_service import update_profile
 from app.tools.llm_client import get_llm
 
@@ -16,6 +18,15 @@ DISCLAIMER = (
     "如出现胸痛持续、呼吸困难、晕厥等紧急症状，请立即就医。"
 )
 HIGH_RISK_ALERT = "【紧急提示】当前结果提示较高风险，请尽快急诊或由心内科医生立即评估。"
+
+
+def _build_pdf_url(report_id: str) -> str:
+    return f"/api/v1/ecg/report/{report_id}/pdf"
+
+
+def _resolve_pdf_url(report_id: str) -> str | None:
+    path = get_report_pdf_path(report_id)
+    return _build_pdf_url(report_id) if os.path.exists(path) else None
 
 
 def _format_patient_info(data: ECGReportRequest) -> str:
@@ -153,12 +164,19 @@ def _build_prompt(data: ECGReportRequest) -> str:
 class ECGReportService:
     """Skill-like service for ECG report generation."""
 
-    def generate_report(self, request: ECGReportRequest, session_id: str = "") -> ECGReportResponse:
+    def generate_report(
+        self,
+        request: ECGReportRequest,
+        session_id: str = "",
+        *,
+        tenant_id: str = "default",
+        user_id: str = "anonymous",
+    ) -> ECGReportResponse:
         risk_level = _infer_risk_level(request)
         key_findings = _extract_key_findings(request)
         recommendations = _build_recommendations(risk_level)
 
-        llm = get_llm()
+        llm = get_llm(tenant_id=tenant_id, user_id=user_id)
         report = ""
         if llm:
             prompt = _build_prompt(request)
@@ -176,24 +194,49 @@ class ECGReportService:
             report = _fallback_report(request, key_findings, recommendations)
         report = _ensure_safety_guardrail(report, risk_level)
 
+        raw_request_payload = request.model_dump(exclude={"waveform"})
         saved = db_service.save_ecg_report(
             session_id=session_id or None,
+            tenant_id=tenant_id,
+            user_id=user_id,
             patient_id=request.patient_info.patient_id,
             risk_level=risk_level,
             report=report,
             key_findings=key_findings,
             recommendations=recommendations,
             disclaimer=DISCLAIMER,
-            raw_request=request.model_dump(),
+            raw_request=raw_request_payload,
         )
         report_id = saved.get("report_id")
         created_at = saved.get("created_at")
+        pdf_url = None
+
+        if report_id:
+            try:
+                pdf_path = generate_ecg_pdf(
+                    report_id=report_id,
+                    created_at=created_at,
+                    patient_info=request.patient_info.model_dump(),
+                    features=request.features,
+                    waveform=request.waveform,
+                    report_text=report,
+                    risk_level=risk_level,
+                    key_findings=key_findings,
+                    recommendations=recommendations,
+                    disclaimer=DISCLAIMER,
+                )
+                if pdf_path and os.path.exists(pdf_path):
+                    pdf_url = _build_pdf_url(report_id)
+            except Exception as exc:
+                logger.warning("ECG PDF generation failed: %s", exc)
 
         if session_id:
             try:
                 update_profile(
                     session_id,
                     _build_profile_updates(request, risk_level, report_id),
+                    tenant_id=tenant_id,
+                    user_id=user_id,
                 )
             except Exception as exc:
                 logger.warning("Failed to write ECG summary into profile: %s", exc)
@@ -206,11 +249,22 @@ class ECGReportService:
             key_findings=key_findings,
             recommendations=recommendations,
             disclaimer=DISCLAIMER,
+            pdf_url=pdf_url,
             success=bool(report.strip()),
         )
 
-    def get_report_by_id(self, report_id: str) -> ECGReportResponse | None:
-        record = db_service.get_ecg_report(report_id)
+    def get_report_by_id(
+        self,
+        report_id: str,
+        *,
+        tenant_id: str = "default",
+        user_id: str = "anonymous",
+    ) -> ECGReportResponse | None:
+        record = db_service.get_ecg_report(
+            report_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
         if not record:
             return None
         return ECGReportResponse(
@@ -221,6 +275,11 @@ class ECGReportService:
             key_findings=record.get("key_findings") or [],
             recommendations=record.get("recommendations") or [],
             disclaimer=record.get("disclaimer", DISCLAIMER),
+            pdf_url=(
+                _resolve_pdf_url(record.get("report_id"))
+                if record.get("report_id")
+                else None
+            ),
             success=bool((record.get("report") or "").strip()),
         )
 
