@@ -65,6 +65,48 @@ function parseUploadedEcgPayload(rawText) {
   return JSON.parse(firstLine);
 }
 
+function buildFallbackWelcomeMessage() {
+  const hour = new Date().getHours();
+  const dayPart = hour < 11 ? '早上' : hour < 18 ? '下午' : '晚上';
+  return `${dayPart}好，我是 MediGenius。你可以直接告诉我今天的症状、上传心电参数，或者继续跟进上一次的问题。你今天想先聊哪一项？`;
+}
+
+async function getGrantedGeolocation() {
+  if (!navigator?.geolocation || !navigator?.permissions?.query) return null;
+
+  try {
+    const status = await navigator.permissions.query({ name: 'geolocation' });
+    if (status.state !== 'granted') return null;
+
+    return await new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+        () => resolve(null),
+        {
+          enableHighAccuracy: false,
+          timeout: 1500,
+          maximumAge: 10 * 60 * 1000,
+        },
+      );
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function buildWelcomePayload() {
+  const location = await getGrantedGeolocation();
+  return {
+    latitude: location?.latitude ?? null,
+    longitude: location?.longitude ?? null,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    locale: navigator?.language || 'zh-CN',
+  };
+}
+
 // ══════════════════════════════════════════════════════════════
 // SECTION 3 — SIDEBAR COMPONENT
 // ══════════════════════════════════════════════════════════════
@@ -401,6 +443,7 @@ export default function App() {
   const [chatHistory, setChatHistory] = useState([]);       // for download
   const [showWelcome, setShowWelcome] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [isWelcoming, setIsWelcoming] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
@@ -408,6 +451,8 @@ export default function App() {
   const inputRef = useRef(null);
   const uploadInputRef = useRef(null);
   const toastTimerRef = useRef(null);
+  const bootstrappedRef = useRef(false);
+  const hasUserActivityRef = useRef(false);
 
   // ── Theme ──────────────────────────────────────────────────
   useEffect(() => {
@@ -441,7 +486,7 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => { scrollToBottom(); }, [messages, isTyping, scrollToBottom]);
+  useEffect(() => { scrollToBottom(); }, [messages, isTyping, isWelcoming, scrollToBottom]);
 
   // ── Load sessions ──────────────────────────────────────────
   const loadSessions = useCallback(async () => {
@@ -454,13 +499,62 @@ export default function App() {
     }
   }, []);
 
+  const requestWelcomeMessage = useCallback(async () => {
+    const fallbackContent = buildFallbackWelcomeMessage();
+    setShowWelcome(false);
+    setIsWelcoming(true);
+
+    try {
+      const payload = await buildWelcomePayload();
+      const res = await fetch(`${API_BASE}/welcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!hasUserActivityRef.current && res.ok && data.success && data.response) {
+        const botMsg = {
+          type: 'assistant',
+          content: data.response,
+          timestamp: data.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          source: data.source || 'Welcome Concierge',
+        };
+        setCurrentSessionId(data.session_id || null);
+        setMessages([botMsg]);
+        setChatHistory([botMsg]);
+        return true;
+      }
+    } catch {
+      // Fall back to a local greeting below.
+    } finally {
+      setIsWelcoming(false);
+    }
+
+    if (hasUserActivityRef.current) return false;
+
+    const fallbackMsg = {
+      type: 'assistant',
+      content: fallbackContent,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      source: 'Welcome Concierge',
+    };
+    setMessages([fallbackMsg]);
+    setChatHistory([fallbackMsg]);
+    return false;
+  }, []);
+
   // ── Load current history on mount ──────────────────────────
   useEffect(() => {
-    loadSessions();
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+
     (async () => {
+      await loadSessions();
       try {
         const res = await fetch(`${API_BASE}/history`);
         const data = await res.json();
+        if (data.session_id) setCurrentSessionId(data.session_id);
         if (data.success && data.messages && data.messages.length > 0) {
           const msgs = data.messages.map(m => ({
             type: m.role === 'user' ? 'user' : 'assistant',
@@ -471,13 +565,18 @@ export default function App() {
           setMessages(msgs);
           setChatHistory(msgs.map(m => ({ ...m })));
           setShowWelcome(false);
+        } else {
+          await requestWelcomeMessage();
         }
-      } catch { /* silent */ }
+      } catch {
+        await requestWelcomeMessage();
+      }
     })();
-  }, [loadSessions]);
+  }, [loadSessions, requestWelcomeMessage]);
 
   // ── Load session ───────────────────────────────────────────
   const loadSession = useCallback(async (sessionId) => {
+    hasUserActivityRef.current = true;
     try {
       const res = await fetch(`${API_BASE}/session/${sessionId}`);
       const data = await res.json();
@@ -519,18 +618,21 @@ export default function App() {
   const createNewChat = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/new-chat`, { method: 'POST' });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
+        hasUserActivityRef.current = false;
         setMessages([]);
         setChatHistory([]);
-        setCurrentSessionId(null);
-        setShowWelcome(true);
+        setCurrentSessionId(data.session_id || null);
+        setShowWelcome(false);
         await loadSessions();
+        await requestWelcomeMessage();
         showToast('New chat created', 'success');
       }
     } catch {
       showToast('Failed to create new chat', 'error');
     }
-  }, [loadSessions, showToast]);
+  }, [loadSessions, requestWelcomeMessage, showToast]);
 
   // ── Clear chat ─────────────────────────────────────────────
   const clearChat = useCallback(async () => {
@@ -587,6 +689,7 @@ export default function App() {
     }
 
     setShowWelcome(false);
+    hasUserActivityRef.current = true;
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsg = {
       type: 'user',
@@ -656,6 +759,7 @@ export default function App() {
     if (!message || isTyping) return;
 
     setShowWelcome(false);
+    hasUserActivityRef.current = true;
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsg = { type: 'user', content: message, timestamp: time, source: null };
     setMessages(prev => [...prev, userMsg]);
@@ -781,7 +885,7 @@ export default function App() {
           {/* Chat Area */}
           <ChatArea
             messages={messages}
-            isTyping={isTyping}
+            isTyping={isTyping || isWelcoming}
             showWelcome={showWelcome}
             onQuickQuestion={handleQuickQuestion}
             chatAreaRef={chatAreaRef}

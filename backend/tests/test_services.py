@@ -46,6 +46,34 @@ class TestChatService:
             assert result["source"] == "Test Source"
 
     @pytest.mark.asyncio
+    async def test_process_message_bootstraps_persisted_history(self):
+        service = ChatService()
+        service.workflow_app = MagicMock()
+        service.workflow_app.ainvoke = AsyncMock(return_value={
+            "generation": "继续观察即可",
+            "source": "Test Source",
+        })
+
+        from app.services import db_service
+        with patch.object(db_service, "save_message"), \
+             patch.object(
+                 db_service,
+                 "get_chat_history",
+                 return_value=[
+                     {
+                         "role": "assistant",
+                         "content": "欢迎回来",
+                         "source": "Welcome Concierge",
+                     }
+                 ],
+             ):
+            await service.process_message("test-session", "Hello")
+
+        restored_history = service.conversation_states["test-session"]["conversation_history"]
+        assert restored_history[0]["content"] == "欢迎回来"
+        assert restored_history[0]["source"] == "Welcome Concierge"
+
+    @pytest.mark.asyncio
     async def test_process_message_no_workflow(self):
         service = ChatService()
         with pytest.raises(ValueError, match="Workflow not initialized"):

@@ -1,14 +1,15 @@
 """
 MediGenius — api/v1/endpoints/chat.py
-Chat-related endpoints: /chat, /clear, /new-chat.
+Chat-related endpoints: /chat, /clear, /new-chat, /welcome.
 """
 
 import uuid
 
 from fastapi import APIRouter, HTTPException, Request
 
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.chat import ChatRequest, ChatResponse, WelcomeRequest, WelcomeResponse
 from app.services.chat_service import chat_service
+from app.services.greeting_service import greeting_service
 
 router = APIRouter(tags=["Chat"])
 
@@ -45,3 +46,16 @@ async def new_chat_endpoint(req: Request):
     new_id = str(uuid.uuid4())
     req.session["session_id"] = new_id
     return {"message": "New chat created", "session_id": new_id, "success": True}
+
+
+@router.post("/welcome", response_model=WelcomeResponse)
+async def welcome_endpoint(request: WelcomeRequest, req: Request):
+    """Generate a proactive welcome message for the current session."""
+    session_id = _get_session_id(req)
+    return greeting_service.generate_greeting(
+        session_id,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        timezone_name=request.timezone,
+        locale=request.locale,
+    )

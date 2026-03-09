@@ -25,8 +25,10 @@ def _get_session_id(request: Request) -> str:
 @router.get("/history")
 async def get_history_endpoint(req: Request):
     """Return the chat history for the current session."""
+    session_id = _get_session_id(req)
     return {
-        "messages": db_service.get_chat_history(_get_session_id(req)),
+        "messages": db_service.get_chat_history(session_id),
+        "session_id": session_id,
         "success": True,
     }
 

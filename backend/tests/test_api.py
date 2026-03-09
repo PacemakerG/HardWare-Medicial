@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from app.services import chat_service, db_service
+from app.services.greeting_service import WELCOME_SOURCE, greeting_service
 
 
 def test_health_check(test_client):
@@ -68,6 +69,31 @@ def test_get_history(test_client):
         response = test_client.get("/api/v1/history", headers={"X-Session-ID": "test-sess"})
         assert response.status_code == 200
         assert len(response.json()["messages"]) == 1
+        assert response.json()["session_id"] == "test-sess"
+
+
+def test_welcome_message(test_client):
+    with patch.object(greeting_service, "generate_greeting") as mock_greeting:
+        mock_greeting.return_value = {
+            "response": "欢迎回来，今天想继续看看上次的心电变化吗？",
+            "source": WELCOME_SOURCE,
+            "timestamp": "10:00 AM",
+            "success": True,
+            "session_id": "test-session",
+            "created": True,
+            "context_used": ["ecg"],
+        }
+        response = test_client.post(
+            "/api/v1/welcome",
+            json={"timezone": "Asia/Shanghai"},
+            headers={"X-Session-ID": "test-session"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["source"] == WELCOME_SOURCE
+        assert data["session_id"] == "test-session"
 
 
 def test_load_session(test_client):

@@ -9,10 +9,41 @@ describe('App Integration', () => {
 
     beforeEach(() => {
         mockFetch.mockClear();
-        // Default mocks
-        mockFetch.mockResolvedValue({
-            json: () => Promise.resolve({ success: true, messages: [], sessions: [] }),
-            ok: true
+        mockFetch.mockImplementation((url) => {
+            if (url === '/api/v1/sessions') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ success: true, sessions: [] }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/history') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ success: true, session_id: 'session-1', messages: [] }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/welcome') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({
+                        success: true,
+                        response: '欢迎回来，你今天想先聊什么？',
+                        source: 'Welcome Concierge',
+                        timestamp: 'now',
+                        session_id: 'session-1'
+                    }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/new-chat') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ success: true, session_id: 'new-session' }),
+                    ok: true
+                });
+            }
+            return Promise.resolve({
+                json: () => Promise.resolve({ success: true }),
+                ok: true
+            });
         });
     });
 
@@ -25,6 +56,10 @@ describe('App Integration', () => {
         expect(screen.getByText('Medical AI Assistant')).toBeInTheDocument();
         expect(screen.getByText('MediGenius')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Ask your medical question...')).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith('/api/v1/welcome', expect.any(Object));
+        });
     });
 
     it('loads sessions on mount', async () => {
@@ -33,6 +68,24 @@ describe('App Integration', () => {
             if (url === '/api/v1/sessions') {
                 return Promise.resolve({
                     json: () => Promise.resolve({ success: true, sessions: mockSessions }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/history') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ success: true, session_id: 'session-1', messages: [] }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/welcome') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({
+                        success: true,
+                        response: '欢迎回来，你今天想先聊什么？',
+                        source: 'Welcome Concierge',
+                        timestamp: 'now',
+                        session_id: 'session-1'
+                    }),
                     ok: true
                 });
             }
@@ -56,6 +109,24 @@ describe('App Integration', () => {
                         response: 'I can help with that.',
                         source: 'test-source',
                         timestamp: 'now'
+                    }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/history') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ success: true, session_id: 'session-1', messages: [] }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/welcome') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({
+                        success: true,
+                        response: '欢迎回来，你今天想先聊什么？',
+                        source: 'Welcome Concierge',
+                        timestamp: 'now',
+                        session_id: 'session-1'
                     }),
                     ok: true
                 });
@@ -86,6 +157,24 @@ describe('App Integration', () => {
                     ok: true
                 });
             }
+            if (url === '/api/v1/history') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({ success: true, session_id: 'session-1', messages: [] }),
+                    ok: true
+                });
+            }
+            if (url === '/api/v1/welcome') {
+                return Promise.resolve({
+                    json: () => Promise.resolve({
+                        success: true,
+                        response: '欢迎回来，你今天想先聊什么？',
+                        source: 'Welcome Concierge',
+                        timestamp: 'now',
+                        session_id: 'new-session'
+                    }),
+                    ok: true
+                });
+            }
             return Promise.resolve({ json: () => Promise.resolve({ success: true, sessions: [] }), ok: true });
         });
 
@@ -98,5 +187,15 @@ describe('App Integration', () => {
             // Check if new chat API was called
             expect(mockFetch).toHaveBeenCalledWith('/api/v1/new-chat', expect.any(Object));
         });
+    });
+
+    it('requests a welcome message for an empty session', async () => {
+        render(<App />);
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith('/api/v1/welcome', expect.any(Object));
+        });
+
+        expect(screen.getByText('欢迎回来，你今天想先聊什么？')).toBeInTheDocument();
     });
 });
