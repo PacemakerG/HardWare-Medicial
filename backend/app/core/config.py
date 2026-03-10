@@ -72,6 +72,11 @@ ECG_SITE_URL = os.getenv(
 )
 ECG_SITE_USER = os.getenv("ECG_SITE_USER", "doctor")
 ECG_SITE_PASS = os.getenv("ECG_SITE_PASS", "123456")
+ECG_MONITOR_TARGET_CREATE_TIME = os.getenv(
+    "ECG_MONITOR_TARGET_CREATE_TIME",
+    "2026-01-17 13:46:03",
+)
+ECG_MONITOR_DATA_MODE = os.getenv("ECG_MONITOR_DATA_MODE", "synthetic_normal")
 
 DEPARTMENT_HINT_FOLDERS = {
     code: department_folder_name(code)

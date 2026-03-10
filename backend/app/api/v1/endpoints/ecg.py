@@ -84,7 +84,7 @@ async def download_ecg_report_pdf_endpoint(report_id: str, req: Request):
 
 @router.post("/monitor/start", response_model=ECGMonitorStartResponse)
 async def start_ecg_monitor_endpoint(request: ECGMonitorStartRequest, req: Request):
-    """Start remote ECG fetch task and generate report from latest cloud record."""
+    """Start ECG monitor task and generate report from configured live/synthetic source."""
     ctx = _get_request_context(req)
     return ecg_monitor_service.start_monitor(
         session_id=ctx.session_id,

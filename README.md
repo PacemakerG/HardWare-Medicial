@@ -7,6 +7,25 @@
 
 系统目标是将“医疗问答 + 生理信号分析 + 长期记忆 + 可交付报告”整合为可持续迭代的医疗 AI 工作台。
 
+## About (English)
+
+HardWare-Medicial (MediGenius) is an end-to-end, production-oriented healthcare AI assistant designed for real clinical-support workflows rather than single-turn demos.
+
+The platform combines two core pipelines:
+
+1. Multi-department medical Q&A with hybrid routing (`manual department lock + automatic routing + RAG`).
+2. ECG report generation from cloud data (or configurable synthetic normal signals), with structured interpretation and PDF delivery.
+
+Key engineering characteristics:
+
+- Multi-agent orchestration with a unified executor sink (memory read, safety/domain triage, routing, retrieval, generation, async memory write-back).
+- Real streaming UX via SSE from backend to frontend.
+- Config-driven behavior through `.env` switches (RAG, query rewriting, web search, model protocol, ECG data mode).
+- Multi-tenant isolation by `tenant_id + user_id + session_id`, enabling safer team usage and long-term user profiling.
+- Full ECG workflow from intake and data acquisition to expert narrative + waveform PDF output.
+
+This project targets practical scenarios such as pre-consult triage, chronic care follow-up, and wearable ECG interpretation support, while keeping clinical-risk messaging and fallback behavior explicit and auditable.
+
 ## 核心特性
 
 - 多科室路由：支持 7 个专业科室 + general

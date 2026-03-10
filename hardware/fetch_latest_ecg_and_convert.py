@@ -365,19 +365,48 @@ class ECGWebClient:
         raise FetchError(f"登录失败: {last_msg}")
 
     def get_latest_row(self) -> Dict[str, object]:
+        rows = self.get_rows(page_num=1, page_size=1)
+        if not rows:
+            raise FetchError("doctorlist 返回为空，无法获取最新 ECG 记录")
+        return rows[0]
+
+    def get_rows(self, page_num: int = 1, page_size: int = 20) -> List[Dict[str, object]]:
         params = {
-            "pageNum": 1,
-            "pageSize": 1,
+            "pageNum": page_num,
+            "pageSize": page_size,
             "field": "createTime",
             "order": "desc",
             "invalidate_ie_cache": int(time.time() * 1000),
         }
-        resp = self.session.get(self._url("user/doctorlist"), params=params, timeout=self.cfg.timeout_sec)
+        resp = self.session.get(
+            self._url("user/doctorlist"),
+            params=params,
+            timeout=self.cfg.timeout_sec,
+        )
         payload = resp.json()
         rows = (payload.get("data") or {}).get("rows") or []
-        if not rows:
-            raise FetchError("doctorlist 返回为空，无法获取最新 ECG 记录")
-        return rows[0]
+        return [dict(row) for row in rows]
+
+    def get_row_by_create_time(
+        self,
+        target_create_time: str,
+        *,
+        max_pages: int = 10,
+        page_size: int = 20,
+    ) -> Dict[str, object]:
+        target = (target_create_time or "").strip()
+        if not target:
+            raise FetchError("target_create_time 不能为空")
+
+        for page_num in range(1, max_pages + 1):
+            rows = self.get_rows(page_num=page_num, page_size=page_size)
+            if not rows:
+                break
+            for row in rows:
+                if str(row.get("createTime") or "").strip() == target:
+                    return row
+
+        raise FetchError(f"未找到 createTime={target} 的 ECG 记录")
 
     def download_latest_xls(self, row: Dict[str, object], output_dir: Path) -> Path:
         username = str(row.get("username") or "").strip()

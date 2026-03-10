@@ -387,7 +387,7 @@ function ECGGuideModal({
     <div className="ecg-guide-backdrop" onClick={onClose}>
       <div className="ecg-guide-modal glass-effect" onClick={(e) => e.stopPropagation()}>
         <h3>ECG 专家报告引导</h3>
-        <p>先补充基础信息。提交后会确认你是否已完成 ECG 采集并上传云端，确认后直接抓取最新一条数据生成报告。</p>
+        <p>先补充基础信息。提交后系统将按后端配置的数据模式生成 ECG 报告。</p>
         <form onSubmit={onSubmit}>
           <div className="ecg-guide-grid">
             <label>
@@ -1085,10 +1085,10 @@ export default function App() {
     };
 
     const uploadConfirmed = window.confirm(
-      '是否已采集 ECG 数据并上传云端？\n点击“确定”后将直接抓取网站最新一条数据生成 PDF 报告。',
+      '请确认已完成 ECG 相关数据准备。\n点击“确定”后将按后端当前配置的数据模式生成 PDF 报告。',
     );
     if (!uploadConfirmed) {
-      showToast('请先完成 ECG 采集并上传云端后再开始', 'info');
+      showToast('已取消 ECG 报告制作', 'info');
       return;
     }
 
@@ -1118,7 +1118,7 @@ export default function App() {
       if (res.ok && data.success && data.task_id) {
         const botMsg = {
           type: 'assistant',
-          content: '已确认上传状态，正在直接抓取医生系统最新一条 ECG 数据，并生成 PDF 版专家报告。',
+          content: '已确认，正在按后端配置的数据模式生成 PDF 版专家报告。',
           timestamp: now,
           source: 'ECG Monitor',
         };

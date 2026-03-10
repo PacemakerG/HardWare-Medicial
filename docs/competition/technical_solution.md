@@ -1,5 +1,7 @@
 # 医枢智疗 技术方案文档
 
+队伍名称：**心脉智航队（PulsePilot）**
+
 ## 1. 项目简介
 医枢智疗是一个面向真实医疗咨询与心电数据分析场景的多Agent智能系统。  
 系统目标：
@@ -40,14 +42,76 @@
 4. 检索增强：ChromaDB + 医学知识库。  
 5. 数据存储：SQLite（会话历史）、JSON（用户画像）、向量库持久化目录、ECG报告PDF目录。
 
-### 3.2 问答流程（简化）
-1. MemoryRead  
-2. HealthConcierge（安全级别+领域判断）  
-3. MedicalRouter（医疗问题科室路由）  
-4. QueryRewriter（可配置LLM或规则路径）  
-5. Retriever / Reranker（RAG）  
-6. Executor（答案生成，可配置联网策略）  
-7. MemoryWriteAsync（异步写入长期记忆）
+### 3.2 Agent工作流（详细）
+系统采用“单汇聚执行器（Executor）”设计，所有分支最终都汇聚到 `ExecutorAgent`，确保回答风格与安全策略一致。
+
+标准工作流（LangGraph定义）：
+
+`MemoryRead -> HealthConcierge(=KeywordRouter) -> [MedicalRouter / JudgeNeedRAG / QueryRewriter / Executor] -> Retriever -> Reranker -> Executor -> MemoryWriteAsync`
+
+各节点职责如下：
+
+1. `MemoryReadAgent`
+- 读取最近会话历史、用户画像和长期记忆摘要。
+- 初始化本轮 `AgentState`（tenant/user/session 隔离上下文）。
+
+2. `HealthConciergeAgent (KeywordRouterAgent)`
+- 做安全分级：`SAFE / CLARIFY / EMERGENCY`。
+- 做领域判断（medical/general...）与是否优先用 RAG 的初判。
+- 识别前端是否手动锁定科室（`selected_department_forced`）。
+
+3. `MedicalRouterAgent`
+- 仅在 medical 场景触发（且非强制科室时）。
+- 输出主科室与检索范围：`primary_department`、`retrieval_scopes`、`routing_reason`。
+
+4. `JudgeNeedRAGAgent`
+- 在 `use_rag=False` 的情况下二次判断是否仍需检索（`need_rag`）。
+- 避免“该检索未检索”与“过度检索”。
+
+5. `QueryRewriterAgent`
+- 生成更适配检索库的查询表达：`retrieval_query`。
+- 支持规则重写或 LLM 重写（由 `.env` 开关控制）。
+
+6. `RetrieverAgent + RerankerAgent`
+- 按科室范围进行多库召回，聚合候选片段。
+- 重排后生成最终 `rag_context` 供执行器引用。
+
+7. `ExecutorAgent`
+- 统一生成最终回答，执行工具决策与容错降级。
+- 处理 ECG JSON 快捷 skill 分支（若用户消息中包含 ECG payload）。
+
+8. `MemoryWriteAsyncAgent`
+- 异步写回画像与长期记忆，不阻塞前端响应。
+
+### 3.3 Agent路由决策过程（条件分支）
+后端核心路由逻辑可归纳为以下规则：
+
+1. 安全优先
+- 若 `safety_level in {EMERGENCY, CLARIFY}`，直接进入 `Executor` 输出风险提示，不再走检索链路。
+
+2. 手动科室优先
+- 若 `selected_department_forced=true`，直接进入 `QueryRewriter -> Retriever -> Reranker -> Executor`。
+- 检索范围强制限定到用户点击的科室知识库。
+
+3. 医疗域自动路由
+- 若 `domain=medical` 且未手动锁定科室，先走 `MedicalRouter` 确定科室范围，再决定是否检索。
+
+4. 非强检索场景兜底
+- 若 `use_rag=false`，进入 `JudgeNeedRAG`：
+- `need_rag=true` 则补走检索链路；
+- `need_rag=false` 则直达 `Executor`。
+
+5. 非医疗域但需要检索
+- 若 `domain!=medical` 且 `use_rag=true`，可直接进入 `QueryRewriter -> Retriever -> Reranker`。
+
+### 3.4 在线流式执行路径（SSE）
+在线接口 `/api/v1/chat/stream` 采用与主工作流对齐的“前置节点 + 流式执行器”模式：
+
+1. 前置执行：`MemoryRead -> KeywordRouter`，按条件决定是否追加 `MedicalRouter / JudgeNeedRAG / QueryRewriter / Retriever / Reranker`。
+2. 进入执行器计划阶段：`build_executor_plan`。
+3. LLM 通过 `astream` 按 token 推送 `delta` 事件。
+4. 结束后推送 `done`，并调用 `MemoryWriteAsync` 异步持久化。
+5. 同时记录 `flow_trace`，用于可解释性展示和日志追踪。
 
 ---
 
@@ -65,7 +129,7 @@
 
 ### 4.3 ECG专家报告生成
 1. 前端引导输入姓名、年龄、性别等基础信息。  
-2. 用户确认已上传云端数据后，系统抓取站点最新一条ECG记录。  
+2. 系统按后端 `.env` 配置选择数据来源（网站抓取或模拟正常信号）。  
 3. 数据标准化后进入报告生成链路。  
 4. 输出ECG专家结论并生成PDF（波形图+文字报告+风险等级+免责声明）。
 
@@ -129,15 +193,19 @@
 ---
 
 ## 11. 团队信息
-1. elonge  
-   - GitHub: https://github.com/PacemakerG/HardWare-Medicial  
-2. xhforever  
-   - GitHub: https://github.com/xhforever/HardWare-Medicial
-
+1. 队伍名称：**心脉智航队（PulsePilot）**
+2. 队伍成员：
+- ElonGe（工程实现 / 架构整合）
+  GitHub: https://github.com/PacemakerG
+- xhforever（协同开发 / 功能迭代）
+  GitHub: https://github.com/xhforever
+3. 项目地址：
+- 主仓库: https://github.com/PacemakerG/HardWare-Medicial
+- 协作仓库: https://github.com/xhforever/HardWare-Medicial
 ---
 
 ## 12. 提交说明（建议）
-1. 文档命名：`队伍名称_技术方案文档.md`（或导出PDF后同名）  
-2. 视频命名：`队伍名称_Demo视频.mp4`  
-3. 邮件主题：`AI Agent大赛报名+队伍名称`  
+1. 文档命名：`心脉智航队_技术方案文档.md`（或导出PDF后同名）  
+2. 视频命名：`心脉智航队_Demo视频.mp4`  
+3. 邮件主题：`AI Agent大赛报名+心脉智航队`  
 4. 收件邮箱：`csce@suat-sz.edu.cn`

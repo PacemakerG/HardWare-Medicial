@@ -55,6 +55,7 @@ class ECGMonitorStartRequest(BaseModel):
     )
     monitor_username: Optional[str] = Field(default=None, max_length=128)
     monitor_password: Optional[str] = Field(default=None, max_length=128)
+    monitor_data_mode: Optional[str] = Field(default=None, max_length=32)
     wait_timeout_sec: int = Field(default=60, ge=30, le=1800)
     poll_interval_sec: int = Field(default=5, ge=2, le=60)
     http_timeout_sec: int = Field(default=15, ge=5, le=120)

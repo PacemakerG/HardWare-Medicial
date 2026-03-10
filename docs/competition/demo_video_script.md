@@ -34,10 +34,17 @@
 ### 00:20 - 00:55 架构总览
 **画面**
 - 展示一张系统架构图（前端、后端、LangGraph、RAG、ECG模块）
+- 架构图上高亮问答主链路：`MemoryReadAgent -> KeywordRouterAgent -> RetrieverAgent/JudgeNeedRAGAgent -> ExecutorAgent -> MemoryWriteAsyncAgent`
+- 在图右侧标注两条分支：
+  - `use_rag=True`：进入 `RetrieverAgent`，拉取科室知识后汇聚到 `ExecutorAgent`
+  - `use_rag=False`：进入 `JudgeNeedRAGAgent`，再决定是否补充检索上下文
 
 **配音**
 > 系统前端基于React，后端基于FastAPI。  
-> 问答流程由多Agent协同完成，包括安全判断、科室路由、检索增强和答案生成。  
+> 在问答链路里，消息先进入 MemoryReadAgent，读取历史上下文和用户画像。  
+> 然后由 KeywordRouterAgent 做科室路由和是否启用RAG的判断。  
+> 如果启用RAG，进入 RetrieverAgent 检索对应科室知识；如果不启用，则由 JudgeNeedRAGAgent 再做一次兜底判断。  
+> 两条分支最后都会汇聚到 ExecutorAgent，完成最终回答生成，并由 MemoryWriteAsyncAgent 异步写回长期记忆。  
 > ECG流程会抓取云端最新数据，自动完成分析并输出可交付的PDF报告。
 
 ---
