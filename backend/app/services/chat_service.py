@@ -4,6 +4,7 @@ ChatService: orchestrates the LangGraph agentic workflow for each chat message.
 """
 
 from datetime import datetime
+from time import perf_counter
 from typing import Any, AsyncGenerator, Dict
 import threading
 
@@ -22,9 +23,15 @@ from app.agents.reranker import RerankerAgent
 from app.core.langgraph_workflow import create_workflow
 from app.core.logging_config import logger
 from app.core.medical_taxonomy import normalize_department_code
-from app.core.state import initialize_conversation_state, reset_query_state
+from app.core.state import (
+    estimate_text_tokens,
+    initialize_conversation_state,
+    record_token_usage,
+    reset_query_state,
+)
 from app.services.database_service import db_service
 from app.services.flow_trace_service import append_flow_trace_record
+from app.core.langsmith_service import build_langsmith_runnable_config
 from app.tools.llm_client import get_llm
 
 
@@ -164,6 +171,7 @@ class ChatService:
             user_id,
             session_id[:8],
         )
+        request_started = perf_counter()
 
         if not self.workflow_app:
             raise ValueError("Workflow not initialized")
@@ -184,15 +192,25 @@ class ChatService:
             user_id=user_id,
             selected_department=selected_department,
         )
+        workflow_config = build_langsmith_runnable_config(
+            operation="chat.process_message",
+            session_id=session_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            selected_department=selected_department,
+            extra_tags=["chat", "sync"],
+        )
 
         # Run workflow (async preferred, sync fallback)
         try:
-            result = await self.workflow_app.ainvoke(state)
+            result = await self.workflow_app.ainvoke(state, config=workflow_config)
         except AttributeError:
             logger.warning("Falling back to sync invoke")
-            result = self.workflow_app.invoke(state)
+            result = self.workflow_app.invoke(state, config=workflow_config)
 
         self._store_state(context_key, result)
+        result.setdefault("profiling", {})
+        result["profiling"]["end_to_end_ms"] = round((perf_counter() - request_started) * 1000.0, 2)
 
         response_text = result.get("generation", "Unable to generate response.")
         source = result.get("source", "Unknown")
@@ -217,6 +235,7 @@ class ChatService:
             primary_department=result.get("primary_department", "") or "",
             use_rag=bool(result.get("use_rag", False)),
             need_rag=bool(result.get("need_rag", False)),
+            profiling=result.get("profiling", {}),
         )
 
         return {
@@ -243,6 +262,7 @@ class ChatService:
             user_id,
             session_id[:8],
         )
+        request_started = perf_counter()
         if not self.workflow_app:
             raise ValueError("Workflow not initialized")
 
@@ -259,6 +279,15 @@ class ChatService:
             tenant_id=tenant_id,
             user_id=user_id,
             selected_department=selected_department,
+        )
+        state.setdefault("profiling", {})
+        state["profiling"]["trace_context"] = build_langsmith_runnable_config(
+            operation="chat.process_message_stream",
+            session_id=session_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            selected_department=selected_department,
+            extra_tags=["chat", "stream"],
         )
 
         # Mirror workflow up to executor so stream path is behaviorally aligned.
@@ -296,10 +325,16 @@ class ChatService:
         preferred_name = plan.get("preferred_name", "")
         source_info = plan.get("source_info", state.get("source", "Unknown"))
         streamed_text = ""
+        answer = ""
         emitted_fallback_delta = False
 
         if plan.get("mode") == "shortcut":
-            answer = plan.get("answer", "")
+            answer = normalize_executor_answer(
+                plan.get("answer", ""),
+                question,
+                preferred_name=preferred_name,
+                state=state,
+            )
             if answer:
                 yield {"event": "delta", "delta": answer}
         else:
@@ -309,6 +344,7 @@ class ChatService:
                     "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。",
                     question,
                     preferred_name=preferred_name,
+                    state=state,
                 )
                 source_info = "System Message"
                 yield {"event": "delta", "delta": answer}
@@ -326,6 +362,7 @@ class ChatService:
                         streamed_text,
                         question,
                         preferred_name=preferred_name,
+                        state=state,
                     )
                     state["llm_success"] = bool(answer)
                     state["llm_attempted"] = True
@@ -336,12 +373,14 @@ class ChatService:
                             streamed_text,
                             question,
                             preferred_name=preferred_name,
+                            state=state,
                         )
                     else:
                         answer = normalize_executor_answer(
                             "我理解你的担心，目前我无法稳定生成可靠建议。请优先咨询线下医生进行明确评估。",
                             question,
                             preferred_name=preferred_name,
+                            state=state,
                         )
                         source_info = "System Message"
                         yield {"event": "delta", "delta": answer}
@@ -356,6 +395,17 @@ class ChatService:
                 yield {"event": "delta", "delta": suffix}
         elif (not streamed_text) and answer and (not emitted_fallback_delta):
             yield {"event": "delta", "delta": answer}
+
+        # Stream path token/cost profiling fallback (providers may not return usage in chunks).
+        prompt_tokens = estimate_text_tokens(plan.get("prompt", ""))
+        completion_tokens = estimate_text_tokens(answer)
+        record_token_usage(
+            state,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+        )
+        state.setdefault("profiling", {})
+        state["profiling"]["end_to_end_ms"] = round((perf_counter() - request_started) * 1000.0, 2)
 
         state = finalize_executor_state(state, answer=answer, source_info=source_info)
         state = MemoryWriteAsyncAgent(state)
@@ -380,6 +430,7 @@ class ChatService:
             primary_department=state.get("primary_department", "") or "",
             use_rag=bool(state.get("use_rag", False)),
             need_rag=bool(state.get("need_rag", False)),
+            profiling=state.get("profiling", {}),
         )
         yield {
             "event": "done",
@@ -388,6 +439,7 @@ class ChatService:
             "source": source_info,
             "timestamp": datetime.now().strftime("%I:%M %p"),
             "flow_trace": flow_trace,
+            "profiling": state.get("profiling", {}),
         }
 
     def clear_conversation(

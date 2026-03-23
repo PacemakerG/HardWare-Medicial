@@ -8,11 +8,25 @@ import json
 import re
 from typing import Any, Dict
 
-from app.core.config import WEB_SEARCH_ENABLED, WEB_SEARCH_USE_LLM_DECIDER
+from app.core.config import (
+    GENERATION_MAX_CONTEXT_CHARS,
+    GENERATION_MAX_CONTEXT_CHUNKS,
+    GENERATION_REQUIRE_CITATION,
+    WEB_SEARCH_ENABLED,
+    WEB_SEARCH_USE_LLM_DECIDER,
+)
 from app.core.logging_config import logger
-from app.core.state import AgentState, append_flow_trace
+from app.core.state import (
+    AgentState,
+    append_flow_trace,
+    estimate_text_tokens,
+    profile_node,
+    record_token_usage,
+    set_retrieval_metric,
+)
 from app.schemas.ecg import ECGReportRequest
 from app.services.ecg_report_service import ecg_report_service
+from app.core.langsmith_service import langsmith_traceable
 from app.tools.llm_client import coerce_response_text, get_light_llm, get_llm
 from app.tools.tavily_search import get_tavily_search
 
@@ -70,13 +84,63 @@ def _recent_history_text(state: AgentState) -> str:
     return "\n".join(lines)
 
 
+def _chunk_dedupe_key(chunk: dict) -> tuple:
+    metadata = chunk.get("metadata", {}) or {}
+    content = re.sub(r"\s+", " ", str(chunk.get("content", "")).strip()).lower()
+    return (
+        content[:280],
+        metadata.get("source_book"),
+        metadata.get("source_path"),
+        metadata.get("page"),
+        metadata.get("parent_chunk_id"),
+    )
+
+
+def _chunk_citation_text(chunk: dict, idx: int) -> str:
+    metadata = chunk.get("metadata", {}) or {}
+    source_book = metadata.get("source_book") or metadata.get("source") or "未知来源"
+    page = metadata.get("page")
+    department = chunk.get("scope_display_name") or metadata.get("department") or "通用"
+    if page:
+        return f"[CIT-{idx}] {department} / {source_book} / 第{page}段"
+    return f"[CIT-{idx}] {department} / {source_book}"
+
+
+def _pack_rag_context_chunks(state: AgentState) -> list[dict]:
+    rag_context = list(state.get("rag_context") or [])
+    packed: list[dict] = []
+    seen = set()
+    total_chars = 0
+    max_chunks = max(1, int(GENERATION_MAX_CONTEXT_CHUNKS))
+    max_chars = max(1200, int(GENERATION_MAX_CONTEXT_CHARS))
+    for chunk in rag_context:
+        content = str(chunk.get("content", "")).strip()
+        if len(content) < 40:
+            continue
+        key = _chunk_dedupe_key(chunk)
+        if key in seen:
+            continue
+        content = content[:1400]
+        if packed and total_chars + len(content) > max_chars:
+            break
+        seen.add(key)
+        packed.append({**chunk, "content": content})
+        total_chars += len(content)
+        if len(packed) >= max_chunks:
+            break
+    state["packed_rag_context"] = packed
+    set_retrieval_metric(state, "packed_context_chunks", len(packed))
+    set_retrieval_metric(state, "packed_context_chars", total_chars)
+    return packed
+
+
 def _rag_context_text(state: AgentState) -> str:
-    rag_context = state.get("rag_context") or []
-    if not rag_context:
+    packed_context = _pack_rag_context_chunks(state)
+    if not packed_context:
         return "No retrieved context."
     chunks = []
-    for i, chunk in enumerate(rag_context[:5], start=1):
-        chunks.append(f"[RAG-{i}] {chunk.get('content', '')}")
+    for i, chunk in enumerate(packed_context, start=1):
+        chunks.append(f"{_chunk_citation_text(chunk, i)}\n{chunk.get('content', '')}")
     return "\n\n".join(chunks)
 
 
@@ -260,6 +324,20 @@ def _follow_up_template(preferred_name: str = "") -> str:
     return DEFAULT_FOLLOW_UP_TEMPLATE
 
 
+def _ensure_citation_presence(answer: str, state: AgentState) -> str:
+    if not GENERATION_REQUIRE_CITATION:
+        return answer
+    packed_context = state.get("packed_rag_context") or []
+    if not packed_context:
+        return answer
+    if re.search(r"\[CIT-\d+\]", answer):
+        return answer
+    citation_ids = [f"[CIT-{idx}]" for idx in range(1, min(len(packed_context), 3) + 1)]
+    if not citation_ids:
+        return answer
+    return f"{answer}\n\n证据引用：{', '.join(citation_ids)}。"
+
+
 def _normalize_answer(answer: str, question: str, preferred_name: str = "") -> str:
     """Post-process answer for Chinese output, safety reminders, and proactive follow-up."""
     text = (answer or "").strip()
@@ -285,6 +363,21 @@ def _normalize_answer(answer: str, question: str, preferred_name: str = "") -> s
         text = f"{text}\n\n{_follow_up_template(preferred_name)}"
 
     return text
+
+
+def _extract_response_usage(response: Any) -> dict:
+    usage = {}
+    if hasattr(response, "usage_metadata") and isinstance(response.usage_metadata, dict):
+        usage = response.usage_metadata
+    elif hasattr(response, "response_metadata") and isinstance(response.response_metadata, dict):
+        usage = response.response_metadata.get("token_usage") or {}
+    if not isinstance(usage, dict):
+        return {}
+    return {
+        "input_tokens": int(usage.get("input_tokens") or usage.get("prompt_tokens") or 0),
+        "output_tokens": int(usage.get("output_tokens") or usage.get("completion_tokens") or 0),
+        "total_tokens": int(usage.get("total_tokens") or 0),
+    }
 
 
 def _decide_web_search(state: AgentState) -> tuple[bool, str]:
@@ -509,6 +602,7 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
         "2) 再给出1-3条可执行的下一步建议\n"
         "3) 最后必须主动追问一个下一步问题，引导继续对话\n"
         "4) 若出现高风险症状，优先提示紧急就医阈值\n\n"
+        "5) 若引用 RAG 资料，请在关键结论后标注 [CIT-x]，至少引用 1 条证据\n\n"
         "在不影响医学准确性的前提下，遵循以下个性化偏好：\n"
         f"{personalization_guidance}\n\n"
         f"当前领域：{domain}\n"
@@ -521,6 +615,7 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
         f"联网资料:\n{web_evidence or '暂无联网资料'}\n\n"
         "请给出清晰、可执行、有人情味的中文回答。"
     )
+    set_retrieval_metric(state, "generation_prompt_tokens_est", estimate_text_tokens(prompt))
     return {
         "mode": "llm",
         "prompt": prompt,
@@ -547,60 +642,107 @@ def finalize_executor_state(
     return state
 
 
-def normalize_executor_answer(answer: str, question: str, preferred_name: str = "") -> str:
+def normalize_executor_answer(
+    answer: str,
+    question: str,
+    preferred_name: str = "",
+    state: AgentState | None = None,
+) -> str:
     """Exported wrapper for shared post-processing in stream path."""
-    return _normalize_answer(answer, question, preferred_name=preferred_name)
+    normalized = _normalize_answer(answer, question, preferred_name=preferred_name)
+    if state is not None:
+        normalized = _ensure_citation_presence(normalized, state)
+    return normalized
 
 
+@langsmith_traceable("executor")
 def ExecutorAgent(state: AgentState) -> AgentState:
     """Generate final answer with optional internal web-search tool usage."""
-    llm = get_llm(
-        tenant_id=state.get("tenant_id", "default"),
-        user_id=state.get("user_id", "anonymous"),
-    )
-    plan = build_executor_plan(state)
-    question = plan.get("question", state.get("question", ""))
-    preferred_name = plan.get("preferred_name", "")
-    source_info = plan.get("source_info", state.get("source", "AI Medical Knowledge"))
+    with profile_node(state, "executor"):
+        llm = get_llm(
+            tenant_id=state.get("tenant_id", "default"),
+            user_id=state.get("user_id", "anonymous"),
+        )
+        plan = build_executor_plan(state)
+        question = plan.get("question", state.get("question", ""))
+        preferred_name = plan.get("preferred_name", "")
+        source_info = plan.get("source_info", state.get("source", "AI Medical Knowledge"))
 
-    if plan.get("mode") == "shortcut":
-        answer = plan.get("answer", "")
-        finalize_executor_state(state, answer=answer, source_info=source_info)
-        logger.info("Executor: ECG report skill executed")
-        return state
+        if plan.get("mode") == "shortcut":
+            answer = normalize_executor_answer(
+                plan.get("answer", ""),
+                question,
+                preferred_name=preferred_name,
+                state=state,
+            )
+            finalize_executor_state(state, answer=answer, source_info=source_info)
+            logger.info("Executor: shortcut path executed")
+            return state
 
-    if not llm:
-        if _is_lightweight_chitchat(question):
-            answer = "你好，我在。你想聊健康问题、饮食、运动、睡眠，还是心电数据？"
-        else:
-            answer = (
-                "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。"
-            )
-        source_info = "System Message"
-    else:
-        prompt = plan.get("prompt", "")
-        try:
-            response = llm.invoke(prompt)
-            answer = coerce_response_text(response).strip()
-            answer = _normalize_answer(answer, question, preferred_name=preferred_name)
-            state["llm_success"] = bool(answer)
-            state["llm_attempted"] = True
-            logger.info(
-                "Executor: Final response generated (web_used=%s, rag_used=%s)",
-                source_info == "Current Medical Research & News",
-                bool(state.get("rag_context")),
-            )
-        except Exception as exc:
-            logger.error("Executor: LLM generation failed: %s", exc)
-            answer = (
-                "我理解你的担心，目前我无法稳定生成可靠建议。请优先咨询线下医生进行明确评估。"
-            )
-            answer = _normalize_answer(answer, question, preferred_name=preferred_name)
+        if not llm:
+            if _is_lightweight_chitchat(question):
+                answer = "你好，我在。你想聊健康问题、饮食、运动、睡眠，还是心电数据？"
+            else:
+                answer = (
+                    "当前医疗助手服务暂时不可用，建议你先进行基础观察，必要时尽快咨询线下医生。"
+                )
             source_info = "System Message"
-            state["llm_success"] = False
-            state["llm_attempted"] = True
+        else:
+            prompt = plan.get("prompt", "")
+            try:
+                response = llm.invoke(prompt)
+                answer = coerce_response_text(response).strip()
+                answer = normalize_executor_answer(
+                    answer,
+                    question,
+                    preferred_name=preferred_name,
+                    state=state,
+                )
+                usage = _extract_response_usage(response)
+                record_token_usage(
+                    state,
+                    prompt_tokens=usage.get("input_tokens", 0),
+                    completion_tokens=usage.get("output_tokens", 0),
+                    total_tokens=usage.get("total_tokens", 0),
+                )
+                state["llm_success"] = bool(answer)
+                state["llm_attempted"] = True
+                logger.info(
+                    "Executor: Final response generated (web_used=%s, rag_used=%s)",
+                    source_info == "Current Medical Research & News",
+                    bool(state.get("rag_context")),
+                )
+            except Exception as exc:
+                logger.error("Executor: LLM generation failed: %s", exc)
+                answer = (
+                    "我理解你的担心，目前我无法稳定生成可靠建议。请优先咨询线下医生进行明确评估。"
+                )
+                answer = normalize_executor_answer(
+                    answer,
+                    question,
+                    preferred_name=preferred_name,
+                    state=state,
+                )
+                source_info = "System Message"
+                state["llm_success"] = False
+                state["llm_attempted"] = True
 
-    if source_info == "System Message":
-        answer = _normalize_answer(answer, question, preferred_name=preferred_name)
+        if source_info == "System Message":
+            answer = normalize_executor_answer(
+                answer,
+                question,
+                preferred_name=preferred_name,
+                state=state,
+            )
 
-    return finalize_executor_state(state, answer=answer, source_info=source_info)
+        if not state.get("profiling", {}).get("token_usage"):
+            # Fallback estimation for providers that do not return usage metadata.
+            prompt_tokens = estimate_text_tokens(plan.get("prompt", ""))
+            answer_tokens = estimate_text_tokens(answer)
+            record_token_usage(
+                state,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=answer_tokens,
+            )
+
+        return finalize_executor_state(state, answer=answer, source_info=source_info)

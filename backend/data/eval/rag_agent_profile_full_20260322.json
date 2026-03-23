@@ -1,0 +1,1250 @@
+{
+  "summary": {
+    "dataset_samples": 48,
+    "langsmith_tracing_enabled": false,
+    "langsmith_project": "medigenius",
+    "node_timing_ms": {
+      "query_rewriter": {
+        "avg": 0.47,
+        "p50": 0.36,
+        "p95": 0.83
+      },
+      "rag": {
+        "avg": 786.38,
+        "p50": 211.72,
+        "p95": 2444.98
+      },
+      "reranker": {
+        "avg": 0.1,
+        "p50": 0.09,
+        "p95": 0.17
+      }
+    },
+    "pipeline_total_ms": {
+      "avg": 786.94,
+      "p50": 212.63,
+      "p95": 2445.39
+    },
+    "retrieval_behavior": {
+      "avg_context_count": 4.29,
+      "avg_retrieval_query_count": 2.5,
+      "avg_vector_hits": 4.83,
+      "avg_keyword_hits": 0
+    },
+    "token_estimates": {
+      "answer_generation": {
+        "avg_prompt_tokens": 120.12,
+        "avg_completion_tokens": 68.88,
+        "avg_total_tokens": 189
+      },
+      "llm_judge": {
+        "avg_prompt_tokens": 283.1,
+        "avg_completion_tokens": 13,
+        "avg_total_tokens": 296.1
+      },
+      "combined_avg_total_tokens": 485.1
+    }
+  },
+  "samples": [
+    {
+      "id": "dermatology_001",
+      "question": "淋菌性咽炎的常见表现和处理要点是什么？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.9,
+        "rag": 14858.39,
+        "reranker": 0.09,
+        "total": 14859.38
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 117,
+        "completion_tokens": 53,
+        "total_tokens": 170
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 264,
+        "completion_tokens": 13,
+        "total_tokens": 277
+      }
+    },
+    {
+      "id": "dermatology_002",
+      "question": "关于由内向外可分髓质，诊断时需要重点关注哪些关键点？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.35,
+        "rag": 161.8,
+        "reranker": 0.09,
+        "total": 162.24
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 3,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 117,
+        "completion_tokens": 49,
+        "total_tokens": 166
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 260,
+        "completion_tokens": 13,
+        "total_tokens": 273
+      }
+    },
+    {
+      "id": "dermatology_003",
+      "question": "直至停止治疗相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.7,
+        "rag": 114.94,
+        "reranker": 0.07,
+        "total": 115.71
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 151,
+        "completion_tokens": 129,
+        "total_tokens": 280
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 374,
+        "completion_tokens": 13,
+        "total_tokens": 387
+      }
+    },
+    {
+      "id": "dermatology_004",
+      "question": "如果怀疑期梅毒未经治疗，临床上通常会关注哪些二期梅毒？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.48,
+        "rag": 184.66,
+        "reranker": 0.25,
+        "total": 185.39
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 11,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 158,
+        "completion_tokens": 52,
+        "total_tokens": 210
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 304,
+        "completion_tokens": 13,
+        "total_tokens": 317
+      }
+    },
+    {
+      "id": "dermatology_005",
+      "question": "性传播疾病的常见表现和处理要点是什么？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 110.23,
+        "reranker": 0.07,
+        "total": 110.66
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 117,
+        "completion_tokens": 54,
+        "total_tokens": 171
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 265,
+        "completion_tokens": 13,
+        "total_tokens": 278
+      }
+    },
+    {
+      "id": "dermatology_006",
+      "question": "关于斑疹性梅毒疹，诊断时需要重点关注哪些关键点？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 174.36,
+        "reranker": 0.13,
+        "total": 174.85
+      },
+      "retrieval_context_count": 5,
+      "retrieval_query_count": 3,
+      "vector_hits": 5,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 128,
+        "completion_tokens": 65,
+        "total_tokens": 193
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 287,
+        "completion_tokens": 13,
+        "total_tokens": 300
+      }
+    },
+    {
+      "id": "ent_001",
+      "question": "慢性外耳道炎的常见表现和处理要点是什么？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 1160.49,
+        "reranker": 0.05,
+        "total": 1160.9
+      },
+      "retrieval_context_count": 2,
+      "retrieval_query_count": 2,
+      "vector_hits": 2,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 87,
+        "completion_tokens": 62,
+        "total_tokens": 149
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 243,
+        "completion_tokens": 13,
+        "total_tokens": 256
+      }
+    },
+    {
+      "id": "ent_002",
+      "question": "关于变应性炎，诊断时需要重点关注哪些关键点？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.7,
+        "rag": 208.14,
+        "reranker": 0.09,
+        "total": 208.93
+      },
+      "retrieval_context_count": 2,
+      "retrieval_query_count": 3,
+      "vector_hits": 2,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 74,
+        "completion_tokens": 46,
+        "total_tokens": 120
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 215,
+        "completion_tokens": 13,
+        "total_tokens": 228
+      }
+    },
+    {
+      "id": "ent_003",
+      "question": "即可诊断为艾滋病相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.88,
+        "rag": 146.23,
+        "reranker": 0.1,
+        "total": 147.21
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 140,
+        "completion_tokens": 54,
+        "total_tokens": 194
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 288,
+        "completion_tokens": 13,
+        "total_tokens": 301
+      }
+    },
+    {
+      "id": "ent_004",
+      "question": "如果怀疑并创造了鉍窦检查，临床上通常会关注哪些观察？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.3,
+        "rag": 196.33,
+        "reranker": 0.1,
+        "total": 196.73
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 131,
+        "completion_tokens": 63,
+        "total_tokens": 194
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 288,
+        "completion_tokens": 13,
+        "total_tokens": 301
+      }
+    },
+    {
+      "id": "ent_005",
+      "question": "膜迷路的其他间隙的常见表现和处理要点是什么？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.55,
+        "rag": 150.01,
+        "reranker": 0.08,
+        "total": 150.64
+      },
+      "retrieval_context_count": 2,
+      "retrieval_query_count": 2,
+      "vector_hits": 2,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 68,
+        "completion_tokens": 48,
+        "total_tokens": 116
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 210,
+        "completion_tokens": 13,
+        "total_tokens": 223
+      }
+    },
+    {
+      "id": "ent_006",
+      "question": "关于下颌牙齿等的感觉，诊断时需要重点关注哪些关键点？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 181.0,
+        "reranker": 0.09,
+        "total": 181.42
+      },
+      "retrieval_context_count": 5,
+      "retrieval_query_count": 3,
+      "vector_hits": 5,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 114,
+        "completion_tokens": 56,
+        "total_tokens": 170
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 264,
+        "completion_tokens": 13,
+        "total_tokens": 277
+      }
+    },
+    {
+      "id": "general_surgery_001",
+      "question": "述公式可见的常见表现和处理要点是什么？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.35,
+        "rag": 2914.34,
+        "reranker": 0.08,
+        "total": 2914.77
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 151,
+        "completion_tokens": 69,
+        "total_tokens": 220
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 314,
+        "completion_tokens": 13,
+        "total_tokens": 327
+      }
+    },
+    {
+      "id": "general_surgery_002",
+      "question": "关于一般结肠前方式为，诊断时需要重点关注哪些关键点？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 274.4,
+        "reranker": 0.08,
+        "total": 274.81
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 115,
+        "completion_tokens": 51,
+        "total_tokens": 166
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 261,
+        "completion_tokens": 13,
+        "total_tokens": 274
+      }
+    },
+    {
+      "id": "general_surgery_003",
+      "question": "排钾量会有所增加相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.66,
+        "rag": 175.84,
+        "reranker": 0.07,
+        "total": 176.57
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 98,
+        "completion_tokens": 55,
+        "total_tokens": 153
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 246,
+        "completion_tokens": 13,
+        "total_tokens": 259
+      }
+    },
+    {
+      "id": "general_surgery_004",
+      "question": "如果怀疑围术期处理或其他全身疾病，临床上通常会关注哪些第九章围术期处理或其他全身疾病征象？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.65,
+        "rag": 286.95,
+        "reranker": 0.18,
+        "total": 287.78
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 174,
+        "completion_tokens": 52,
+        "total_tokens": 226
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 320,
+        "completion_tokens": 13,
+        "total_tokens": 333
+      }
+    },
+    {
+      "id": "general_surgery_005",
+      "question": "起的尿路感染的常见表现和处理要点是什么？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 188.78,
+        "reranker": 0.06,
+        "total": 189.2
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 80,
+        "completion_tokens": 44,
+        "total_tokens": 124
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 218,
+        "completion_tokens": 13,
+        "total_tokens": 231
+      }
+    },
+    {
+      "id": "general_surgery_006",
+      "question": "关于检查有助于发现瘤，诊断时需要重点关注哪些关键点？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.64,
+        "rag": 286.67,
+        "reranker": 0.1,
+        "total": 287.41
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 109,
+        "completion_tokens": 72,
+        "total_tokens": 181
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 275,
+        "completion_tokens": 13,
+        "total_tokens": 288
+      }
+    },
+    {
+      "id": "infectious_disease_001",
+      "question": "第二章病的常见表现和处理要点是什么？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 1573.32,
+        "reranker": 0.01,
+        "total": 1573.69
+      },
+      "retrieval_context_count": 0,
+      "retrieval_query_count": 2,
+      "vector_hits": 0,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 25,
+        "completion_tokens": 44,
+        "total_tokens": 69
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 163,
+        "completion_tokens": 13,
+        "total_tokens": 176
+      }
+    },
+    {
+      "id": "infectious_disease_002",
+      "question": "关于甲型流感病，诊断时需要重点关注哪些关键点？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.31,
+        "rag": 207.68,
+        "reranker": 0.05,
+        "total": 208.04
+      },
+      "retrieval_context_count": 1,
+      "retrieval_query_count": 3,
+      "vector_hits": 1,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 50,
+        "completion_tokens": 48,
+        "total_tokens": 98
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 192,
+        "completion_tokens": 13,
+        "total_tokens": 205
+      }
+    },
+    {
+      "id": "infectious_disease_003",
+      "question": "临床表现与其他病相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.31,
+        "rag": 143.25,
+        "reranker": 0.07,
+        "total": 143.63
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 110,
+        "completion_tokens": 158,
+        "total_tokens": 268
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 363,
+        "completion_tokens": 13,
+        "total_tokens": 376
+      }
+    },
+    {
+      "id": "infectious_disease_004",
+      "question": "如果怀疑发病，临床上通常会关注哪些可分离到金葡菌？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.38,
+        "rag": 220.13,
+        "reranker": 0.12,
+        "total": 220.63
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 171,
+        "completion_tokens": 63,
+        "total_tokens": 234
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 327,
+        "completion_tokens": 13,
+        "total_tokens": 340
+      }
+    },
+    {
+      "id": "infectious_disease_005",
+      "question": "或继发感染的常见表现和处理要点是什么？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.37,
+        "rag": 181.15,
+        "reranker": 0.06,
+        "total": 181.58
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 90,
+        "completion_tokens": 74,
+        "total_tokens": 164
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 258,
+        "completion_tokens": 13,
+        "total_tokens": 271
+      }
+    },
+    {
+      "id": "infectious_disease_006",
+      "question": "关于但对寒冷有抵抗力，诊断时需要重点关注哪些关键点？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 223.83,
+        "reranker": 0.09,
+        "total": 224.28
+      },
+      "retrieval_context_count": 5,
+      "retrieval_query_count": 3,
+      "vector_hits": 5,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 106,
+        "completion_tokens": 80,
+        "total_tokens": 186
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 280,
+        "completion_tokens": 13,
+        "total_tokens": 293
+      }
+    },
+    {
+      "id": "neurology_001",
+      "question": "建议人院治疗的常见表现和处理要点是什么？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 1447.79,
+        "reranker": 0.07,
+        "total": 1448.19
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 128,
+        "completion_tokens": 75,
+        "total_tokens": 203
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 298,
+        "completion_tokens": 13,
+        "total_tokens": 311
+      }
+    },
+    {
+      "id": "neurology_002",
+      "question": "关于发作持续时间短，诊断时需要重点关注哪些关键点？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.68,
+        "rag": 207.82,
+        "reranker": 0.09,
+        "total": 208.59
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 111,
+        "completion_tokens": 79,
+        "total_tokens": 190
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 283,
+        "completion_tokens": 13,
+        "total_tokens": 296
+      }
+    },
+    {
+      "id": "neurology_003",
+      "question": "轴突变性轴突变性相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.37,
+        "rag": 163.37,
+        "reranker": 0.08,
+        "total": 163.82
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 200,
+        "completion_tokens": 81,
+        "total_tokens": 281
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 375,
+        "completion_tokens": 13,
+        "total_tokens": 388
+      }
+    },
+    {
+      "id": "neurology_004",
+      "question": "如果怀疑的疾病，临床上通常会关注哪些等导致大脑半球弥漫性病变的疾病引起？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.92,
+        "rag": 215.31,
+        "reranker": 0.1,
+        "total": 216.33
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 111,
+        "completion_tokens": 68,
+        "total_tokens": 179
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 273,
+        "completion_tokens": 13,
+        "total_tokens": 286
+      }
+    },
+    {
+      "id": "neurology_005",
+      "question": "他治疗的常见表现和处理要点是什么？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 134.71,
+        "reranker": 0.1,
+        "total": 135.17
+      },
+      "retrieval_context_count": 2,
+      "retrieval_query_count": 2,
+      "vector_hits": 2,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 64,
+        "completion_tokens": 54,
+        "total_tokens": 118
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 212,
+        "completion_tokens": 13,
+        "total_tokens": 225
+      }
+    },
+    {
+      "id": "neurology_006",
+      "question": "关于阻止过敏性反应和外科手术，诊断时需要重点关注哪些关键点？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.5,
+        "rag": 229.04,
+        "reranker": 0.1,
+        "total": 229.64
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 129,
+        "completion_tokens": 82,
+        "total_tokens": 211
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 306,
+        "completion_tokens": 13,
+        "total_tokens": 319
+      }
+    },
+    {
+      "id": "ophthalmology_001",
+      "question": "组釆用的视力检查的常见表现和处理要点是什么？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 1505.02,
+        "reranker": 0.11,
+        "total": 1505.46
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 133,
+        "completion_tokens": 118,
+        "total_tokens": 251
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 345,
+        "completion_tokens": 13,
+        "total_tokens": 358
+      }
+    },
+    {
+      "id": "ophthalmology_002",
+      "question": "关于行走于脉络膜上腔，诊断时需要重点关注哪些关键点？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.38,
+        "rag": 216.9,
+        "reranker": 0.12,
+        "total": 217.4
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 143,
+        "completion_tokens": 58,
+        "total_tokens": 201
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 295,
+        "completion_tokens": 13,
+        "total_tokens": 308
+      }
+    },
+    {
+      "id": "ophthalmology_003",
+      "question": "如果怀疑和地塞米松磷酸盐，临床上通常会关注哪些糖皮质激素滴眼液常用的制剂有醋酸氢化可的松？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.45,
+        "rag": 198.78,
+        "reranker": 0.13,
+        "total": 199.36
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 199,
+        "completion_tokens": 93,
+        "total_tokens": 292
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 386,
+        "completion_tokens": 13,
+        "total_tokens": 399
+      }
+    },
+    {
+      "id": "ophthalmology_004",
+      "question": "角膜炎的常见表现和处理要点是什么？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.34,
+        "rag": 136.04,
+        "reranker": 0.1,
+        "total": 136.48
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 108,
+        "completion_tokens": 71,
+        "total_tokens": 179
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 273,
+        "completion_tokens": 13,
+        "total_tokens": 286
+      }
+    },
+    {
+      "id": "ophthalmology_005",
+      "question": "关于部的临床表现可有助于诊断，诊断时需要重点关注哪些关键点？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 194.88,
+        "reranker": 0.1,
+        "total": 195.31
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 116,
+        "completion_tokens": 87,
+        "total_tokens": 203
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 297,
+        "completion_tokens": 13,
+        "total_tokens": 310
+      }
+    },
+    {
+      "id": "ophthalmology_006",
+      "question": "目前临床多用主观检查相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.62,
+        "rag": 154.99,
+        "reranker": 0.1,
+        "total": 155.71
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 2,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 150,
+        "completion_tokens": 77,
+        "total_tokens": 227
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 321,
+        "completion_tokens": 13,
+        "total_tokens": 334
+      }
+    },
+    {
+      "id": "pediatrics_001",
+      "question": "大约当进食量达到的常见表现和处理要点是什么？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.69,
+        "rag": 1519.25,
+        "reranker": 0.07,
+        "total": 1520.01
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 123,
+        "completion_tokens": 92,
+        "total_tokens": 215
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 309,
+        "completion_tokens": 13,
+        "total_tokens": 322
+      }
+    },
+    {
+      "id": "pediatrics_002",
+      "question": "关于的分泌或加强，诊断时需要重点关注哪些关键点？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.4,
+        "rag": 234.79,
+        "reranker": 0.16,
+        "total": 235.35
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 180,
+        "completion_tokens": 92,
+        "total_tokens": 272
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 365,
+        "completion_tokens": 13,
+        "total_tokens": 378
+      }
+    },
+    {
+      "id": "pediatrics_003",
+      "question": "铜经胆汁排泄相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 154.71,
+        "reranker": 0.09,
+        "total": 155.16
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 112,
+        "completion_tokens": 74,
+        "total_tokens": 186
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 280,
+        "completion_tokens": 13,
+        "total_tokens": 293
+      }
+    },
+    {
+      "id": "pediatrics_004",
+      "question": "如果怀疑但随病，临床上通常会关注哪些挛缩？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.67,
+        "rag": 231.84,
+        "reranker": 0.1,
+        "total": 232.61
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 119,
+        "completion_tokens": 40,
+        "total_tokens": 159
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 254,
+        "completion_tokens": 13,
+        "total_tokens": 267
+      }
+    },
+    {
+      "id": "pediatrics_005",
+      "question": "肺炎的常见表现和处理要点是什么？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.36,
+        "rag": 157.49,
+        "reranker": 0.05,
+        "total": 157.9
+      },
+      "retrieval_context_count": 1,
+      "retrieval_query_count": 2,
+      "vector_hits": 1,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 47,
+        "completion_tokens": 45,
+        "total_tokens": 92
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 187,
+        "completion_tokens": 13,
+        "total_tokens": 200
+      }
+    },
+    {
+      "id": "pediatrics_006",
+      "question": "关于青春期健康与疾病，诊断时需要重点关注哪些关键点？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.34,
+        "rag": 222.65,
+        "reranker": 0.1,
+        "total": 223.09
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 166,
+        "completion_tokens": 132,
+        "total_tokens": 298
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 392,
+        "completion_tokens": 13,
+        "total_tokens": 405
+      }
+    },
+    {
+      "id": "general_medical_001",
+      "question": "只能用小剂量超短波治疗的常见表现和处理要点是什么？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.31,
+        "rag": 4523.31,
+        "reranker": 0.16,
+        "total": 4523.78
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 169,
+        "completion_tokens": 45,
+        "total_tokens": 214
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 308,
+        "completion_tokens": 13,
+        "total_tokens": 321
+      }
+    },
+    {
+      "id": "general_medical_002",
+      "question": "关于难以感觉疼痛，诊断时需要重点关注哪些关键点？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.31,
+        "rag": 366.97,
+        "reranker": 0.09,
+        "total": 367.37
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 104,
+        "completion_tokens": 73,
+        "total_tokens": 177
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 271,
+        "completion_tokens": 13,
+        "total_tokens": 284
+      }
+    },
+    {
+      "id": "general_medical_003",
+      "question": "红细胞血型和相关的症状、鉴别和处理原则怎么理解？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.64,
+        "rag": 252.45,
+        "reranker": 0.06,
+        "total": 253.15
+      },
+      "retrieval_context_count": 2,
+      "retrieval_query_count": 2,
+      "vector_hits": 2,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 96,
+        "completion_tokens": 67,
+        "total_tokens": 163
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 257,
+        "completion_tokens": 13,
+        "total_tokens": 270
+      }
+    },
+    {
+      "id": "general_medical_004",
+      "question": "如果怀疑作为糖尿病，临床上通常会关注哪些作为糖尿病的诊断标准？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.41,
+        "rag": 356.65,
+        "reranker": 0.09,
+        "total": 357.15
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 150,
+        "completion_tokens": 45,
+        "total_tokens": 195
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 290,
+        "completion_tokens": 13,
+        "total_tokens": 303
+      }
+    },
+    {
+      "id": "general_medical_005",
+      "question": "预防流感和肺炎的常见表现和处理要点是什么？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.35,
+        "rag": 246.87,
+        "reranker": 0.07,
+        "total": 247.29
+      },
+      "retrieval_context_count": 4,
+      "retrieval_query_count": 2,
+      "vector_hits": 4,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 105,
+        "completion_tokens": 52,
+        "total_tokens": 157
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 252,
+        "completion_tokens": 13,
+        "total_tokens": 265
+      }
+    },
+    {
+      "id": "general_medical_006",
+      "question": "关于它不仅可以帮助临床精神病，诊断时需要重点关注哪些关键点？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.75,
+        "rag": 351.6,
+        "reranker": 0.22,
+        "total": 352.57
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 122,
+        "completion_tokens": 65,
+        "total_tokens": 187
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 281,
+        "completion_tokens": 13,
+        "total_tokens": 294
+      }
+    }
+  ]
+}

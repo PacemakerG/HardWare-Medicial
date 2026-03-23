@@ -14,9 +14,20 @@ from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import List
+from uuid import uuid4
 
 from langchain_core.documents import Document
 
+from app.core.config import (
+    RAG_CHILD_CHUNK_OVERLAP,
+    RAG_CHILD_CHUNK_SIZE,
+    RAG_CHUNK_OVERLAP,
+    RAG_CHUNK_SIZE,
+    RAG_CHUNK_STRATEGY,
+    RAG_PARENT_CHUNK_OVERLAP,
+    RAG_PARENT_CHUNK_SIZE,
+    RAG_PARENT_CHILD_ENABLED,
+)
 from app.core.medical_taxonomy import (
     GENERAL_MEDICAL_DEPARTMENT,
     normalize_department_code,
@@ -200,17 +211,153 @@ def load_document(document_path: str) -> List[Document]:
     raise ValueError(f"Unsupported knowledge document type: {document_path}")
 
 
-def split_documents(docs: List[Document]) -> List[Document]:
-    """Split documents into overlapping chunks using tiktoken-aware splitter."""
+def _build_splitter(chunk_size: int, chunk_overlap: int):
     from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-        chunk_size=512,
-        chunk_overlap=128,
+    return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=max(128, int(chunk_size)),
+        chunk_overlap=max(0, int(chunk_overlap)),
         separators=["\n\n", ". ", "\n", " "],
     )
-    splits = splitter.split_documents(docs)
-    logger.info("Split into %d chunks", len(splits))
+
+
+def _is_heading_line(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped:
+        return False
+    if len(stripped) > 80:
+        return False
+    heading_patterns = (
+        r"^第[一二三四五六七八九十百千0-9]+[章节篇部分卷].*",
+        r"^[0-9]+(\.[0-9]+)*\s+.+",
+        r"^[（(]?[一二三四五六七八九十0-9]+[）)]\s*.+",
+        r"^(chapter|section)\s+[0-9ivx]+",
+    )
+    lowered = stripped.lower()
+    return any(re.match(pattern, stripped) for pattern in heading_patterns) or any(
+        lowered.startswith(prefix) for prefix in ("chapter ", "section ", "part ")
+    )
+
+
+def _structured_sections(text: str) -> List[str]:
+    lines = [line.strip() for line in (text or "").splitlines()]
+    sections: List[str] = []
+    buffer: List[str] = []
+
+    for line in lines:
+        if not line:
+            continue
+        if _is_heading_line(line) and buffer:
+            section_text = "\n".join(buffer).strip()
+            if section_text:
+                sections.append(section_text)
+            buffer = [line]
+            continue
+        buffer.append(line)
+
+    if buffer:
+        section_text = "\n".join(buffer).strip()
+        if section_text:
+            sections.append(section_text)
+    return sections or [text.strip()]
+
+
+def _adaptive_child_chunk_size(text: str) -> int:
+    length = len(text or "")
+    if length <= 900:
+        return max(240, min(RAG_CHILD_CHUNK_SIZE, 360))
+    if length <= 2200:
+        return max(360, RAG_CHILD_CHUNK_SIZE)
+    return max(RAG_CHILD_CHUNK_SIZE, min(900, int(RAG_CHILD_CHUNK_SIZE * 1.25)))
+
+
+def _prepare_structured_docs(docs: List[Document]) -> List[Document]:
+    prepared: List[Document] = []
+    for doc in docs:
+        text = (doc.page_content or "").strip()
+        if not text:
+            continue
+        sections = _structured_sections(text)
+        if len(sections) == 1:
+            prepared.append(doc)
+            continue
+        for section_idx, section in enumerate(sections, start=1):
+            metadata = dict(doc.metadata or {})
+            metadata["section_index"] = section_idx
+            prepared.append(Document(page_content=section, metadata=metadata))
+    return prepared
+
+
+def _split_fixed(docs: List[Document]) -> List[Document]:
+    splitter = _build_splitter(RAG_CHUNK_SIZE, RAG_CHUNK_OVERLAP)
+    return splitter.split_documents(docs)
+
+
+def _split_adaptive(docs: List[Document]) -> List[Document]:
+    chunks: List[Document] = []
+    for doc in docs:
+        chunk_size = _adaptive_child_chunk_size(doc.page_content)
+        chunk_overlap = min(RAG_CHILD_CHUNK_OVERLAP, max(32, int(chunk_size * 0.3)))
+        splitter = _build_splitter(chunk_size, chunk_overlap)
+        split_docs = splitter.split_documents([doc])
+        for chunk_idx, child in enumerate(split_docs, start=1):
+            metadata = dict(child.metadata or {})
+            metadata["chunk_strategy"] = "adaptive"
+            metadata["chunk_index"] = chunk_idx
+            child.metadata = metadata
+            chunks.append(child)
+    return chunks
+
+
+def _split_parent_child(docs: List[Document]) -> List[Document]:
+    parent_splitter = _build_splitter(RAG_PARENT_CHUNK_SIZE, RAG_PARENT_CHUNK_OVERLAP)
+    child_chunks: List[Document] = []
+
+    for doc in docs:
+        parent_docs = parent_splitter.split_documents([doc])
+        for parent_idx, parent_doc in enumerate(parent_docs, start=1):
+            parent_text = (parent_doc.page_content or "").strip()
+            if not parent_text:
+                continue
+            parent_id = f"pc-{uuid4().hex[:12]}"
+            child_size = _adaptive_child_chunk_size(parent_text)
+            child_overlap = min(RAG_CHILD_CHUNK_OVERLAP, max(40, int(child_size * 0.28)))
+            child_splitter = _build_splitter(child_size, child_overlap)
+            split_children = child_splitter.split_documents([parent_doc])
+            for child_idx, child_doc in enumerate(split_children, start=1):
+                metadata = dict(child_doc.metadata or {})
+                metadata["chunk_strategy"] = "parent_child"
+                metadata["chunk_level"] = "child"
+                metadata["parent_chunk_id"] = parent_id
+                metadata["parent_index"] = parent_idx
+                metadata["child_index"] = child_idx
+                metadata["parent_excerpt"] = parent_text[:900]
+                child_doc.metadata = metadata
+                child_chunks.append(child_doc)
+    return child_chunks
+
+
+def split_documents(docs: List[Document]) -> List[Document]:
+    """Split documents with configurable strategy (fixed/adaptive/parent-child)."""
+    if not docs:
+        return []
+
+    strategy = (RAG_CHUNK_STRATEGY or "adaptive").strip().lower()
+    structured_docs = _prepare_structured_docs(docs) if strategy != "fixed" else docs
+
+    if strategy == "fixed":
+        splits = _split_fixed(structured_docs)
+    elif RAG_PARENT_CHILD_ENABLED:
+        splits = _split_parent_child(structured_docs)
+    else:
+        splits = _split_adaptive(structured_docs)
+
+    logger.info(
+        "Split into %d chunks (strategy=%s, parent_child=%s)",
+        len(splits),
+        strategy,
+        RAG_PARENT_CHILD_ENABLED,
+    )
     return splits
 
 

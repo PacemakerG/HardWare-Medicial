@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 from app.core.logging_config import logger
 
@@ -27,6 +27,7 @@ def _render_notes(
     use_rag: bool,
     need_rag: bool,
     primary_department: str,
+    profiling: dict | None = None,
 ) -> str:
     parts = [
         f"safety_level={safety_level}",
@@ -35,6 +36,14 @@ def _render_notes(
         f"use_rag={use_rag}",
         f"need_rag={need_rag}",
     ]
+    if profiling and isinstance(profiling, dict):
+        node_timings = profiling.get("node_timings_ms") or {}
+        if isinstance(node_timings, dict) and node_timings:
+            total_ms = round(sum(float(v) for v in node_timings.values()), 2)
+            parts.append(f"node_total_ms={total_ms}")
+        token_usage = profiling.get("token_usage") or {}
+        if isinstance(token_usage, dict) and token_usage:
+            parts.append(f"tokens={int(token_usage.get('total_tokens', 0))}")
     return ", ".join(parts)
 
 
@@ -48,11 +57,19 @@ def append_flow_trace_record(
     primary_department: str,
     use_rag: bool,
     need_rag: bool,
+    profiling: dict[str, Any] | None = None,
 ) -> None:
     """Append one trace record to markdown and JSONL docs."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     flow_trace_list = list(flow_trace)
-    notes = _render_notes(safety_level, domain, use_rag, need_rag, primary_department)
+    notes = _render_notes(
+        safety_level,
+        domain,
+        use_rag,
+        need_rag,
+        primary_department,
+        profiling=profiling,
+    )
 
     record = {
         "timestamp": timestamp,
@@ -61,6 +78,7 @@ def append_flow_trace_record(
         "flow_trace": flow_trace_list,
         "source": source,
         "notes": notes,
+        "profiling": profiling or {},
     }
 
     try:

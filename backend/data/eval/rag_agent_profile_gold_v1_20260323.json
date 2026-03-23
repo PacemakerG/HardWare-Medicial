@@ -1,0 +1,525 @@
+{
+  "summary": {
+    "dataset_samples": 19,
+    "langsmith_tracing_enabled": false,
+    "langsmith_project": "medigenius",
+    "node_timing_ms": {
+      "query_rewriter": {
+        "avg": 0.46,
+        "p50": 0.39,
+        "p95": 0.69
+      },
+      "rag": {
+        "avg": 3233.26,
+        "p50": 356.87,
+        "p95": 8129.18
+      },
+      "reranker": {
+        "avg": 0.12,
+        "p50": 0.12,
+        "p95": 0.16
+      }
+    },
+    "pipeline_total_ms": {
+      "avg": 3233.83,
+      "p50": 357.37,
+      "p95": 8129.66
+    },
+    "retrieval_behavior": {
+      "avg_context_count": 5.63,
+      "avg_retrieval_query_count": 2.79,
+      "avg_vector_hits": 8.26,
+      "avg_keyword_hits": 0.58
+    },
+    "token_estimates": {
+      "answer_generation": {
+        "avg_prompt_tokens": 150.53,
+        "avg_completion_tokens": 60.11,
+        "avg_total_tokens": 210.63
+      },
+      "llm_judge": {
+        "avg_prompt_tokens": 304.79,
+        "avg_completion_tokens": 13,
+        "avg_total_tokens": 317.79
+      },
+      "combined_avg_total_tokens": 528.42
+    }
+  },
+  "samples": [
+    {
+      "id": "dermatology_001",
+      "question": "淋菌性咽炎常用哪些治疗方案？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.86,
+        "rag": 44633.04,
+        "reranker": 0.12,
+        "total": 44634.02
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 2,
+      "vector_hits": 6,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 119,
+        "completion_tokens": 50,
+        "total_tokens": 169
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 263,
+        "completion_tokens": 13,
+        "total_tokens": 276
+      }
+    },
+    {
+      "id": "dermatology_004",
+      "question": "二期梅毒一般在什么时候发生？有哪些典型皮肤黏膜表现？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.38,
+        "rag": 162.64,
+        "reranker": 0.11,
+        "total": 163.13
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 151,
+        "completion_tokens": 57,
+        "total_tokens": 208
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 302,
+        "completion_tokens": 13,
+        "total_tokens": 315
+      }
+    },
+    {
+      "id": "dermatology_006",
+      "question": "二期梅毒常见的斑疹性梅毒疹和黏膜损害有哪些特点？",
+      "selected_department": "dermatology",
+      "node_timings_ms": {
+        "query_rewriter": 0.43,
+        "rag": 125.97,
+        "reranker": 0.09,
+        "total": 126.49
+      },
+      "retrieval_context_count": 5,
+      "retrieval_query_count": 2,
+      "vector_hits": 5,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 145,
+        "completion_tokens": 42,
+        "total_tokens": 187
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 281,
+        "completion_tokens": 13,
+        "total_tokens": 294
+      }
+    },
+    {
+      "id": "ent_001",
+      "question": "慢性外耳道炎常用哪些滴耳药物？怎么使用？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.34,
+        "rag": 1190.49,
+        "reranker": 0.11,
+        "total": 1190.94
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 157,
+        "completion_tokens": 70,
+        "total_tokens": 227
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 321,
+        "completion_tokens": 13,
+        "total_tokens": 334
+      }
+    },
+    {
+      "id": "ent_002",
+      "question": "变应性鼻炎应用莫米松鼻喷雾剂有什么作用和用法？",
+      "selected_department": "ent",
+      "node_timings_ms": {
+        "query_rewriter": 0.46,
+        "rag": 135.42,
+        "reranker": 0.08,
+        "total": 135.96
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 103,
+        "completion_tokens": 49,
+        "total_tokens": 152
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 246,
+        "completion_tokens": 13,
+        "total_tokens": 259
+      }
+    },
+    {
+      "id": "infectious_disease_002",
+      "question": "甲型流感为什么容易引起大流行？它有哪些流行特点？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.59,
+        "rag": 1611.27,
+        "reranker": 0.12,
+        "total": 1611.98
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 123,
+        "completion_tokens": 62,
+        "total_tokens": 185
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 280,
+        "completion_tokens": 13,
+        "total_tokens": 293
+      }
+    },
+    {
+      "id": "infectious_disease_005",
+      "question": "某些传染病进入多尿期后可能出现哪些并发症？需要注意哪些电解质问题？",
+      "selected_department": "infectious_disease",
+      "node_timings_ms": {
+        "query_rewriter": 0.39,
+        "rag": 205.92,
+        "reranker": 0.12,
+        "total": 206.43
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 139,
+        "completion_tokens": 55,
+        "total_tokens": 194
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 289,
+        "completion_tokens": 13,
+        "total_tokens": 302
+      }
+    },
+    {
+      "id": "neurology_001",
+      "question": "TIA患者在什么情况下建议住院治疗？ABCD2评分怎么用？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 1358.77,
+        "reranker": 0.16,
+        "total": 1359.26
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 5,
+      "answer_tokens_est": {
+        "prompt_tokens": 200,
+        "completion_tokens": 126,
+        "total_tokens": 326
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 420,
+        "completion_tokens": 13,
+        "total_tokens": 433
+      }
+    },
+    {
+      "id": "neurology_002",
+      "question": "额叶癫痫发作持续时间和发作形式有哪些典型特点？",
+      "selected_department": "neurology",
+      "node_timings_ms": {
+        "query_rewriter": 0.35,
+        "rag": 147.87,
+        "reranker": 0.07,
+        "total": 148.29
+      },
+      "retrieval_context_count": 3,
+      "retrieval_query_count": 2,
+      "vector_hits": 3,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 94,
+        "completion_tokens": 60,
+        "total_tokens": 154
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 248,
+        "completion_tokens": 13,
+        "total_tokens": 261
+      }
+    },
+    {
+      "id": "ophthalmology_001",
+      "question": "ETDRS视力检查法有什么特点，临床上怎么使用？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.35,
+        "rag": 1463.72,
+        "reranker": 0.14,
+        "total": 1464.21
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 2,
+      "answer_tokens_est": {
+        "prompt_tokens": 280,
+        "completion_tokens": 106,
+        "total_tokens": 386
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 480,
+        "completion_tokens": 13,
+        "total_tokens": 493
+      }
+    },
+    {
+      "id": "ophthalmology_004",
+      "question": "角膜炎的病理变化通常分哪几个阶段？浸润期有什么表现？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.67,
+        "rag": 219.88,
+        "reranker": 0.14,
+        "total": 220.69
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 12,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 145,
+        "completion_tokens": 43,
+        "total_tokens": 188
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 282,
+        "completion_tokens": 13,
+        "total_tokens": 295
+      }
+    },
+    {
+      "id": "ophthalmology_006",
+      "question": "色觉检查常用哪些方法？假同色图检查有什么优缺点？",
+      "selected_department": "ophthalmology",
+      "node_timings_ms": {
+        "query_rewriter": 0.42,
+        "rag": 200.46,
+        "reranker": 0.12,
+        "total": 201.0
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 10,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 128,
+        "completion_tokens": 47,
+        "total_tokens": 175
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 269,
+        "completion_tokens": 13,
+        "total_tokens": 282
+      }
+    },
+    {
+      "id": "pediatrics_005",
+      "question": "病原明确后，肺炎链球菌肺炎如何选择抗生素？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.33,
+        "rag": 1453.72,
+        "reranker": 0.16,
+        "total": 1454.21
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 10,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 144,
+        "completion_tokens": 45,
+        "total_tokens": 189
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 283,
+        "completion_tokens": 13,
+        "total_tokens": 296
+      }
+    },
+    {
+      "id": "pediatrics_006",
+      "question": "青春期是怎样一个发育阶段？有哪些主要生理变化？",
+      "selected_department": "pediatrics",
+      "node_timings_ms": {
+        "query_rewriter": 0.38,
+        "rag": 208.82,
+        "reranker": 0.13,
+        "total": 209.33
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 143,
+        "completion_tokens": 57,
+        "total_tokens": 200
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 294,
+        "completion_tokens": 13,
+        "total_tokens": 307
+      }
+    },
+    {
+      "id": "general_medical_001",
+      "question": "短波治疗有哪些禁忌？为什么急性感染炎症只能用小剂量超短波治疗？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.31,
+        "rag": 4073.2,
+        "reranker": 0.11,
+        "total": 4073.62
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 8,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 139,
+        "completion_tokens": 48,
+        "total_tokens": 187
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 281,
+        "completion_tokens": 13,
+        "total_tokens": 294
+      }
+    },
+    {
+      "id": "general_medical_004",
+      "question": "HbA1c能否作为糖尿病诊断标准？我国目前为什么不推荐单独采用？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.37,
+        "rag": 356.87,
+        "reranker": 0.13,
+        "total": 357.37
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 11,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 213,
+        "completion_tokens": 51,
+        "total_tokens": 264
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 358,
+        "completion_tokens": 13,
+        "total_tokens": 371
+      }
+    },
+    {
+      "id": "general_medical_005",
+      "question": "特发性肺纤维化患者为什么要预防流感和肺炎？它的自然病程和预后怎样？",
+      "selected_department": "general_medical",
+      "node_timings_ms": {
+        "query_rewriter": 0.66,
+        "rag": 367.68,
+        "reranker": 0.09,
+        "total": 368.43
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 7,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 111,
+        "completion_tokens": 44,
+        "total_tokens": 155
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 249,
+        "completion_tokens": 13,
+        "total_tokens": 262
+      }
+    },
+    {
+      "id": "general_surgery_003",
+      "question": "纠正缺水后为什么要预防低钾血症？低渗性缺水有哪些处理要点？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.54,
+        "rag": 3245.85,
+        "reranker": 0.12,
+        "total": 3246.51
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 9,
+      "keyword_hits": 0,
+      "answer_tokens_est": {
+        "prompt_tokens": 193,
+        "completion_tokens": 84,
+        "total_tokens": 277
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 372,
+        "completion_tokens": 13,
+        "total_tokens": 385
+      }
+    },
+    {
+      "id": "general_surgery_006",
+      "question": "骨样骨瘤有哪些典型临床表现？CT检查和治疗要点是什么？",
+      "selected_department": "general_surgery",
+      "node_timings_ms": {
+        "query_rewriter": 0.55,
+        "rag": 270.27,
+        "reranker": 0.17,
+        "total": 270.99
+      },
+      "retrieval_context_count": 6,
+      "retrieval_query_count": 3,
+      "vector_hits": 13,
+      "keyword_hits": 4,
+      "answer_tokens_est": {
+        "prompt_tokens": 133,
+        "completion_tokens": 46,
+        "total_tokens": 179
+      },
+      "judge_tokens_est": {
+        "prompt_tokens": 273,
+        "completion_tokens": 13,
+        "total_tokens": 286
+      }
+    }
+  ]
+}

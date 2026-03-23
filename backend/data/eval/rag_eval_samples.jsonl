@@ -1,0 +1,2 @@
+{"id":"sample-1","question":"干眼症常见症状和处理建议是什么？","forced_department":"ophthalmology","expected_department":"ophthalmology","expected_keyword":"干眼"}
+{"id":"sample-2","question":"皮肤瘙痒伴红斑应该先做哪些检查？","forced_department":"dermatology","expected_department":"dermatology","expected_keyword":"红斑"}

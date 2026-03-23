@@ -15,7 +15,8 @@ from app.core.medical_taxonomy import (
     list_department_codes,
     normalize_department_code,
 )
-from app.core.state import AgentState, append_flow_trace
+from app.core.state import AgentState, append_flow_trace, profile_node
+from app.core.langsmith_service import langsmith_traceable
 from app.tools.llm_client import coerce_response_text, get_light_llm
 
 
@@ -56,84 +57,86 @@ def _normalize_candidates(raw_candidates, fallback_candidates: list[dict]) -> li
     return normalized[:3]
 
 
+@langsmith_traceable("medical_router")
 def MedicalRouterAgent(state: AgentState) -> AgentState:
     """Classify medical queries into a primary department and candidate departments."""
     append_flow_trace(state, "medical_router")
-    if state.get("domain") != "medical":
-        return state
-    if state.get("selected_department_forced") and state.get("selected_department"):
-        selected = state["selected_department"]
-        state["primary_department"] = selected
-        state["department_candidates"] = [
-            {
-                "name": selected,
-                "score": 1.0,
-                "display_name": department_display_name(selected),
-            }
-        ]
-        state["routing_reason"] = "manual department override"
-        state["current_tool"] = "query_rewriter"
-        return state
+    with profile_node(state, "medical_router"):
+        if state.get("domain") != "medical":
+            return state
+        if state.get("selected_department_forced") and state.get("selected_department"):
+            selected = state["selected_department"]
+            state["primary_department"] = selected
+            state["department_candidates"] = [
+                {
+                    "name": selected,
+                    "score": 1.0,
+                    "display_name": department_display_name(selected),
+                }
+            ]
+            state["routing_reason"] = "manual department override"
+            state["current_tool"] = "query_rewriter"
+            return state
 
-    question = (state.get("question") or "").strip()
-    fallback_candidates = infer_department_candidates(question, top_k=3)
-    fallback_primary = fallback_candidates[0]["name"] if fallback_candidates else GENERAL_MEDICAL_DEPARTMENT
-    primary_department = fallback_primary
-    department_candidates = fallback_candidates
-    routing_reason = "heuristic keyword fallback"
+        question = (state.get("question") or "").strip()
+        fallback_candidates = infer_department_candidates(question, top_k=3)
+        fallback_primary = fallback_candidates[0]["name"] if fallback_candidates else GENERAL_MEDICAL_DEPARTMENT
+        primary_department = fallback_primary
+        department_candidates = fallback_candidates
+        routing_reason = "heuristic keyword fallback"
 
-    llm = get_light_llm(
-        tenant_id=state.get("tenant_id", "default"),
-        user_id=state.get("user_id", "anonymous"),
-    )
-    if llm:
-        allowed_departments = ", ".join(code for code in list_department_codes() if code != GENERAL_MEDICAL_DEPARTMENT)
-        prompt = (
-            "你负责把医疗问题路由到医院科室。\n"
-            "只返回如下 JSON：\n"
-            "{"
-            "\"primary_department\": \"...\", "
-            "\"department_candidates\": [{\"name\": \"...\", \"score\": 0.0}], "
-            "\"routing_reason\": \"...\""
-            "}\n"
-            f"允许的科室代码：{allowed_departments}。\n"
-            "最多给出 3 个候选科室，score 取值范围必须在 0 到 1 之间。\n"
-            f"用户问题：{question[:1200]}\n"
+        llm = get_light_llm(
+            tenant_id=state.get("tenant_id", "default"),
+            user_id=state.get("user_id", "anonymous"),
         )
-        try:
-            raw = llm.invoke(prompt)
-            content = coerce_response_text(raw)
-            parsed = json.loads(_extract_json_block(content))
-            primary = normalize_department_code(parsed.get("primary_department"))
-            department_candidates = _normalize_candidates(
-                parsed.get("department_candidates"),
-                fallback_candidates,
+        if llm:
+            allowed_departments = ", ".join(code for code in list_department_codes() if code != GENERAL_MEDICAL_DEPARTMENT)
+            prompt = (
+                "你负责把医疗问题路由到医院科室。\n"
+                "只返回如下 JSON：\n"
+                "{"
+                "\"primary_department\": \"...\", "
+                "\"department_candidates\": [{\"name\": \"...\", \"score\": 0.0}], "
+                "\"routing_reason\": \"...\""
+                "}\n"
+                f"允许的科室代码：{allowed_departments}。\n"
+                "最多给出 3 个候选科室，score 取值范围必须在 0 到 1 之间。\n"
+                f"用户问题：{question[:1200]}\n"
             )
-            if primary:
-                primary_department = primary
-            elif department_candidates:
-                primary_department = department_candidates[0]["name"]
-            routing_reason = str(parsed.get("routing_reason") or routing_reason)
-        except Exception as exc:
-            logger.warning("MedicalRouter fallback used: %s", exc)
+            try:
+                raw = llm.invoke(prompt)
+                content = coerce_response_text(raw)
+                parsed = json.loads(_extract_json_block(content))
+                primary = normalize_department_code(parsed.get("primary_department"))
+                department_candidates = _normalize_candidates(
+                    parsed.get("department_candidates"),
+                    fallback_candidates,
+                )
+                if primary:
+                    primary_department = primary
+                elif department_candidates:
+                    primary_department = department_candidates[0]["name"]
+                routing_reason = str(parsed.get("routing_reason") or routing_reason)
+            except Exception as exc:
+                logger.warning("MedicalRouter fallback used: %s", exc)
 
-    if primary_department not in {item["name"] for item in department_candidates}:
-        department_candidates.insert(
-            0,
-            {
-                "name": primary_department,
-                "score": 0.8,
-                "display_name": department_display_name(primary_department),
-            },
+        if primary_department not in {item["name"] for item in department_candidates}:
+            department_candidates.insert(
+                0,
+                {
+                    "name": primary_department,
+                    "score": 0.8,
+                    "display_name": department_display_name(primary_department),
+                },
+            )
+
+        state["primary_department"] = primary_department or GENERAL_MEDICAL_DEPARTMENT
+        state["department_candidates"] = department_candidates[:3]
+        state["routing_reason"] = routing_reason
+        state["current_tool"] = "query_rewriter"
+        logger.info(
+            "MedicalRouter: primary=%s candidates=%s",
+            state["primary_department"],
+            [item["name"] for item in state["department_candidates"]],
         )
-
-    state["primary_department"] = primary_department or GENERAL_MEDICAL_DEPARTMENT
-    state["department_candidates"] = department_candidates[:3]
-    state["routing_reason"] = routing_reason
-    state["current_tool"] = "query_rewriter"
-    logger.info(
-        "MedicalRouter: primary=%s candidates=%s",
-        state["primary_department"],
-        [item["name"] for item in state["department_candidates"]],
-    )
     return state

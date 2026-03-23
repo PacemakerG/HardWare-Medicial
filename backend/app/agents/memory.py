@@ -5,7 +5,8 @@ Memory agents:
   - MemoryWriteAsyncAgent: async profile update after final answer
 """
 
-from app.core.state import AgentState, append_flow_trace
+from app.core.state import AgentState, append_flow_trace, profile_node
+from app.core.langsmith_service import langsmith_traceable
 from app.services.profile_service import (
     load_profile,
     render_profile_as_text,
@@ -13,45 +14,49 @@ from app.services.profile_service import (
 )
 
 
+@langsmith_traceable("memory_read")
 def MemoryReadAgent(state: AgentState) -> AgentState:
     """Trim history and load persistent profile context into state."""
     append_flow_trace(state, "memory_read")
-    history = state.get("conversation_history", [])
-    if len(history) > 20:
-        history = history[-20:]
-    state["conversation_history"] = history
+    with profile_node(state, "memory_read"):
+        history = state.get("conversation_history", [])
+        if len(history) > 20:
+            history = history[-20:]
+        state["conversation_history"] = history
 
-    session_id = state.get("session_id", "")
-    tenant_id = state.get("tenant_id", "default")
-    user_id = state.get("user_id", "anonymous")
-    profile = load_profile(
-        session_id,
-        tenant_id=tenant_id,
-        user_id=user_id,
-    )
-    state["memory_context"] = render_profile_as_text(profile)
-    state["user_preferences"] = profile.get("preferences") or {}
+        session_id = state.get("session_id", "")
+        tenant_id = state.get("tenant_id", "default")
+        user_id = state.get("user_id", "anonymous")
+        profile = load_profile(
+            session_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+        state["memory_context"] = render_profile_as_text(profile)
+        state["user_preferences"] = profile.get("preferences") or {}
 
     return state
 
 
+@langsmith_traceable("memory_write_async")
 def MemoryWriteAsyncAgent(state: AgentState) -> AgentState:
     """Schedule asynchronous profile updates without blocking main response path."""
     append_flow_trace(state, "memory_write_async")
-    session_id = state.get("session_id", "")
-    tenant_id = state.get("tenant_id", "default")
-    user_id = state.get("user_id", "anonymous")
-    question = state.get("question", "")
-    answer = state.get("generation", "")
+    with profile_node(state, "memory_write_async"):
+        session_id = state.get("session_id", "")
+        tenant_id = state.get("tenant_id", "default")
+        user_id = state.get("user_id", "anonymous")
+        question = state.get("question", "")
+        answer = state.get("generation", "")
 
-    if session_id and question and answer:
-        schedule_profile_update(
-            session_id,
-            question,
-            answer,
-            tenant_id=tenant_id,
-            user_id=user_id,
-        )
+        if session_id and question and answer:
+            schedule_profile_update(
+                session_id,
+                question,
+                answer,
+                tenant_id=tenant_id,
+                user_id=user_id,
+            )
 
     return state
 

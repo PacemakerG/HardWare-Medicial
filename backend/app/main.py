@@ -34,6 +34,7 @@ from app.core.config import (
 from app.core.logging_config import logger
 from app.services.chat_service import chat_service
 from app.services.database_service import db_service
+from app.core.langsmith_service import configure_langsmith
 from app.tools.pdf_loader import process_knowledge_library, process_pdf
 from app.tools.vector_store import get_or_create_vectorstore
 
@@ -43,6 +44,7 @@ from app.tools.vector_store import get_or_create_vectorstore
 async def lifespan(app: FastAPI):
     """Application startup and shutdown lifecycle."""
     logger.info("Initializing MediGenius System...")
+    configure_langsmith()
 
     db_service.init_db()
     logger.info("Database initialized at %s", CHAT_DB_PATH)

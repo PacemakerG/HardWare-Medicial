@@ -6,7 +6,8 @@ JudgeNeedRAGAgent: lightweight classifier deciding whether retrieval is needed.
 import json
 
 from app.core.logging_config import logger
-from app.core.state import AgentState, append_flow_trace
+from app.core.state import AgentState, append_flow_trace, profile_node
+from app.core.langsmith_service import langsmith_traceable
 from app.tools.llm_client import coerce_response_text, get_light_llm
 
 LIGHTWEIGHT_CHITCHAT = {
@@ -32,6 +33,7 @@ def _extract_json_block(text: str) -> str:
     return text[start : end + 1]
 
 
+@langsmith_traceable("judge_need_rag")
 def JudgeNeedRAGAgent(state: AgentState) -> AgentState:
     """
     Decide whether query needs retrieval.
@@ -39,46 +41,47 @@ def JudgeNeedRAGAgent(state: AgentState) -> AgentState:
       {"need_rag": true|false, "reason": "..."}
     """
     append_flow_trace(state, "judge_need_rag")
-    question = (state.get("question") or "").strip()
-    if not question:
-        state["need_rag"] = False
-        return state
+    with profile_node(state, "judge_need_rag"):
+        question = (state.get("question") or "").strip()
+        if not question:
+            state["need_rag"] = False
+            return state
 
-    # Fast-path heuristic for simple greetings/chitchat.
-    if question.lower() in LIGHTWEIGHT_CHITCHAT:
-        state["need_rag"] = False
-        state["search_query"] = None
-        return state
+        # Fast-path heuristic for simple greetings/chitchat.
+        if question.lower() in LIGHTWEIGHT_CHITCHAT:
+            state["need_rag"] = False
+            state["search_query"] = None
+            return state
 
-    llm = get_light_llm(
-        tenant_id=state.get("tenant_id", "default"),
-        user_id=state.get("user_id", "anonymous"),
-    )
-    if not llm:
-        # Conservative fallback: for non-keyword route, avoid retrieval by default.
-        state["need_rag"] = False
-        return state
+        llm = get_light_llm(
+            tenant_id=state.get("tenant_id", "default"),
+            user_id=state.get("user_id", "anonymous"),
+        )
+        if not llm:
+            # Conservative fallback: for non-keyword route, avoid retrieval by default.
+            state["need_rag"] = False
+            return state
 
-    prompt = (
-        "你是医疗助手工作流中的严格路由器。\n"
-        "请判断当前问题是否需要从医疗文档中检索资料。\n"
-        "只返回 JSON：{\"need_rag\": true|false, \"reason\": \"...\"}\n\n"
-        f"用户问题：{question[:1200]}\n"
-    )
+        prompt = (
+            "你是医疗助手工作流中的严格路由器。\n"
+            "请判断当前问题是否需要从医疗文档中检索资料。\n"
+            "只返回 JSON：{\"need_rag\": true|false, \"reason\": \"...\"}\n\n"
+            f"用户问题：{question[:1200]}\n"
+        )
 
-    try:
-        raw = llm.invoke(prompt)
-        content = coerce_response_text(raw)
-        parsed = json.loads(_extract_json_block(content))
-        need_rag = bool(parsed.get("need_rag", False))
-        state["need_rag"] = need_rag
-        state["search_query"] = question if need_rag else None
-        state["current_tool"] = "query_rewriter" if need_rag else "executor"
-        logger.info("JudgeNeedRAG: need_rag=%s", need_rag)
-    except Exception as exc:
-        logger.warning("JudgeNeedRAG failed, fallback to no-rag: %s", exc)
-        state["need_rag"] = False
-        state["search_query"] = None
-        state["current_tool"] = "executor"
+        try:
+            raw = llm.invoke(prompt)
+            content = coerce_response_text(raw)
+            parsed = json.loads(_extract_json_block(content))
+            need_rag = bool(parsed.get("need_rag", False))
+            state["need_rag"] = need_rag
+            state["search_query"] = question if need_rag else None
+            state["current_tool"] = "query_rewriter" if need_rag else "executor"
+            logger.info("JudgeNeedRAG: need_rag=%s", need_rag)
+        except Exception as exc:
+            logger.warning("JudgeNeedRAG failed, fallback to no-rag: %s", exc)
+            state["need_rag"] = False
+            state["search_query"] = None
+            state["current_tool"] = "executor"
 
     return state
