@@ -15,6 +15,7 @@ from app.agents.query_rewriter import QueryRewriterAgent  # noqa: E402
 from app.agents.retriever import RetrieverAgent  # noqa: E402
 from app.agents.reranker import RerankerAgent  # noqa: E402
 from app.core.state import initialize_conversation_state  # noqa: E402
+from app.tools.pdf_loader import split_documents  # noqa: E402
 
 
 # --- Planner Agent Tests ---
@@ -123,6 +124,42 @@ def test_retriever_agent_failure():
         assert new_state["rag_success"] is False
 
 
+def test_retriever_agent_with_elasticsearch_keyword_backend():
+    state = initialize_conversation_state()
+    state["question"] = "发热是不是感染"
+    state["domain"] = "medical"
+    state["use_rag"] = True
+    state["primary_department"] = "infectious_disease"
+    state["department_candidates"] = [{"name": "infectious_disease", "score": 0.9}]
+    state["retrieval_query"] = "发热 感染"
+    state["retrieval_queries"] = ["发热 感染"]
+    state["department_queries"] = {"infectious_disease": "感染 发热"}
+
+    vector_doc = Document(
+        page_content="向量召回结果 " * 12,
+        metadata={"chunk_id": "vec-1", "department": "infectious_disease"},
+    )
+    keyword_doc = Document(
+        page_content="关键词召回结果 " * 12,
+        metadata={"chunk_id": "kw-1", "department": "infectious_disease"},
+    )
+
+    with patch("app.agents.retriever.KEYWORD_BACKEND", "elasticsearch"), \
+            patch("app.agents.retriever.keyword_backend_available", return_value=True), \
+            patch("app.agents.retriever.get_retriever") as mock_get_retriever, \
+            patch("app.agents.retriever.keyword_search_es", return_value=[keyword_doc]):
+        mock_retriever = MagicMock()
+        mock_retriever.invoke.return_value = [vector_doc]
+        mock_get_retriever.return_value = mock_retriever
+
+        new_state = RetrieverAgent(state)
+
+    methods = {item["retrieval_method"] for item in new_state["merged_rag_context"]}
+    assert new_state["rag_success"] is True
+    assert {"vector", "keyword"} <= methods
+    assert new_state["profiling"]["retrieval"]["keyword_backend"] == "elasticsearch"
+
+
 def test_retriever_agent_no_tool():
     state = initialize_conversation_state()
     state["domain"] = "medical"
@@ -132,6 +169,28 @@ def test_retriever_agent_no_tool():
     with patch('app.agents.retriever.get_retriever', return_value=None):
         new_state = RetrieverAgent(state)
         assert new_state["rag_success"] is False
+
+
+def test_split_documents_assigns_stable_chunk_ids():
+    docs = [
+        Document(
+            page_content="第一章 总论\n这里是测试内容。" * 40,
+            metadata={
+                "source": "demo.epub",
+                "source_path": "demo.epub",
+                "page": 1,
+                "section": "chapter-1",
+            },
+        )
+    ]
+
+    chunks_a = split_documents(docs)
+    chunks_b = split_documents(docs)
+
+    ids_a = [chunk.metadata.get("chunk_id") for chunk in chunks_a]
+    ids_b = [chunk.metadata.get("chunk_id") for chunk in chunks_b]
+    assert ids_a
+    assert ids_a == ids_b
 
 
 def test_medical_router_agent_fallback():

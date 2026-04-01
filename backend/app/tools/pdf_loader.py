@@ -8,13 +8,13 @@ from __future__ import annotations
 import os
 import posixpath
 import re
+import hashlib
 import xml.etree.ElementTree as ET
 import zipfile
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import List
-from uuid import uuid4
 
 from langchain_core.documents import Document
 
@@ -108,6 +108,55 @@ def _normalize_text(text: str) -> str:
     normalized = "\n".join(line for line in lines if line)
     normalized = re.sub(r"\n{3,}", "\n\n", normalized)
     return normalized.strip()
+
+
+def _hash_identity(*parts: object) -> str:
+    payload = "||".join(str(part or "") for part in parts)
+    return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _stable_parent_chunk_id(parent_doc: Document, parent_idx: int) -> str:
+    metadata = parent_doc.metadata or {}
+    return (
+        "pc-"
+        + _hash_identity(
+            metadata.get("source_path") or metadata.get("source"),
+            metadata.get("page"),
+            metadata.get("section"),
+            metadata.get("section_index"),
+            parent_idx,
+            (parent_doc.page_content or "")[:240],
+        )
+    )
+
+
+def _stable_chunk_id(chunk: Document) -> str:
+    metadata = chunk.metadata or {}
+    return (
+        "ck-"
+        + _hash_identity(
+            metadata.get("source_path") or metadata.get("source"),
+            metadata.get("source_type"),
+            metadata.get("page"),
+            metadata.get("section"),
+            metadata.get("section_index"),
+            metadata.get("chunk_strategy"),
+            metadata.get("chunk_level"),
+            metadata.get("parent_chunk_id"),
+            metadata.get("parent_index"),
+            metadata.get("child_index"),
+            metadata.get("chunk_index"),
+            (chunk.page_content or "")[:320],
+        )
+    )
+
+
+def _apply_chunk_identity(chunks: List[Document]) -> List[Document]:
+    for chunk in chunks:
+        metadata = dict(chunk.metadata or {})
+        metadata["chunk_id"] = _stable_chunk_id(chunk)
+        chunk.metadata = metadata
+    return chunks
 
 
 def _extract_epub_text(raw_content: bytes) -> str:
@@ -290,7 +339,13 @@ def _prepare_structured_docs(docs: List[Document]) -> List[Document]:
 
 def _split_fixed(docs: List[Document]) -> List[Document]:
     splitter = _build_splitter(RAG_CHUNK_SIZE, RAG_CHUNK_OVERLAP)
-    return splitter.split_documents(docs)
+    split_docs = splitter.split_documents(docs)
+    for chunk_idx, split_doc in enumerate(split_docs, start=1):
+        metadata = dict(split_doc.metadata or {})
+        metadata.setdefault("chunk_strategy", "fixed")
+        metadata.setdefault("chunk_index", chunk_idx)
+        split_doc.metadata = metadata
+    return split_docs
 
 
 def _split_adaptive(docs: List[Document]) -> List[Document]:
@@ -319,7 +374,7 @@ def _split_parent_child(docs: List[Document]) -> List[Document]:
             parent_text = (parent_doc.page_content or "").strip()
             if not parent_text:
                 continue
-            parent_id = f"pc-{uuid4().hex[:12]}"
+            parent_id = _stable_parent_chunk_id(parent_doc, parent_idx)
             child_size = _adaptive_child_chunk_size(parent_text)
             child_overlap = min(RAG_CHILD_CHUNK_OVERLAP, max(40, int(child_size * 0.28)))
             child_splitter = _build_splitter(child_size, child_overlap)
@@ -358,7 +413,7 @@ def split_documents(docs: List[Document]) -> List[Document]:
         strategy,
         RAG_PARENT_CHILD_ENABLED,
     )
-    return splits
+    return _apply_chunk_identity(splits)
 
 
 def process_pdf(pdf_path: str) -> List[Document]:

@@ -18,6 +18,7 @@ Module layout:
 import os
 import secrets
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +27,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.api.v1.api import api_router
 from app.core.config import (
     CHAT_DB_PATH,
+    KEYWORD_BACKEND,
     KNOWLEDGE_ROOT_DIR,
     PDF_PATH,
     RAG_ENABLED,
@@ -35,7 +37,13 @@ from app.core.logging_config import logger
 from app.services.chat_service import chat_service
 from app.services.database_service import db_service
 from app.core.langsmith_service import configure_langsmith
-from app.tools.pdf_loader import process_knowledge_library, process_pdf
+from app.tools.es_client import bulk_index_documents, es_document_count, es_enabled
+from app.tools.pdf_loader import (
+    GENERAL_MEDICAL_DEPARTMENT,
+    process_knowledge_library,
+    process_pdf,
+    process_pdf_with_metadata,
+)
 from app.tools.vector_store import get_or_create_vectorstore
 
 
@@ -45,6 +53,7 @@ async def lifespan(app: FastAPI):
     """Application startup and shutdown lifecycle."""
     logger.info("Initializing MediGenius System...")
     configure_langsmith()
+    knowledge_docs = None
 
     db_service.init_db()
     logger.info("Database initialized at %s", CHAT_DB_PATH)
@@ -83,6 +92,32 @@ async def lifespan(app: FastAPI):
             logger.warning("System will continue without RAG support.")
     else:
         logger.info("RAG initialization disabled by RAG_ENABLED=false")
+
+    if es_enabled() and KEYWORD_BACKEND == "elasticsearch":
+        try:
+            if knowledge_docs:
+                bulk_index_documents(knowledge_docs)
+            elif es_document_count() == 0:
+                logger.info("Elasticsearch keyword index empty; backfilling knowledge documents")
+                knowledge_docs = process_knowledge_library(KNOWLEDGE_ROOT_DIR)
+                if not knowledge_docs and os.path.exists(PDF_PATH):
+                    knowledge_docs = process_pdf_with_metadata(
+                        PDF_PATH,
+                        {
+                            "tenant_id": "default",
+                            "domain": "medical",
+                            "department": GENERAL_MEDICAL_DEPARTMENT,
+                            "source_book": Path(PDF_PATH).stem,
+                            "source_path": PDF_PATH,
+                            "source_type": "pdf",
+                        },
+                    )
+                if knowledge_docs:
+                    bulk_index_documents(knowledge_docs)
+                else:
+                    logger.warning("No documents available to populate Elasticsearch keyword index")
+        except Exception as exc:
+            logger.warning("Elasticsearch startup sync skipped: %s", exc)
 
     chat_service.initialize_workflow()
     logger.info("MediGenius System Ready!")
