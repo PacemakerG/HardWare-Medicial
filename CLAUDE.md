@@ -131,7 +131,7 @@ Auth & infrastructure:
 - `auth_service.py`: PBKDF2-SHA256 password hashing + HMAC-signed access tokens (stateful, not JWT)
 - `redis_service.py`: Optional Redis client with transparent in-memory fallback
 - `rate_limit_service.py`: Fixed-window rate limiter (login: 10/min, chat: 60/min)
-- `semantic_cache_service.py`: Redis Stack semantic cache using normalized entities plus vector similarity
+- `semantic_cache_service.py`: qwen3.5-flash structured signature (`entities`, `action`, `constraints`) + Redis Stack HNSW semantic cache
 - `task_queue_service.py`: Thread-pool task queue with Redis-compatible status storage
 
 ECG services:
@@ -272,7 +272,7 @@ Five scripts under `backend/scripts/evaluation/` build, upload, and evaluate thr
 - **Executor tool loop**: Hard budget (max 2 calls) + same-tool repeat limit (max 1) + timeout + forced final answer
 - **Memory JSON corruption**: Atomic writes + file locking + limited retry on failure
 - **RAG low quality**: Executor autonomous judgment with optional WebSearch fallback
-- **Semantic cache matching**: Exact normalized-entity filtering precedes vector-threshold matching; extraction or Redis Search failures fall through to the full workflow
+- **Semantic cache matching**: Exact `entities + action + constraints` TAG filtering precedes the 0.80 vector threshold; extraction or Redis Search failures fall through to the full workflow
 - **Rate limiting**: Fixed-window counters on login (10/min) and chat (60/min)
 
 ## Language & Tone

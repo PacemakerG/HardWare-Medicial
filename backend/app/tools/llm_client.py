@@ -178,12 +178,14 @@ def get_llm(*, user_id: str = "anonymous"):
         return instance
 
 
-def get_light_llm(*, user_id: str = "anonymous"):
+def get_light_llm(*, user_id: str = "anonymous", model_override: str = ""):
     """Return a cached lightweight LLM instance."""
     global _light_llm_instance
     cfg = _resolve_llm_config(user_id)
     api_key = cfg.get("api_key")
-    model = cfg.get("light_model") or cfg.get("model") or LIGHT_LLM_MODEL
+    model = (
+        model_override or cfg.get("light_model") or cfg.get("model") or LIGHT_LLM_MODEL
+    )
     base_url = cfg.get("base_url")
 
     if not api_key:

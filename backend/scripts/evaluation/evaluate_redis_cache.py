@@ -16,7 +16,10 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from app.core.config import KNOWLEDGE_ROOT_DIR  # noqa: E402
+from app.core.config import (  # noqa: E402
+    KNOWLEDGE_ROOT_DIR,
+    SEMANTIC_CACHE_EXTRACTION_MODEL,
+)
 from app.services.chat_service import chat_service  # noqa: E402
 from app.services.database_service import db_service  # noqa: E402
 from app.services.redis_service import redis_service  # noqa: E402
@@ -50,8 +53,14 @@ def preflight() -> None:
     client = redis_service.client()
     if client is None or not semantic_cache_service._ensure_index(client):
         missing.append("Redis Stack Search")
-    if get_light_llm(user_id="redis-eval") is None:
-        missing.append("light LLM for entity extraction")
+    if (
+        get_light_llm(
+            user_id="redis-eval",
+            model_override=SEMANTIC_CACHE_EXTRACTION_MODEL,
+        )
+        is None
+    ):
+        missing.append("qwen3.5-flash for cache signature extraction")
     if get_llm(user_id="redis-eval") is None:
         missing.append("main LLM for full-RAG latency")
     if not es_enabled() or not ensure_es_index():
@@ -148,7 +157,11 @@ async def evaluate(dataset: dict[str, Any]) -> dict[str, Any]:
         "metadata": {
             "dataset": dataset["metadata"]["name"],
             "samples": 50,
-            "implementation": "entity normalization + exact entity-set TAG filter + Redis Stack HNSW cosine search",
+            "implementation": (
+                "qwen3.5-flash structured extraction + exact "
+                "entities/action/constraints TAG filters + "
+                "Redis Stack HNSW cosine search"
+            ),
             "metric_definitions": {
                 "cache_hit_accuracy": "50对问题中命中/未命中判断正确的样本数 / 50",
                 "average_latency": "成功命中的正样本分别走完整RAG与实体抽取、向量化、Redis Search和读取回答链路的平均耗时",

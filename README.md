@@ -1,254 +1,281 @@
-# MediGenius (HardWare-Medicial)
+<div align="center">
 
-[English](./README.md) | [简体中文](./README.zh-CN.md)
+# MediGenius · 医枢智疗
 
-MediGenius is a production-oriented healthcare AI assistant that combines multi-agent orchestration, RAG retrieval, streaming interaction, long-term memory, and medical report delivery into one end-to-end system.
+**An engineering-oriented medical AI agent for multi-department Q&A and ECG report delivery**
 
-Two core pipelines:
+MediGenius combines hierarchical routing, hybrid RAG, evidence-grounded generation, Redis semantic caching, LangSmith evaluation, and real-time SSE streaming in one runnable system.
 
-1. **Multi-department medical Q&A** -- medical-intent classification -> department routing -> optional query rewriting -> hybrid retrieval (ChromaDB + keyword) -> reranking -> personalized answer generation, with optional web search
-2. **ECG report generation** -- cloud fetch or synthetic-normal mode -> structured parameter analysis -> professional Chinese report with PDF output
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](backend/pyproject.toml)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.128-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-1.0-1C3C3C)](https://github.com/langchain-ai/langgraph)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](frontend/package.json)
+[![Redis](https://img.shields.io/badge/Redis_Stack-HNSW-DC382D?logo=redis&logoColor=white)](https://redis.io/docs/latest/develop/interact/search-and-query/)
+[![Elasticsearch](https://img.shields.io/badge/Elasticsearch-9.4-005571?logo=elasticsearch&logoColor=white)](docker-compose.yml)
 
-Designed for practical scenarios: pre-consult triage, chronic-care follow-up, and wearable/monitor ECG interpretation support.
+**English** · [简体中文](./README.zh-CN.md) · [Evaluation Plan](docs/evaluation/评测方案.md) · [Evaluation Report](docs/evaluation/评测结果.md)
 
-## Key Highlights
+</div>
 
-- **9-node LangGraph workflow** with binary medical-intent routing and a single executor sink
-- **Department-level RAG** across 8 medical departments with optional query rewriting and scoped retrieval
-- **Hybrid retrieval** -- parallel ChromaDB vector search + Elasticsearch BM25 with RRF fusion
-- **Two-stage reranking** -- rule-based scoring + BGE cross-encoder reranking
-- **Real-time SSE streaming** with token-level delta updates
-- **User/session isolation** via `user_id + session_id` with PBKDF2 password auth and HMAC-signed tokens
-- **Redis semantic cache** -- normalized medical entities and filtering + 512-d vectors + Redis Stack HNSW search
-- **LangSmith observability** -- tracing plus separate RAG, routing, and Redis evaluation pipelines
-- **ECG end-to-end** -- cloud fetch -> signal parsing -> structured report -> PDF with waveform rendering
+---
 
-## Tech Stack
+## Overview
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19 + Vite + Tailwind CSS 4 + daisyUI 5 |
-| Backend | FastAPI + LangGraph |
-| LLM | OpenAI-compatible API (configurable model) |
-| Retrieval | ChromaDB (vector) + Elasticsearch (BM25) + RRF + BGE Reranker |
-| Storage | SQLite (chat/users) + Redis Stack (semantic cache) + JSON (profiles) + filesystem (PDF/vectors) |
-| Testing | pytest + vitest |
+MediGenius is more than a single-turn medical chatbot. It provides two complete application pipelines:
+
+- **Multi-department medical Q&A** — identify medical intent, route across eight departments, run scoped vector/BM25 retrieval, fuse results with RRF, rerank with BGE, and optionally fall back to web search.
+- **ECG report delivery** — ingest structured ECG data, analyze parameters and risk levels, and produce a Chinese PDF report with waveform rendering.
+
+The surrounding engineering layer includes user/session isolation, long-term memory, SSE streaming, semantic caching, rate limiting, asynchronous jobs, LangSmith traces, and separate evaluation suites.
+
+## Core Capabilities
+
+| Area | Implementation |
+| --- | --- |
+| Agent orchestration | Nine-node LangGraph workflow with a single Executor sink |
+| Hierarchical routing | Medical/non-medical decision, eight-department classification, local RAG/web routing |
+| Hybrid retrieval | Parallel ChromaDB vector and Elasticsearch BM25 retrieval with RRF fusion |
+| Reranking | Rule-based pre-ranking plus `BAAI/bge-reranker-v2-m3` cross-encoder |
+| Semantic cache | `qwen3.5-flash` structured extraction + Redis Stack TAG filters + HNSW vector search |
+| Streaming | Token-level FastAPI SSE rendered incrementally by React |
+| Identity | `user_id + session_id` ownership checks, PBKDF2 password hashing, HMAC tokens |
+| Observability | LangSmith traces and independent RAG, routing, and Redis evaluation suites |
 
 ## Architecture
 
+```text
+React / Vite
+    │
+    ├── REST: auth, sessions, ECG, jobs
+    └── SSE: streaming medical chat
+             │
+             ▼
+      Redis Semantic Cache
+       ├── Hit ───────────────────────────────────────► Response
+       └── Miss
+             │
+             ▼
+        MemoryRead
+             │
+        KeywordRouter ── non-medical ─► JudgeNeedRAG ─┐
+             │                                        │
+           medical                                    │
+             ▼                                        │
+        MedicalRouter (8 departments)                 │
+             │                                        │
+        QueryRewriter (pass-through by default)       │
+             │                                        │
+        Vector + Elasticsearch ──► RRF                │
+             │                                        │
+        BGE Reranker                                  │
+             └──────────────────► Executor ◄──────────┘
+                                      │
+                           MemoryWriteAsync
+                                      │
+                         Semantic Cache Store
+                                      │
+                                  Response
 ```
-Frontend (React/Vite)
-   ├─ POST /api/v1/chat/stream (SSE)
-   ├─ POST /api/v1/auth/login
-   ├─ POST /api/v1/ecg/monitor/start
-   └─ GET  /api/v1/ecg/monitor/{task_id}/events
 
-Backend (FastAPI) ─── LangGraph Workflow (9 nodes):
+The eight retrieval scopes are general medicine, general surgery, pediatrics, neurology, infectious disease, ENT, ophthalmology, and dermatology. Specialty routes search only their own PDFs; general medicine searches the full medical library.
 
-  semantic_cache
-      ├── cache hit ───────────────────────────────────────────────► response
-      └── cache miss
-              │
-              ▼
-  memory_read
-      │
-      ▼
-  keyword_router  ←── binary medical-intent classification
-      │
-      ├── department forced ────► query_rewriter → rag → reranker → executor
-      │
-      ├── medical ──► medical_router → query_rewriter → rag → reranker → executor
-      │
-      └── non-medical ──► judge_need_rag → (need_rag) query_rewriter → rag → reranker → executor
-                                          └─ (!need_rag) executor
-                                                                           │
-                                                                           ▼
-                                                                    memory_write_async
-                                                                           │
-                                                                           ▼
-                                                              semantic_cache store → response
+## Redis Semantic Cache
+
+Cache reuse is not decided by vector similarity alone. The service first compares the structured semantics that can change an answer, then performs vector retrieval.
+
+```text
+Question
+   ├── qwen3.5-flash
+   │      └── { entities, action, constraints }
+   ├── BAAI/bge-small-zh-v1.5
+   │      └── 512-d normalized embedding
+   └── FT.SEARCH
+          ├── exact entities TAG filter
+          ├── exact action TAG filter
+          ├── exact constraints TAG filter
+          └── KNN Top1, cosine similarity ≥ 0.80
 ```
 
-Key services: ChatService, AuthService, DatabaseService, ProfileService, RedisService, RateLimitService, SemanticCacheService, TaskQueueService, ECGReportService, ECGMonitorService, ECGPdfService
+Each entry is a TTL-bound Redis Hash:
+
+```text
+Key: mg:semcache:item:{uuid}
+
+entities | action | constraints | embedding | answer
+```
+
+`FT.SEARCH` combines all three exact filters with vector KNN. The answer is reused only when the structured fields are identical and similarity reaches `0.80`. Extraction, embedding, or Redis failures are treated as cache misses and fall through to the full RAG workflow.
+
+## Evaluation
+
+The project maintains three independent datasets with 250 samples in total:
+
+| System | Size | Split | Metrics |
+| --- | ---: | --- | --- |
+| RAG | 150 | 50 single-hop, 50 multi-hop, 50 hard retrieval | Hit@1, Recall@5, MRR, answer faithfulness |
+| Routing | 50 | 30 local RAG, 10 web medical, 10 non-medical | Route accuracy, department accuracy |
+| Redis | 50 pairs | 25 reusable, 25 non-reusable | Hit-decision accuracy, average latency |
+
+RAG evaluation searches the complete 20-PDF, 3,219-page corpus instead of a gold-only subset. Questions are generated from English source evidence and remain in English to avoid introducing a cross-language variable.
+
+### Independent RAG Modules
+
+Every module is first compared independently against the same B0 baseline, then evaluated in cumulative combinations.
+
+| Version | Single change from B0 | Hit@1 | Recall@5 | MRR | Mean retrieval latency |
+| --- | --- | ---: | ---: | ---: | ---: |
+| B0 | Fixed chunks + vector only | 14.67% | 35.33% | 0.2419 | 25.06 ms |
+| B1 | Semantic chunks | 16.00% | 31.67% | 0.2412 | 16.64 ms |
+| B2 | Parent-child index | 12.00% | 36.00% | 0.2297 | 16.79 ms |
+| B3 | OCR/text cleaning | 12.67% | 36.33% | 0.2321 | 16.79 ms |
+| B4 | Query Rewrite | 14.67% | 38.00% | 0.2511 | 6344.59 ms |
+| B5 | Vector + ES + RRF | 19.33% | 41.67% | 0.2989 | 17.64 ms |
+| B6 | BGE Reranker | **28.67%** | **44.33%** | **0.3773** | 1054.75 ms |
+
+### Final Combination and Trade-offs
+
+The retained C2 system uses **fixed chunks + parallel vector/Elasticsearch retrieval + RRF + BGE Reranker**.
+
+| Combination | Hit@1 | Recall@5 | MRR | Mean latency | Decision |
+| --- | ---: | ---: | ---: | ---: | --- |
+| C0 baseline | 14.67% | 35.33% | 0.2419 | 25.06 ms | Baseline |
+| C1 + Reranker | 28.67% | 44.33% | 0.3773 | 1054.75 ms | Keep |
+| C2 + ES/RRF | **30.00%** | **48.67%** | **0.4050** | 1067.76 ms | **Final** |
+| C3 + Query Rewrite | 26.67% | 54.67% | 0.3970 | 7395.45 ms | Drop |
+| C6 with parent-child | 22.67% | 46.33% | 0.3453 | 7393.07 ms | Drop |
+
+- The Reranker provides the largest independent quality gain.
+- ES/RRF adds about 13 ms while improving all three retrieval metrics.
+- Query Rewrite is disabled by default because it reduces Hit@1/MRR and adds about 6.3 seconds on average.
+- Parent-child indexing is removed because it lowers final quality while increasing indexing and storage complexity.
+
+### Routing and Cache Results
+
+| Experiment | Current result | Status |
+| --- | --- | --- |
+| Routing | 76.00% route accuracy, 65.00% department accuracy | Pre-fix diagnostic; formal post-fix model rerun pending |
+| Redis | 100% decisions on 50 pairs; ~10.7 s → 6.70 ms | Five-field signature implemented; Redis Stack v2 rerun pending archival |
+
+Model-dependent answer-faithfulness coverage and the post-fix routing run are not presented as completed. See the [evaluation report](docs/evaluation/评测结果.md) for definitions and limitations.
 
 ## Quick Start
 
-### 1) Environment
+### Requirements
+
+- Python `3.11`
+- Node.js `20+`
+- Redis Stack with RediSearch/`FT.SEARCH`
+- Elasticsearch `9.x`
+
+### Install and Configure
 
 ```bash
-conda activate medigenius
-```
+git clone https://github.com/PacemakerG/HardWare-Medicial.git
+cd HardWare-Medicial
 
-### 2) Install Dependencies
+cp backend/.env.example backend/.env
 
-```bash
 cd backend
-pip install -r requirements.txt
+uv sync --extra dev
 
 cd ../frontend
 npm install
 ```
 
-### 3) Configure Environment
+Minimum configuration:
 
-```bash
-cp backend/.env.example backend/.env
+```dotenv
+OPENAI_BASE_URL=your-openai-compatible-base-url
+OPENAI_API_KEY=your-api-key
+LLM_MODEL=Pro/deepseek-ai/DeepSeek-V3.2
+LIGHT_LLM_MODEL=Pro/deepseek-ai/DeepSeek-V3.2
+
+REDIS_ENABLED=true
+REDIS_URL=redis://localhost:6379/0
+SEMANTIC_CACHE_EXTRACTION_MODEL=qwen3.5-flash
+
+ES_ENABLED=true
+ES_HOST=http://localhost:9200
 ```
 
-Required variables:
-- `OPENAI_BASE_URL` -- LLM API base URL
-- `OPENAI_API_KEY` -- LLM API key
-- `LLM_MODEL` / `LIGHT_LLM_MODEL` -- main and lightweight model names
-- `OPENAI_WIRE_API` -- `chat` or `responses`
-- `SESSION_SECRET_KEY` / `AUTH_TOKEN_SECRET` -- random secrets for session and token signing
-
-Optional but recommended:
-- `RAG_ENABLED`, `EMBEDDING_MODEL_NAME` -- RAG configuration
-- `QUERY_REWRITER_ENABLED`, `HYBRID_RETRIEVAL_ENABLED`, `RERANKER_MODEL_ENABLED` -- retrieval quality
-- `TAVILY_API_KEY` -- web search fallback
-- `ECG_SITE_URL` / `ECG_SITE_USER` / `ECG_SITE_PASS` -- ECG cloud fetch
-- `SEMANTIC_CACHE_ENABLED`, `REDIS_ENABLED` -- performance
-
-### 4) Run
+### Run
 
 ```bash
+docker compose up -d redis elasticsearch
 python run.py
 ```
 
-Default ports: backend `8000`, frontend `5173` (auto-increments if occupied).
+Default endpoints: frontend `http://localhost:5173`, backend `http://localhost:8000`, OpenAPI `http://localhost:8000/docs`.
 
-### 5) Prepare the Local Medical Knowledge Base
+## Local Medical Knowledge Base
 
-The medical PDFs are large and remain subject to their publishers' terms, so they are kept locally and are not committed to GitHub. Download them from the [official-source manifest](backend/data/knowledge/医学知识库官方下载来源.md), preserve the listed paths and filenames, and then rebuild the vector store.
+The medical PDFs are large and remain subject to publisher terms, so they stay local and are excluded from Git. Download them from the [official-source manifest](backend/data/knowledge/医学知识库官方下载来源.md), preserve the listed paths, and rebuild the vector store.
 
-## API Endpoints
-
-### Auth
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/v1/auth/me` | Current login status and identity |
-| POST | `/api/v1/auth/login` | Password login, returns Bearer token |
-| POST | `/api/v1/auth/logout` | Clear session identity |
-
-### Chat & Sessions
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/v1/chat` | Non-streaming chat |
-| POST | `/api/v1/chat/stream` | SSE streaming chat |
-| POST | `/api/v1/chat/jobs` | Queue async chat task |
-| GET | `/api/v1/jobs/{job_id}` | Poll async job status |
-| GET | `/api/v1/sessions` | List sessions (scoped by user) |
-| GET | `/api/v1/session/{session_id}` | Load session details |
-| DELETE | `/api/v1/session/{session_id}` | Delete session |
-| GET | `/api/v1/history` | Current session chat history |
-| POST | `/api/v1/new-chat` | Create new session |
-| POST | `/api/v1/clear` | Clear conversation state |
-| POST | `/api/v1/welcome` | Generate proactive greeting |
-
-### ECG
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/v1/ecg/report` | Generate ECG report |
-| GET | `/api/v1/ecg/report/{report_id}` | Query report by ID |
-| GET | `/api/v1/ecg/report/{report_id}/pdf` | Download PDF report |
-| POST | `/api/v1/ecg/monitor/start` | Start ECG monitoring task |
-| GET | `/api/v1/ecg/monitor/{task_id}` | Query task status |
-
-### Health
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/v1/health` | Health check |
-| GET | `/api/v1/healthz` | Liveness probe |
-| GET | `/api/v1/readyz` | Readiness probe |
-
-## Testing
-
-```bash
-# Backend
-cd backend
-pytest -v                           # all tests
-pytest tests/test_agents.py -v      # single file
-pytest --cov=app --cov-report=html  # with HTML coverage
-
-# Frontend
-cd frontend
-npm test            # vitest
-npm run build       # production build
-npm run lint        # ESLint
-```
-
-## Evaluation
-
-The project uses three independent datasets with 250 samples in total: 150 for RAG, 50 for end-to-end routing, and 50 pairs for Redis semantic caching. See the [evaluation plan](docs/evaluation/评测方案.md) for definitions and the [evaluation report](docs/evaluation/评测结果.md) for itemized results.
-
-Key completed results:
-
-| Experiment | Result |
-| --- | --- |
-| Final RAG combination C2 | Hit@1 30.00%, Recall@5 48.67%, MRR 0.4050, mean retrieval latency 1067.76 ms |
-| Pre-fix routing diagnostic | Route accuracy 76.00%, department accuracy 65.00%; the post-fix formal rerun awaits model quota |
-| Redis semantic cache | 100.00% hit-decision accuracy (50/50), with mean latency reduced from 10676.83 ms to 6.70 ms |
-
-The default RAG path uses fixed chunks, parallel vector/Elasticsearch retrieval, RRF, and the BGE Reranker. Query Rewrite is disabled by default because it added about 6.3 seconds on average while reducing Hit@1; parent-child indexing was dropped because it reduced quality and increased complexity. Some answer-faithfulness scoring and the post-fix routing rerun require model calls and remain pending because the model quota is exhausted; they are not presented as completed results.
+## Reproduce the Evaluations
 
 ```bash
 cd backend
-uv run python scripts/evaluation/build_datasets.py
+
+uv run python scripts/evaluation/build_datasets.py --validate-only
 uv run python scripts/evaluation/upload_langsmith.py
 uv run python scripts/evaluation/evaluate_rag.py --with-faithfulness
 uv run python scripts/evaluation/evaluate_routing.py
 uv run python scripts/evaluation/evaluate_redis_cache.py
 ```
 
-## ECG Usage Flow
+Formal runs require real LLM, Tavily, Redis Stack Search, and Elasticsearch services; mocks are not accepted as experiment results.
 
-1. Log into the system
-2. Click the ECG report button to open the guide modal
-3. Fill in patient info (name, age, gender, height, weight)
-4. Ensure ECG data has been uploaded to the cloud site
-5. System fetches the latest record, analyzes signals, and generates a PDF report with risk stratification
+## Tests
 
-## Project Structure
+```bash
+cd backend
+uv run pytest -q
 
+REDIS_ENABLED=true RUN_REDIS_STACK_INTEGRATION=1 \
+uv run pytest tests/test_semantic_cache_redis_integration.py -q
+
+cd ../frontend
+npm test -- --run
+npm run build
 ```
+
+## Repository Layout
+
+```text
 HardWare-Medicial/
 ├── backend/
 │   ├── app/
-│   │   ├── agents/          # 9 LangGraph agents
-│   │   ├── api/v1/endpoints/ # REST API endpoints
-│   │   ├── core/            # State, config, workflow, langsmith
-│   │   ├── models/          # SQLAlchemy models
-│   │   ├── schemas/         # Pydantic schemas
-│   │   ├── services/        # Business logic (chat, auth, ecg, cache, etc.)
-│   │   └── tools/           # LLM client, vector store, search, reranker
-│   ├── data/knowledge/      # Local medical PDFs (Git-ignored) and source manifest
-│   ├── data/eval/           # LangSmith eval datasets and results
-│   ├── scripts/evaluation/  # Five consolidated evaluation scripts
-│   ├── storage/             # SQLite DB, ChromaDB, profiles, ECG PDFs
-│   └── tests/               # 20 test files (pytest)
-├── frontend/
-│   └── src/                 # React 19 single-page app
-├── hardware/                # ECG data pipeline scripts
-├── docs/
-│   ├── engineering/         # Engineering plans and reports
-│   └── evaluation/          # Eval reports and methodology
-└── run.py                   # One-click launcher
+│   │   ├── agents/              # LangGraph nodes
+│   │   ├── api/v1/              # FastAPI endpoints
+│   │   ├── core/                # Config, state, workflow, taxonomy
+│   │   ├── services/            # Chat, auth, cache, ECG, jobs
+│   │   └── tools/               # LLM, vectors, ES, reranker, web tools
+│   ├── data/eval/               # Three evaluation datasets and results
+│   ├── data/knowledge/          # Local PDFs and source manifest
+│   ├── scripts/evaluation/      # Five consolidated evaluation scripts
+│   └── tests/                   # Unit, workflow, and service integration tests
+├── frontend/                    # React 19 / Vite SPA
+├── docs/evaluation/             # Evaluation plan and report
+├── hardware/                    # ECG data processing
+└── run.py                       # Full-stack launcher
 ```
+
+## API Overview
+
+| Area | Main endpoints |
+| --- | --- |
+| Auth | `POST /api/v1/auth/login`, `GET /api/v1/auth/me` |
+| Chat | `POST /api/v1/chat`, `POST /api/v1/chat/stream` |
+| Sessions | `GET /api/v1/sessions`, `GET/DELETE /api/v1/session/{session_id}` |
+| ECG | `POST /api/v1/ecg/report`, `GET /api/v1/ecg/report/{id}/pdf` |
+| Health | `GET /api/v1/healthz`, `GET /api/v1/readyz` |
 
 ## Acknowledgement
 
-This project was inspired by the original MediGenius prototype by **Md. Emon Hasan**:
+The original idea was inspired by [Md. Emon Hasan / MediGenius](https://github.com/Md-Emon-Hasan/MediGenius). This repository substantially rebuilds the prototype with hierarchical routing, scoped RAG, hybrid retrieval and reranking, Redis semantic caching, identity management, ECG delivery, and a complete evaluation pipeline.
 
-- https://github.com/Md-Emon-Hasan/MediGenius
-
-On top of that prototype, this repository introduces substantial re-engineering: 8-department routing with scoped RAG, a 9-node agent workflow with binary medical-intent routing, SSE streaming, hybrid retrieval with reranking, ECG end-to-end pipeline with PDF output, user-scoped authentication, semantic caching, and LangSmith observability.
-
-## Creators
-
-- **ElonGe** -- [GitHub](https://github.com/PacemakerG)
-- **xhforever** -- [GitHub](https://github.com/xhforever)
-- **Project** -- [HardWare-Medicial](https://github.com/PacemakerG/HardWare-Medicial)
+Creators: [ElonGe](https://github.com/PacemakerG) · [xhforever](https://github.com/xhforever)
 
 ## Disclaimer
 
-This system is for medical assistance and research demonstration only. It does not replace licensed clinical diagnosis. If you experience acute high-risk symptoms, seek immediate in-person medical care or call emergency services.
+This project is for medical assistance, engineering practice, and research demonstration only. It does not replace licensed clinical diagnosis. Seek immediate in-person care for acute high-risk symptoms such as chest pain, breathing difficulty, or altered consciousness.
