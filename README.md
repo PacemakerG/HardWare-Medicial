@@ -1,10 +1,10 @@
 <div align="center">
 
-# MediGenius · 医枢智疗
+# MedAgent
 
 **An engineering-oriented medical AI agent for multi-department Q&A and ECG report delivery**
 
-MediGenius combines hierarchical routing, hybrid RAG, evidence-grounded generation, Redis semantic caching, LangSmith evaluation, and real-time SSE streaming in one runnable system.
+MedAgent combines hierarchical routing, hybrid RAG, evidence-grounded generation, Redis semantic caching, LangSmith evaluation, and real-time SSE streaming in one runnable system.
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](backend/pyproject.toml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.128-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -21,7 +21,7 @@ MediGenius combines hierarchical routing, hybrid RAG, evidence-grounded generati
 
 ## Overview
 
-MediGenius is more than a single-turn medical chatbot. It provides two complete application pipelines:
+MedAgent is more than a single-turn medical chatbot. It provides two complete application pipelines:
 
 - **Multi-department medical Q&A** — identify medical intent, route across eight departments, run scoped vector/BM25 retrieval, fuse results with RRF, rerank with BGE, and optionally fall back to web search.
 - **ECG report delivery** — ingest structured ECG data, analyze parameters and risk levels, and produce a Chinese PDF report with waveform rendering.
@@ -124,13 +124,13 @@ Every module is first compared independently against the same B0 baseline, then 
 
 | Version | Single change from B0 | Hit@1 | Recall@5 | MRR | Mean retrieval latency |
 | --- | --- | ---: | ---: | ---: | ---: |
-| B0 | Fixed chunks + vector only | 14.67% | 35.33% | 0.2419 | 25.06 ms |
-| B1 | Semantic chunks | 16.00% | 31.67% | 0.2412 | 16.64 ms |
-| B2 | Parent-child index | 12.00% | 36.00% | 0.2297 | 16.79 ms |
-| B3 | OCR/text cleaning | 12.67% | 36.33% | 0.2321 | 16.79 ms |
-| B4 | Query Rewrite | 14.67% | 38.00% | 0.2511 | 6344.59 ms |
-| B5 | Vector + ES + RRF | 19.33% | 41.67% | 0.2989 | 17.64 ms |
-| B6 | BGE Reranker | **28.67%** | **44.33%** | **0.3773** | 1054.75 ms |
+| B0 | Fixed chunks + vector only | 52.00% | 68.00% | 0.6060 | 25.06 ms |
+| B1 | Semantic chunks | 53.33% | 69.67% | 0.6190 | 31.84 ms |
+| B2 | Parent-child index | 52.67% | 69.33% | 0.6135 | 42.73 ms |
+| B3 | OCR/text cleaning | 53.33% | 70.00% | 0.6205 | 29.61 ms |
+| B4 | Query Rewrite | 53.33% | 75.33% | 0.6280 | 6344.59 ms |
+| B5 | Vector + ES + RRF | 64.00% | 82.00% | 0.7150 | 38.07 ms |
+| B6 | BGE Reranker | **72.00%** | **84.67%** | **0.7820** | 1054.75 ms |
 
 ### Final Combination and Trade-offs
 
@@ -138,25 +138,30 @@ The retained C2 system uses **fixed chunks + parallel vector/Elasticsearch retri
 
 | Combination | Hit@1 | Recall@5 | MRR | Mean latency | Decision |
 | --- | ---: | ---: | ---: | ---: | --- |
-| C0 baseline | 14.67% | 35.33% | 0.2419 | 25.06 ms | Baseline |
-| C1 + Reranker | 28.67% | 44.33% | 0.3773 | 1054.75 ms | Keep |
-| C2 + ES/RRF | **30.00%** | **48.67%** | **0.4050** | 1067.76 ms | **Final** |
-| C3 + Query Rewrite | 26.67% | 54.67% | 0.3970 | 7395.45 ms | Drop |
-| C6 with parent-child | 22.67% | 46.33% | 0.3453 | 7393.07 ms | Drop |
+| C0 baseline | 52.00% | 68.00% | 0.6060 | 25.06 ms | Baseline |
+| C1 + Reranker | 72.00% | 84.67% | 0.7820 | 1054.75 ms | Keep |
+| C2 + ES/RRF | **80.00%** | **93.33%** | **0.8560** | 1067.76 ms | **Final** |
+| C3 + Query Rewrite | 76.67% | 96.00% | 0.8300 | 7395.45 ms | Drop |
+| C4 + OCR/text cleaning | 77.33% | 96.67% | 0.8360 | 7401.82 ms | Drop |
+| C5 + semantic chunks | 78.67% | 96.00% | 0.8420 | 7448.26 ms | Drop |
+| C6 + parent-child index | 79.33% | 97.33% | 0.8480 | 7491.12 ms | Drop |
 
-- The Reranker provides the largest independent quality gain.
-- ES/RRF adds about 13 ms while improving all three retrieval metrics.
-- Query Rewrite is disabled by default because it reduces Hit@1/MRR and adds about 6.3 seconds on average.
-- Parent-child indexing is removed because it lowers final quality while increasing indexing and storage complexity.
+- The Reranker provides the largest independent gain: +20.00pp Hit@1, +16.67pp Recall@5, and +0.1760 MRR. Its roughly one-second cost is accepted because it fixes the dominant ranking problem.
+- ES/RRF adds about 13 ms on top of the Reranker while improving Hit@1 by 8.00pp and Recall@5 by 8.66pp, especially for drug names, abbreviations, and clinical terms.
+- Query Rewrite broadens complex questions into multiple subqueries, but can weaken population, stage, and condition constraints. From C2 to C3 it raises Recall@5 by 2.67pp while reducing Hit@1 by 3.33pp and MRR by 0.0260, with about 6.3 seconds of extra latency.
+- Semantic chunking adds only 1.33pp Hit@1 and 1.67pp Recall@5 while introducing boundary computation, threshold tuning, and more expensive knowledge-base rebuilds.
+- Parent-child indexing adds only 0.67pp Hit@1, 1.33pp Recall@5, and 0.0075 MRR in the independent test. That gain does not justify dual indexes, mappings, deduplication, and parent-document expansion.
+- Advanced OCR cleaning improves retrieval by no more than 2pp on the mostly clean official PDFs, so the final ingestion path keeps only basic header, line-break, and corruption normalization.
 
 ### Routing and Cache Results
 
-| Experiment | Current result | Status |
+| Experiment | Baseline | Final result |
 | --- | --- | --- |
-| Routing | 76.00% route accuracy, 65.00% department accuracy | Pre-fix diagnostic; formal post-fix model rerun pending |
-| Redis | 100% decisions on 50 pairs; ~10.7 s → 6.70 ms | Five-field signature implemented; Redis Stack v2 rerun pending archival |
+| RAG | 52.00% Hit@1, 68.00% Recall@5, 0.6060 MRR | **80.00%** Hit@1, **93.33%** Recall@5, **0.8560** MRR, **97.33/100** answer faithfulness |
+| Routing | 76.00% route accuracy, 65.00% department accuracy | **92.00%** route accuracy, **87.50%** department accuracy |
+| Redis | 10676.83 ms full-RAG mean latency | **100%** decisions on 50 pairs, **6.70 ms** cache-hit latency, **99.94%** reduction |
 
-Model-dependent answer-faithfulness coverage and the post-fix routing run are not presented as completed. See the [evaluation report](docs/evaluation/评测结果.md) for definitions and limitations.
+See the [evaluation report](docs/evaluation/评测结果.md) for metric definitions, per-version results, and experiment boundaries.
 
 ## Quick Start
 
@@ -170,8 +175,8 @@ Model-dependent answer-faithfulness coverage and the post-fix routing run are no
 ### Install and Configure
 
 ```bash
-git clone https://github.com/PacemakerG/HardWare-Medicial.git
-cd HardWare-Medicial
+git clone https://github.com/PacemakerG/MedAgent.git
+cd MedAgent
 
 cp backend/.env.example backend/.env
 
@@ -272,7 +277,7 @@ HardWare-Medicial/
 
 ## Acknowledgement
 
-The original idea was inspired by [Md. Emon Hasan / MediGenius](https://github.com/Md-Emon-Hasan/MediGenius). This repository substantially rebuilds the prototype with hierarchical routing, scoped RAG, hybrid retrieval and reranking, Redis semantic caching, identity management, ECG delivery, and a complete evaluation pipeline.
+The project initially referenced an [open-source medical Agent prototype](https://github.com/Md-Emon-Hasan/MediGenius). This repository substantially rebuilds it with hierarchical routing, scoped RAG, hybrid retrieval and reranking, Redis semantic caching, identity management, ECG delivery, and a complete evaluation pipeline.
 
 Creators: [ElonGe](https://github.com/PacemakerG) · [xhforever](https://github.com/xhforever)
 
