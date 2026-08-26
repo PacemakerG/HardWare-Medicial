@@ -262,7 +262,7 @@ npm run build
 ## 项目结构
 
 ```text
-HardWare-Medicial/
+MedAgent/
 ├── backend/
 │   ├── app/
 │   │   ├── agents/              # LangGraph 节点

@@ -247,7 +247,7 @@ npm run build
 ## Repository Layout
 
 ```text
-HardWare-Medicial/
+MedAgent/
 ├── backend/
 │   ├── app/
 │   │   ├── agents/              # LangGraph nodes
