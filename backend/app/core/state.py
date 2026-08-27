@@ -19,6 +19,11 @@ class AgentState(TypedDict):
     documents: List[Document]
     rag_context: List[Dict]
     memory_context: str
+    conversation_summary: str
+    protected_medical_facts: List[Dict]
+    recent_history: List[Dict]
+    current_message_id: Optional[int]
+    context_compression_info: Dict[str, Any]
     user_preferences: Dict
     generation: str
     source: str
@@ -70,6 +75,11 @@ def initialize_conversation_state() -> AgentState:
         "documents": [],
         "rag_context": [],
         "memory_context": "",
+        "conversation_summary": "",
+        "protected_medical_facts": [],
+        "recent_history": [],
+        "current_message_id": None,
+        "context_compression_info": {},
         "user_preferences": {},
         "generation": "",
         "source": "",
@@ -127,6 +137,11 @@ def reset_query_state(state: AgentState) -> AgentState:
             "documents": [],
             "rag_context": [],
             "memory_context": "",
+            "conversation_summary": "",
+            "protected_medical_facts": [],
+            "recent_history": [],
+            "current_message_id": None,
+            "context_compression_info": {},
             "user_preferences": {},
             "generation": "",
             "source": "",

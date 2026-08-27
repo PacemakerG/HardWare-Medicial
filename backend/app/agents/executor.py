@@ -77,9 +77,29 @@ DETAIL_ALIAS_MAP = {
 
 def _recent_history_text(state: AgentState) -> str:
     lines = []
-    for item in state.get("conversation_history", [])[-5:]:
+    for item in state.get("recent_history", []):
         role = "Patient" if item.get("role") == "user" else "Doctor"
         lines.append(f"{role}: {item.get('content', '')}")
+    return "\n".join(lines)
+
+
+def _medical_facts_text(state: AgentState) -> str:
+    lines = []
+    for fact in state.get("protected_medical_facts", []):
+        if not isinstance(fact, dict):
+            continue
+        statement = str(fact.get("statement") or "").strip()
+        if not statement:
+            continue
+        category = fact.get("category") or "medical_fact"
+        status = fact.get("status") or "uncertain"
+        message_id = fact.get("source_message_id") or "unknown"
+        observed_at = fact.get("observed_at") or "unknown"
+        source_quote = str(fact.get("source_quote") or "").strip()
+        lines.append(
+            f"- [{category}/{status}] {statement} "
+            f"(message_id={message_id}, time={observed_at}, 原文={source_quote})"
+        )
     return "\n".join(lines)
 
 
@@ -504,6 +524,8 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
     personalization_guidance = _build_personalization_guidance(user_preferences)
     preferred_name = user_preferences.get("preferred_name", "")
     rag_text = _rag_context_text(state)
+    medical_facts_text = _medical_facts_text(state)
+    conversation_summary = str(state.get("conversation_summary") or "").strip()
     history_text = _recent_history_text(state)
     ecg_info = state.get("ecg_metrics", "").strip() or "暂无最新数据"
     rag_source = state.get("source") if state.get("rag_context") else ""
@@ -557,7 +579,11 @@ def build_executor_plan(state: AgentState) -> Dict[str, Any]:
         f"当前主科室：{primary_department}\n"
         f"硬件心电数据摘要：{ecg_info}\n\n"
         f"用户长期画像:\n{memory_context}\n\n"
-        f"最近对话:\n{history_text or '暂无历史对话'}\n\n"
+        "以下医学事实经过原文引用校验，涉及医学细节时优先于普通摘要。"
+        "若事实彼此冲突，不要静默覆盖，结合时间和来源说明不确定性。\n"
+        f"关键医学事实:\n{medical_facts_text or '暂无受保护医学事实'}\n\n"
+        f"历史摘要:\n{conversation_summary or '暂无历史摘要'}\n\n"
+        f"最近对话原文:\n{history_text or '暂无历史对话'}\n\n"
         f"用户问题:\n{question}\n\n"
         f"RAG资料:\n{rag_text}\n\n"
         f"联网资料:\n{web_evidence or '暂无联网资料'}\n\n"

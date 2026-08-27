@@ -87,8 +87,10 @@ class ChatService:
         restored = []
         for item in history[-20:]:
             record = {
+                "id": item.get("id"),
                 "role": item.get("role", ""),
                 "content": item.get("content", ""),
+                "timestamp": item.get("timestamp"),
             }
             if item.get("source"):
                 record["source"] = item["source"]
@@ -102,6 +104,7 @@ class ChatService:
         message: str,
         user_id: str,
         selected_department: str | None,
+        current_message_id: int,
     ) -> tuple[str, Dict[str, Any]]:
         context_key = self._context_key(user_id, session_id)
         legacy_key = self._legacy_context_key(user_id, session_id)
@@ -120,6 +123,7 @@ class ChatService:
         state["user_id"] = user_id
         state["session_id"] = session_id
         state["question"] = message
+        state["current_message_id"] = current_message_id
         normalized_department = self._normalize_selected_department(selected_department)
         state["selected_department"] = normalized_department
         state["selected_department_forced"] = bool(normalized_department)
@@ -231,7 +235,7 @@ class ChatService:
             raise ValueError("Workflow not initialized")
 
         # Persist user message
-        db_service.save_message(
+        current_message_id = db_service.save_message(
             session_id,
             "user",
             message,
@@ -279,6 +283,7 @@ class ChatService:
             message=message,
             user_id=user_id,
             selected_department=selected_department,
+            current_message_id=current_message_id,
         )
         workflow_config = build_langsmith_runnable_config(
             operation="chat.process_message",
@@ -353,7 +358,7 @@ class ChatService:
         if not self.workflow_app:
             raise ValueError("Workflow not initialized")
 
-        db_service.save_message(
+        current_message_id = db_service.save_message(
             session_id,
             "user",
             message,
@@ -405,6 +410,7 @@ class ChatService:
             message=message,
             user_id=user_id,
             selected_department=selected_department,
+            current_message_id=current_message_id,
         )
         state.setdefault("profiling", {})
         state["profiling"]["trace_context"] = build_langsmith_runnable_config(

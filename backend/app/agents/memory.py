@@ -1,12 +1,18 @@
 """
 MediGenius — agents/memory.py
 Memory agents:
-  - MemoryReadAgent: trim recent history + load profile context
+  - MemoryReadAgent: compact conversation history + load profile context
   - MemoryWriteAsyncAgent: async profile update after final answer
 """
 
 from app.core.langsmith_service import langsmith_traceable
-from app.core.state import AgentState, append_flow_trace, profile_node
+from app.core.state import (
+    AgentState,
+    append_flow_trace,
+    profile_node,
+    set_profile_metric,
+)
+from app.services.context_compaction_service import context_compaction_service
 from app.services.profile_service import (
     load_profile,
     render_profile_as_text,
@@ -16,16 +22,26 @@ from app.services.profile_service import (
 
 @langsmith_traceable("memory_read")
 def MemoryReadAgent(state: AgentState) -> AgentState:
-    """Trim history and load persistent profile context into state."""
+    """Synchronously compact history and load persistent profile context."""
     append_flow_trace(state, "memory_read")
     with profile_node(state, "memory_read"):
         history = state.get("conversation_history", [])
-        if len(history) > 20:
-            history = history[-20:]
-        state["conversation_history"] = history
-
         session_id = state.get("session_id", "")
         user_id = state.get("user_id", "anonymous")
+        compacted = context_compaction_service.build_context(
+            user_id=user_id,
+            session_id=session_id,
+            current_message_id=state.get("current_message_id"),
+            fallback_history=history,
+        )
+        state.update(compacted)
+        state["conversation_history"] = list(compacted.get("recent_history") or [])
+        set_profile_metric(
+            state,
+            "context_compaction",
+            compacted.get("context_compression_info") or {},
+        )
+
         profile = load_profile(
             session_id,
             user_id=user_id,

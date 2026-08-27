@@ -6,7 +6,7 @@ SQLAlchemy ORM model for chat messages.
 from datetime import datetime
 from typing import Dict
 
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -35,3 +35,30 @@ class Message(Base):
             "source": self.source,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
         }
+
+
+class ContextCheckpoint(Base):
+    """Incremental conversation compaction state scoped to one user session."""
+
+    __tablename__ = "context_checkpoints"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "session_id",
+            name="uq_context_checkpoint_user_session",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(128), nullable=False, default="anonymous", index=True)
+    session_id = Column(String(255), nullable=False, index=True)
+    summary_text = Column(Text, nullable=False, default="")
+    medical_facts_json = Column(Text, nullable=False, default="[]")
+    covered_message_id = Column(Integer, nullable=False, default=0)
+    version = Column(Integer, nullable=False, default=1)
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )

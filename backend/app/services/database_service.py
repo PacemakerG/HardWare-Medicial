@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.logging_config import logger
 from app.db.session import SessionLocal, engine
 from app.models.ecg_report import ECGReport
-from app.models.message import Base, Message
+from app.models.message import Base, ContextCheckpoint, Message
 from app.models.user import User
 
 
@@ -158,19 +158,21 @@ class DatabaseService:
         content: str,
         source: Optional[str] = None,
         user_id: str = "anonymous",
-    ) -> None:
+    ) -> int:
         logger.debug("Saving %s message for session %s...", role, session_id[:8])
         with self.get_session() as session:
-            session.add(
-                Message(
-                    user_id=user_id,
-                    session_id=session_id,
-                    role=role,
-                    content=content,
-                    source=source,
-                )
+            message = Message(
+                user_id=user_id,
+                session_id=session_id,
+                role=role,
+                content=content,
+                source=source,
             )
+            session.add(message)
+            session.flush()
+            message_id = int(message.id)
             session.commit()
+            return message_id
 
     def get_chat_history(
         self,
@@ -186,6 +188,91 @@ class DatabaseService:
                 .order_by(Message.timestamp)
             )
             return [msg.to_dict() for msg in session.execute(stmt).scalars().all()]
+
+    def get_chat_history_after(
+        self,
+        session_id: str,
+        *,
+        user_id: str = "anonymous",
+        after_message_id: int = 0,
+        before_message_id: Optional[int] = None,
+    ) -> List[Dict]:
+        """Load only uncompacted messages, optionally excluding the current turn."""
+        with self.get_session() as session:
+            stmt = (
+                select(Message)
+                .where(Message.session_id == session_id)
+                .where(Message.user_id == user_id)
+                .where(Message.id > max(0, int(after_message_id)))
+            )
+            if before_message_id is not None:
+                stmt = stmt.where(Message.id < int(before_message_id))
+            stmt = stmt.order_by(Message.id)
+            return [msg.to_dict() for msg in session.execute(stmt).scalars().all()]
+
+    def get_context_checkpoint(
+        self,
+        session_id: str,
+        *,
+        user_id: str = "anonymous",
+    ) -> Optional[Dict]:
+        with self.get_session() as session:
+            stmt = (
+                select(ContextCheckpoint)
+                .where(ContextCheckpoint.session_id == session_id)
+                .where(ContextCheckpoint.user_id == user_id)
+            )
+            checkpoint = session.execute(stmt).scalar_one_or_none()
+            if checkpoint is None:
+                return None
+            try:
+                facts = json.loads(checkpoint.medical_facts_json or "[]")
+            except Exception:
+                facts = []
+            return {
+                "summary_text": checkpoint.summary_text or "",
+                "medical_facts": facts if isinstance(facts, list) else [],
+                "covered_message_id": int(checkpoint.covered_message_id or 0),
+                "version": int(checkpoint.version or 1),
+            }
+
+    def save_context_checkpoint(
+        self,
+        session_id: str,
+        *,
+        user_id: str,
+        summary_text: str,
+        medical_facts: List[Dict],
+        covered_message_id: int,
+    ) -> Dict:
+        with self.get_session() as session:
+            stmt = (
+                select(ContextCheckpoint)
+                .where(ContextCheckpoint.session_id == session_id)
+                .where(ContextCheckpoint.user_id == user_id)
+            )
+            checkpoint = session.execute(stmt).scalar_one_or_none()
+            if checkpoint is None:
+                checkpoint = ContextCheckpoint(
+                    user_id=user_id,
+                    session_id=session_id,
+                    version=1,
+                )
+                session.add(checkpoint)
+            else:
+                checkpoint.version = int(checkpoint.version or 0) + 1
+
+            checkpoint.summary_text = summary_text
+            checkpoint.medical_facts_json = json.dumps(
+                medical_facts,
+                ensure_ascii=False,
+            )
+            checkpoint.covered_message_id = int(covered_message_id)
+            session.commit()
+            return {
+                "covered_message_id": checkpoint.covered_message_id,
+                "version": checkpoint.version,
+            }
 
     def get_all_sessions(
         self,
@@ -239,6 +326,11 @@ class DatabaseService:
                 delete(ECGReport)
                 .where(ECGReport.session_id == session_id)
                 .where(ECGReport.user_id == user_id)
+            )
+            session.execute(
+                delete(ContextCheckpoint)
+                .where(ContextCheckpoint.session_id == session_id)
+                .where(ContextCheckpoint.user_id == user_id)
             )
             session.commit()
 
