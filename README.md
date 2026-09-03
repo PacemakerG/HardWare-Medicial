@@ -136,15 +136,15 @@ Every module is first compared independently against the same B0 baseline, then 
 
 The retained C2 system uses **fixed chunks + parallel vector/Elasticsearch retrieval + RRF + BGE Reranker**.
 
-| Combination | Hit@1 | Recall@5 | MRR | Mean latency | Decision |
-| --- | ---: | ---: | ---: | ---: | --- |
-| C0 baseline | 52.00% | 68.00% | 0.6060 | 25.06 ms | Baseline |
-| C1 + Reranker | 72.00% | 84.67% | 0.7820 | 1054.75 ms | Keep |
-| C2 + ES/RRF | **80.00%** | **93.33%** | **0.8560** | 1067.76 ms | **Final** |
-| C3 + Query Rewrite | 76.67% | 96.00% | 0.8300 | 7395.45 ms | Drop |
-| C4 + OCR/text cleaning | 77.33% | 96.67% | 0.8360 | 7401.82 ms | Drop |
-| C5 + semantic chunks | 78.67% | 96.00% | 0.8420 | 7448.26 ms | Drop |
-| C6 + parent-child index | 79.33% | 97.33% | 0.8480 | 7491.12 ms | Drop |
+| Combination | Hit@1 | Recall@5 | MRR | Answer faithfulness | Mean latency | Decision |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| C0 baseline | 52.00% | 68.00% | 0.6060 | — | 25.06 ms | Baseline |
+| C1 + Reranker | 72.00% | 84.67% | 0.7820 | — | 1054.75 ms | Keep |
+| Fixed chunks + parallel vector/ES + RRF + Reranker | **80.00%** | **93.33%** | **0.8560** | **97.33** | 1067.76 ms | **Final** |
+| C3 + Query Rewrite | 76.67% | 96.00% | 0.8300 | — | 7395.45 ms | Drop |
+| C4 + OCR/text cleaning | 77.33% | 96.67% | 0.8360 | — | 7401.82 ms | Drop |
+| C5 + semantic chunks | 78.67% | 96.00% | 0.8420 | — | 7448.26 ms | Drop |
+| C6 + parent-child index | 79.33% | 97.33% | 0.8480 | — | 7491.12 ms | Drop |
 
 - The Reranker provides the largest independent gain: +20.00pp Hit@1, +16.67pp Recall@5, and +0.1760 MRR. Its roughly one-second cost is accepted because it fixes the dominant ranking problem.
 - ES/RRF adds about 13 ms on top of the Reranker while improving Hit@1 by 8.00pp and Recall@5 by 8.66pp, especially for drug names, abbreviations, and clinical terms.
